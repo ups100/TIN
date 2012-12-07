@@ -1,0 +1,41 @@
+To work with this code you should:
+
+1. Install Boost library
+2. Instal Qt library
+3. Instal cmake (not too old version due to automoc)
+4. Instal Eclipse with CDT plugin
+
+how to start:
+
+1. clone repository to some folder
+	git clone git@git.com:ups100/TIN.git
+
+2. Add execute rights to setup.sh
+	chmod +x setup.sh
+
+3. Run setup.sh script. If there are some errors with libs fix them.
+
+4. Open Eclipse IDE.
+
+5. Import this project using:
+	File > Import... > General/Exisiting Projects into Workspace
+
+6. Select TIN directory as root directory and click Finish
+
+7. If Everything is OK you may now build project from eclipse using Project > Build Project
+ or from command line by invoking make from TIN/build directory
+
+8. On most unixes there should be no problems but if there are some problems with QT edit 
+QT_HEADERS_LOC eclipse variable and set it to place where you have qt headers,
+but remember to not overwrite project settings while merging with master.
+
+9. Results of building this project you may see in
+	TIN/build/bin and TIN/build/lib 
+There should be 3 executable: client, daemon, server and one static-linking library in lib directory.
+
+10. If you would like some class to inherit QObject and has a Q_OBJECT macro remember to add it's
+header files to CMakeLists.txt for it module.
+
+11. Curently this project is in evaluation state so many of arguments and return types are passed by value
+but I will fix it shortly
+
