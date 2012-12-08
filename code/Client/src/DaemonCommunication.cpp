@@ -10,15 +10,15 @@
 namespace TIN_project {
 namespace Client {
 
-DaemonCommunication::DaemonCommunication(){
+DaemonCommunication::DaemonCommunication()
+{
 
 }
 
-
-
-DaemonCommunication::~DaemonCommunication(){
+DaemonCommunication::~DaemonCommunication()
+{
 
 }
 
-}//namespace Client
-}//namespace TIN_project
+} //namespace Client
+} //namespace TIN_project

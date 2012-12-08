@@ -10,6 +10,7 @@
 
 #include <QHostAddress>
 #include <QtGlobal>
+#include <boost/shared_ptr.hpp>
 
 #include "File.h"
 
@@ -25,14 +26,15 @@ class FileSender
 {
 
 public:
-	FileSender();
-	virtual ~FileSender();
-	FileTransferListener *m_FileTransferListener;
+    FileSender();
+    virtual ~FileSender();
+    FileTransferListener *m_FileTransferListener;
 
-	FileSender(QHostAddress address, quint16 port, File file);
+    FileSender(const QHostAddress& address, quint16 port,
+            boost::shared_ptr<File> file);
 
 };
 
-}//namespace Daemon
-}//namespace TIN_project
+} //namespace Daemon
+} //namespace TIN_project
 #endif // !defined(EA_8360E247_8764_4b3d_95B5_552986452643__INCLUDED_)

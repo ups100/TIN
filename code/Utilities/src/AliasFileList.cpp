@@ -10,15 +10,15 @@
 namespace TIN_project {
 namespace Utilities {
 
-AliasFileList::AliasFileList(){
+AliasFileList::AliasFileList()
+{
 
 }
 
-
-
-AliasFileList::~AliasFileList(){
+AliasFileList::~AliasFileList()
+{
 
 }
 
-}//namespace Utilities
-}//namespace TIN_project
+} //namespace Utilities
+} //namespace TIN_project

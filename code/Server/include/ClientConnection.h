@@ -14,8 +14,8 @@
 namespace TIN_project {
 
 namespace Utilities {
-	class FileLocation;
-	class AliasFileList;
+class FileLocation;
+class AliasFileList;
 }
 namespace Server {
 
@@ -26,27 +26,27 @@ class ClientConnection
 {
 
 public:
-	ClientConnection();
-	virtual ~ClientConnection();
-	ClientConnectionListener *m_ClientConnectionListener;
-	ClientServerConnectionListener *m_ClientServerConnectionListener;
+    ClientConnection();
+    virtual ~ClientConnection();
+    ClientConnectionListener *m_ClientConnectionListener;
+    ClientServerConnectionListener *m_ClientServerConnectionListener;
 
-	void disconnectFromServer();
-	void sendFileFound(Utilities::FileLocation location);
-	void sendFileList(Utilities::AliasFileList list);
-	void sendFileNotFound();
-	void sendFileNotRemoved();
-	void sendFileRemoved();
-	void sendFileTransferError();
-	void sendFileTransferFinished();
-	void sendFileTransferStarted();
-	void sendNoSuchFile();
+    void disconnectFromServer();
+    void sendFileFound(const Utilities::FileLocation& location);
+    void sendFileList(const Utilities::AliasFileList& list);
+    void sendFileNotFound();
+    void sendFileNotRemoved();
+    void sendFileRemoved();
+    void sendFileTransferError();
+    void sendFileTransferFinished();
+    void sendFileTransferStarted();
+    void sendNoSuchFile();
 
 private:
-	ClientConnectionListener* m_connectionListener;
+    ClientConnectionListener* m_connectionListener;
 
 };
 
-}//namespace server
-}//namespace TIN_project
+} //namespace server
+} //namespace TIN_project
 #endif // !defined(EA_8025FA43_E1FD_4c29_94EA_DE5FDF7489E8__INCLUDED_)

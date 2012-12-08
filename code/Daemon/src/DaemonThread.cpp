@@ -10,83 +10,81 @@
 namespace TIN_project {
 namespace Daemon {
 
-DaemonThread::DaemonThread(){
+DaemonThread::DaemonThread()
+{
 
 }
 
-
-
-DaemonThread::~DaemonThread(){
-
-}
-
-
-
-
-
-DaemonThread::DaemonThread(QHostAddress ip, quint16 port, QString path){
+DaemonThread::~DaemonThread()
+{
 
 }
 
-
-void DaemonThread::onAliasConnected(){
-
-}
-
-
-void DaemonThread::onAliasConnectionError(){
+DaemonThread::DaemonThread(const QHostAddress& ip, quint16 port,
+        const QString& path)
+{
 
 }
 
-
-void DaemonThread::onConnected(){
-
-}
-
-
-void DaemonThread::onDisconnected(){
+void DaemonThread::onAliasConnected()
+{
 
 }
 
-
-void DaemonThread::onFindFile(QString fileName){
-
-}
-
-
-void DaemonThread::onListFiles(){
+void DaemonThread::onAliasConnectionError()
+{
 
 }
 
-
-void DaemonThread::onReciveFile(File file){
-
-}
-
-
-void DaemonThread::onRemoveFile(QString fileName){
+void DaemonThread::onConnected()
+{
 
 }
 
-
-void DaemonThread::onSendFile(File file){
-
-}
-
-
-void DaemonThread::onTransferEnd(FileSender * sender){
+void DaemonThread::onDisconnected()
+{
 
 }
 
-
-void DaemonThread::onTransferEnd(FileReciver * reciver){
-
-}
-
-
-void DaemonThread::stopThread(){
+void DaemonThread::onFindFile(boost::shared_ptr<QString> fileName)
+{
 
 }
 
-}//namespace Daemon
-}//namespace TIN_project
+void DaemonThread::onListFiles()
+{
+
+}
+
+void DaemonThread::onReciveFile(boost::shared_ptr<File> file)
+{
+
+}
+
+void DaemonThread::onRemoveFile(boost::shared_ptr<QString> fileName)
+{
+
+}
+
+void DaemonThread::onSendFile(boost::shared_ptr<File> file)
+{
+
+}
+
+void DaemonThread::onTransferEnd(FileSender * sender)
+{
+
+}
+
+void DaemonThread::onTransferEnd(FileReciver * reciver)
+{
+
+}
+
+void DaemonThread::stopThread()
+{
+
+}
+
+} //namespace Daemon
+} //namespace TIN_project

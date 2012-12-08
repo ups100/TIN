@@ -9,6 +9,8 @@
 #define EA_723305C7_1A82_4b81_8DF6_2EBC4C2063C7__INCLUDED_
 
 #include <QHostAddress>
+#include <boost/shared_ptr.hpp>
+
 #include "File.h"
 
 namespace TIN_project {
@@ -22,14 +24,15 @@ class FileReciver
 {
 
 public:
-	FileReciver();
-	virtual ~FileReciver();
-	FileTransferListener *m_FileTransferListener;
+    FileReciver();
+    virtual ~FileReciver();
+    FileTransferListener *m_FileTransferListener;
 
-	FileReciver(QHostAddress address, quint16 port, File file);
+    FileReciver(const QHostAddress& address, quint16 port,
+            boost::shared_ptr<File> file);
 
 };
 
-}//namespace Daemon
-}//namespace TIN_project
+} //namespace Daemon
+} //namespace TIN_project
 #endif // !defined(EA_723305C7_1A82_4b81_8DF6_2EBC4C2063C7__INCLUDED_)

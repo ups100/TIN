@@ -12,68 +12,65 @@
 namespace TIN_project {
 namespace Server {
 
-ClientConnection::ClientConnection(){
+ClientConnection::ClientConnection()
+{
 
 }
 
-
-
-ClientConnection::~ClientConnection(){
-
-}
-
-
-
-
-
-void ClientConnection::disconnectFromServer(){
+ClientConnection::~ClientConnection()
+{
 
 }
 
-
-void ClientConnection::sendFileFound(Utilities::FileLocation location){
-
-}
-
-
-void ClientConnection::sendFileList(Utilities::AliasFileList list){
+void ClientConnection::disconnectFromServer()
+{
 
 }
 
-
-void ClientConnection::sendFileNotFound(){
-
-}
-
-
-void ClientConnection::sendFileNotRemoved(){
+void ClientConnection::sendFileFound(const Utilities::FileLocation& location)
+{
 
 }
 
-
-void ClientConnection::sendFileRemoved(){
-
-}
-
-
-void ClientConnection::sendFileTransferError(){
+void ClientConnection::sendFileList(const Utilities::AliasFileList& list)
+{
 
 }
 
-
-void ClientConnection::sendFileTransferFinished(){
-
-}
-
-
-void ClientConnection::sendFileTransferStarted(){
+void ClientConnection::sendFileNotFound()
+{
 
 }
 
-
-void ClientConnection::sendNoSuchFile(){
+void ClientConnection::sendFileNotRemoved()
+{
 
 }
 
-}//namespace server
-}//namespace TIN_project
+void ClientConnection::sendFileRemoved()
+{
+
+}
+
+void ClientConnection::sendFileTransferError()
+{
+
+}
+
+void ClientConnection::sendFileTransferFinished()
+{
+
+}
+
+void ClientConnection::sendFileTransferStarted()
+{
+
+}
+
+void ClientConnection::sendNoSuchFile()
+{
+
+}
+
+} //namespace server
+} //namespace TIN_project

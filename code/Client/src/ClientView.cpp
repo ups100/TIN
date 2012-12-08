@@ -10,15 +10,15 @@
 namespace TIN_project {
 namespace Client {
 
-ClientView::ClientView(){
+ClientView::ClientView()
+{
 
 }
 
-
-
-ClientView::~ClientView(){
+ClientView::~ClientView()
+{
 
 }
 
-}//namespace Client
-}//namespace TIN_project
+} //namespace Client
+} //namespace TIN_project

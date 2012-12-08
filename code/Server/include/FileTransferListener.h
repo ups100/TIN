@@ -17,14 +17,14 @@ class FileTransferListener
 {
 
 public:
-	FileTransferListener();
-	virtual ~FileTransferListener();
+    FileTransferListener();
+    virtual ~FileTransferListener();
 
-	virtual void onFileTransferCompleted(FileTransferServer * transfer) =0;
-	virtual void onFileTransferError(FileTransferServer* transfer) =0;
+    virtual void onFileTransferCompleted(FileTransferServer * transfer) =0;
+    virtual void onFileTransferError(FileTransferServer* transfer) =0;
 
 };
 
-}//namespace server
-}//namespace TIN_project
+} //namespace server
+} //namespace TIN_project
 #endif // !defined(EA_01367691_430E_42ec_8D5F_87C8F2B45C82__INCLUDED_)

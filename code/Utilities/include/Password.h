@@ -20,14 +20,14 @@ class Password
 {
 
 public:
-	Password();
-	virtual ~Password();
+    Password();
+    virtual ~Password();
 
-	Password(QString password);
-	bool check(QString password);
-
+    Password(const QString& password);
+    bool check(const QString& password) const;
+    bool check(const Password& password) const;
 };
 
-}//namespace Utilities
-}//namespace TIN_project
+} //namespace Utilities
+} //namespace TIN_project
 #endif // !defined(EA_91C787C3_94C4_4da7_BA4C_9508DA439345__INCLUDED_)

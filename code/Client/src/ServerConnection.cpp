@@ -12,64 +12,64 @@
 namespace TIN_project {
 namespace Client {
 
-ServerConnection::ServerConnection(){
+ServerConnection::ServerConnection()
+{
 
 }
 
-
-
-ServerConnection::~ServerConnection(){
-
-}
-
-
-
-
-
-void ServerConnection::connectToAlias(QString aliasName, Utilities::Password password){
+ServerConnection::~ServerConnection()
+{
 
 }
 
-
-void ServerConnection::connectToServer(QHostAddress address, quint16 port){
-
-}
-
-
-void ServerConnection::createAlias(QString name, Utilities::Password password){
+void ServerConnection::connectToAlias(const QString& aliasName,
+        const Utilities::Password& password)
+{
 
 }
 
-
-void ServerConnection::findFileInAlias(QString fileName){
-
-}
-
-
-void ServerConnection::listAlias(){
+void ServerConnection::connectToServer(const QHostAddress& address,
+        quint16 port)
+{
 
 }
 
-
-void ServerConnection::pullFileFrom(Utilities::FileLocation file){
+void ServerConnection::createAlias(const QString& name,
+        const Utilities::Password& password)
+{
 
 }
 
+void ServerConnection::findFileInAlias(const QString& fileName)
+{
+
+}
+
+void ServerConnection::listAlias()
+{
+
+}
+
+void ServerConnection::pullFileFrom(const Utilities::FileLocation& file)
+{
+
+}
 
 /**
  * not sure about semantic of this method
  */
-void ServerConnection::pushFileToAlias(QString path){
+void ServerConnection::pushFileToAlias(const QString& path)
+{
 
 }
-
 
 /**
  * not sure about semantic of this method 
  */
-void ServerConnection::removeFileFromAlias(QString fileName){
+void ServerConnection::removeFileFromAlias(const QString& fileName)
+{
 
 }
 
-}//namespace Client
-}//namespace TIN_project
+} //namespace Client
+} //namespace TIN_project

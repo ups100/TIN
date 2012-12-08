@@ -12,16 +12,15 @@
 namespace TIN_project {
 namespace Client {
 
-
-AliasCommunicationListener::AliasCommunicationListener(){
-
-}
-
-
-
-AliasCommunicationListener::~AliasCommunicationListener(){
+AliasCommunicationListener::AliasCommunicationListener()
+{
 
 }
 
-}//namespace Client
-}//namespace TIN_project
+AliasCommunicationListener::~AliasCommunicationListener()
+{
+
+}
+
+} //namespace Client
+} //namespace TIN_project

@@ -11,24 +11,21 @@
 namespace TIN_project {
 namespace Daemon {
 
-ClientCommunication::ClientCommunication(){
+ClientCommunication::ClientCommunication()
+{
 
 }
 
-
-
-ClientCommunication::~ClientCommunication(){
+ClientCommunication::~ClientCommunication()
+{
 
 }
 
+boost::shared_ptr<Utilities::Message> ClientCommunication::getMessage()
+{
 
-
-
-
-Utilities::Message ClientCommunication::getMessage(){
-
-	return  Utilities::Message();
+    return boost::shared_ptr<Utilities::Message>((Utilities::Message*) 0L);
 }
 
-}//namespace Daemon
-}//namespace TIN_project
+} //namespace Daemon
+} //namespace TIN_project

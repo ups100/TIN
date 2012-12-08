@@ -10,15 +10,15 @@
 namespace TIN_project {
 namespace Utilities {
 
-Message::Message(){
+Message::Message()
+{
 
 }
 
-
-
-Message::~Message(){
+Message::~Message()
+{
 
 }
 
-}//namespace Utilities
-}//namespace TIN_project
+} //namespace Utilities
+} //namespace TIN_project

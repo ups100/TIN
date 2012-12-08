@@ -11,38 +11,38 @@
 namespace TIN_project {
 namespace Server {
 
-MainServer::MainServer(){
+MainServer::MainServer()
+{
 
 }
 
-
-
-MainServer::~MainServer(){
-
-}
-
-
-
-
-
-void MainServer::onConnectToAlias(QString name, Utilities::Password password){
+MainServer::~MainServer()
+{
 
 }
 
-
-void MainServer::onCreateAlias(QString name, Utilities::Password password){
-
-}
-
-
-void MainServer::onRemoveAlias(QString name, Utilities::Password password){
+void MainServer::onConnectToAlias(boost::shared_ptr<QString> name,
+        boost::shared_ptr<Utilities::Password> password)
+{
 
 }
 
-
-void MainServer::start(QHostAddress address, quint16 port){
+void MainServer::onCreateAlias(boost::shared_ptr<QString> name,
+        boost::shared_ptr<Utilities::Password> password)
+{
 
 }
 
-}//namespace server
-}//namespace TIN_project
+void MainServer::onRemoveAlias(boost::shared_ptr<QString> name,
+        boost::shared_ptr<Utilities::Password> password)
+{
+
+}
+
+void MainServer::start(const QHostAddress& address, quint16 port)
+{
+
+}
+
+} //namespace server
+} //namespace TIN_project

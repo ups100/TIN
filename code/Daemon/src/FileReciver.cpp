@@ -11,23 +11,21 @@
 namespace TIN_project {
 namespace Daemon {
 
-FileReciver::FileReciver(){
+FileReciver::FileReciver()
+{
 
 }
 
-
-
-FileReciver::~FileReciver(){
-
-}
-
-
-
-
-
-FileReciver::FileReciver(QHostAddress address, quint16 port, File file){
+FileReciver::~FileReciver()
+{
 
 }
 
-}//namespace Daemon
-}//namespace TIN_project
+FileReciver::FileReciver(const QHostAddress& address, quint16 port,
+        boost::shared_ptr<File> file)
+{
+
+}
+
+} //namespace Daemon
+} //namespace TIN_project

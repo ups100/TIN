@@ -8,11 +8,13 @@
 #if !defined(EA_AE18438A_08E8_4911_BEEF_91902EC822A3__INCLUDED_)
 #define EA_AE18438A_08E8_4911_BEEF_91902EC822A3__INCLUDED_
 
+#include <boost/shared_ptr.hpp>
+
 namespace TIN_project {
 
 namespace Utilities {
-	class FileLocation;
-	class AliasFileList;
+class FileLocation;
+class AliasFileList;
 }
 namespace Server {
 
@@ -25,16 +27,18 @@ class DaemonConnectionListener
 {
 
 public:
-	DaemonConnectionListener();
-	virtual ~DaemonConnectionListener();
+    DaemonConnectionListener();
+    virtual ~DaemonConnectionListener();
 
-	virtual void onConnectionClose(DaemonConnection* daemon) =0;
-	virtual void onFileFound(DaemonConnection* daemon, Utilities::FileLocation location) =0;
-	virtual void onFileList(DaemonConnection* daemon, Utilities::AliasFileList list) =0;
-	virtual void onNoSuchFile(DaemonConnection* daemon) =0;
+    virtual void onConnectionClose(DaemonConnection* daemon) =0;
+    virtual void onFileFound(DaemonConnection* daemon,
+            boost::shared_ptr<Utilities::FileLocation> location) =0;
+    virtual void onFileList(DaemonConnection* daemon,
+            boost::shared_ptr<Utilities::AliasFileList> list) =0;
+    virtual void onNoSuchFile(DaemonConnection* daemon) =0;
 
 };
 
-}//namespace server
-}//namespace TIN_project
+} //namespace server
+} //namespace TIN_project
 #endif // !defined(EA_AE18438A_08E8_4911_BEEF_91902EC822A3__INCLUDED_)

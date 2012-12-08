@@ -10,15 +10,15 @@
 namespace TIN_project {
 namespace Client {
 
-Commands::Commands(){
+Commands::Commands()
+{
 
 }
 
-
-
-Commands::~Commands(){
+Commands::~Commands()
+{
 
 }
 
-}//namespace Client
-}//namespace TIN_project
+} //namespace Client
+} //namespace TIN_project

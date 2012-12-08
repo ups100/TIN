@@ -13,33 +13,31 @@
 namespace TIN_project {
 namespace Daemon {
 
-ServerConnection::ServerConnection(){
+ServerConnection::ServerConnection()
+{
 
 }
 
-
-
-ServerConnection::~ServerConnection(){
-
-}
-
-
-
-
-
-void ServerConnection::connectToServer(QHostAddress address, quint64 port){
+ServerConnection::~ServerConnection()
+{
 
 }
 
-
-void ServerConnection::sendFileFound(Utilities::FileLocation location){
-
-}
-
-
-void ServerConnection::sendFileList(Utilities::AliasFileList list){
+void ServerConnection::connectToServer(const QHostAddress& address,
+        quint16 port)
+{
 
 }
 
-}//namespace Daemon
-}//namespace TIN_project
+void ServerConnection::sendFileFound(const Utilities::FileLocation& location)
+{
+
+}
+
+void ServerConnection::sendFileList(const Utilities::AliasFileList& list)
+{
+
+}
+
+} //namespace Daemon
+} //namespace TIN_project

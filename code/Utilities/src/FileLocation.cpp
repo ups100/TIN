@@ -10,15 +10,15 @@
 namespace TIN_project {
 namespace Utilities {
 
-FileLocation::FileLocation(){
+FileLocation::FileLocation()
+{
 
 }
 
-
-
-FileLocation::~FileLocation(){
+FileLocation::~FileLocation()
+{
 
 }
 
-}//namespace Utilities
-}//namespace TIN_project
+} //namespace Utilities
+} //namespace TIN_project

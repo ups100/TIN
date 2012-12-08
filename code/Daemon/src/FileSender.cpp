@@ -11,23 +11,21 @@
 namespace TIN_project {
 namespace Daemon {
 
-FileSender::FileSender(){
+FileSender::FileSender()
+{
 
 }
 
-
-
-FileSender::~FileSender(){
-
-}
-
-
-
-
-
-FileSender::FileSender(QHostAddress address, quint16 port, File file){
+FileSender::~FileSender()
+{
 
 }
 
-}//namespace Daemon
-}//namespace TIN_project
+FileSender::FileSender(const QHostAddress& address, quint16 port,
+        boost::shared_ptr<File> file)
+{
+
+}
+
+} //namespace Daemon
+} //namespace TIN_project

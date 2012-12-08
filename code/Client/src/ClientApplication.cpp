@@ -12,108 +12,107 @@
 namespace TIN_project {
 namespace Client {
 
-ClientApplication::ClientApplication(){
+ClientApplication::ClientApplication()
+{
 
 }
 
-
-
-ClientApplication::~ClientApplication(){
-
-}
-
-
-
-
-
-void ClientApplication::onAliasConnected(){
+ClientApplication::~ClientApplication()
+{
 
 }
 
-
-void ClientApplication::onAliasConnectionError(){
-
-}
-
-
-void ClientApplication::onAliasCreated(){
+void ClientApplication::onAliasConnected()
+{
 
 }
 
-
-void ClientApplication::onAliasCreationError(){
-
-}
-
-
-void ClientApplication::onAliasDeleted(){
+void ClientApplication::onAliasConnectionError()
+{
 
 }
 
-
-void ClientApplication::onAliasDeletionError(){
-
-}
-
-
-void ClientApplication::onAliasListed(Utilities::AliasFileList list){
+void ClientApplication::onAliasCreated()
+{
 
 }
 
-
-void ClientApplication::onConnected(){
-
-}
-
-
-void ClientApplication::onDisconnected(){
+void ClientApplication::onAliasCreationError()
+{
 
 }
 
-
-void ClientApplication::onFileFound(Utilities::FileLocation location){
-
-}
-
-
-void ClientApplication::onFileNotFound(){
+void ClientApplication::onAliasDeleted()
+{
 
 }
 
-
-void ClientApplication::onFileRemoved(){
-
-}
-
-
-void ClientApplication::onFileRemovingError(){
+void ClientApplication::onAliasDeletionError()
+{
 
 }
 
-
-void ClientApplication::onFileTransferError(){
-
-}
-
-
-void ClientApplication::onFileTransferFinished(){
+void ClientApplication::onAliasListed(
+        boost::shared_ptr<Utilities::AliasFileList> list)
+{
 
 }
 
-
-void ClientApplication::onFileTransferStarted(){
-
-}
-
-
-void ClientApplication::setView(boost::shared_ptr<ClientView> view){
+void ClientApplication::onConnected()
+{
 
 }
 
-
-void ClientApplication::start(){
+void ClientApplication::onDisconnected()
+{
 
 }
 
-}//namespace Client
-}//namespace TIN_project
+void ClientApplication::onFileFound(
+        boost::shared_ptr<Utilities::FileLocation> location)
+{
+
+}
+
+void ClientApplication::onFileNotFound()
+{
+
+}
+
+void ClientApplication::onFileRemoved()
+{
+
+}
+
+void ClientApplication::onFileRemovingError()
+{
+
+}
+
+void ClientApplication::onFileTransferError()
+{
+
+}
+
+void ClientApplication::onFileTransferFinished()
+{
+
+}
+
+void ClientApplication::onFileTransferStarted()
+{
+
+}
+
+void ClientApplication::setView(boost::shared_ptr<ClientView> view)
+{
+
+}
+
+void ClientApplication::start()
+{
+
+}
+
+} //namespace Client
+} //namespace TIN_project

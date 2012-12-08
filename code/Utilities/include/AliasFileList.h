@@ -15,11 +15,11 @@ class AliasFileList
 {
 
 public:
-	AliasFileList();
-	virtual ~AliasFileList();
+    AliasFileList();
+    virtual ~AliasFileList();
 
 };
 
-}//namespace Utilities
-}//namespace TIN_project
+} //namespace Utilities
+} //namespace TIN_project
 #endif // !defined(EA_A26F37CC_44D6_4f5b_915E_18BA44DC4E9A__INCLUDED_)

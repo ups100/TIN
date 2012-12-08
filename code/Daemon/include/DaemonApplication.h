@@ -19,17 +19,17 @@ class DaemonApplication
 {
 
 public:
-	DaemonApplication();
-	virtual ~DaemonApplication();
+    DaemonApplication();
+    virtual ~DaemonApplication();
 
-	int start();
+    int start();
 
 private:
-	QList<DaemonThread> m_daemonThreads;
-	ClientCommunication m_clientCommunication;
+    QList<DaemonThread> m_daemonThreads;
+    ClientCommunication m_clientCommunication;
 
 };
 
-}//namespace Daemon
-}//namespace TIN_project
+} //namespace Daemon
+} //namespace TIN_project
 #endif // !defined(EA_E9B53BF6_B582_49b8_8FDE_DA96921106D3__INCLUDED_)

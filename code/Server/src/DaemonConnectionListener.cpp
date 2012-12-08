@@ -10,15 +10,15 @@
 namespace TIN_project {
 namespace Server {
 
-DaemonConnectionListener::DaemonConnectionListener(){
+DaemonConnectionListener::DaemonConnectionListener()
+{
 
 }
 
-
-
-DaemonConnectionListener::~DaemonConnectionListener(){
+DaemonConnectionListener::~DaemonConnectionListener()
+{
 
 }
 
-}//namespace server
-}//namespace TIN_project
+} //namespace server
+} //namespace TIN_project

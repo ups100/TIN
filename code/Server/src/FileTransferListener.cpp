@@ -10,15 +10,15 @@
 namespace TIN_project {
 namespace Server {
 
-FileTransferListener::FileTransferListener(){
+FileTransferListener::FileTransferListener()
+{
 
 }
 
-
-
-FileTransferListener::~FileTransferListener(){
+FileTransferListener::~FileTransferListener()
+{
 
 }
 
-}//namespace server
-}//namespace TIN_project
+} //namespace server
+} //namespace TIN_project

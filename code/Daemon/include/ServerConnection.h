@@ -13,8 +13,8 @@
 namespace TIN_project {
 
 namespace Utilities {
-	class FileLocation;
-	class AliasFileList;
+class FileLocation;
+class AliasFileList;
 }
 
 namespace Daemon {
@@ -25,18 +25,18 @@ class ServerConnection
 {
 
 public:
-	ServerConnection();
-	virtual ~ServerConnection();
+    ServerConnection();
+    virtual ~ServerConnection();
 
-	void connectToServer(QHostAddress address, quint64 port);
-	void sendFileFound(Utilities::FileLocation location);
-	void sendFileList(Utilities::AliasFileList list);
+    void connectToServer(const QHostAddress& address, quint16 port);
+    void sendFileFound(const Utilities::FileLocation& location);
+    void sendFileList(const Utilities::AliasFileList& list);
 
 private:
-	ServerConnectionListener *m_serverConnectionListener;
+    ServerConnectionListener *m_serverConnectionListener;
 
 };
 
-}//namespace Daemon
-}//namespace TIN_project
+} //namespace Daemon
+} //namespace TIN_project
 #endif // !defined(EA_8811645B_7EE0_4f8a_881A_13DB83EB0BD6__INCLUDED_)

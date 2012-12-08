@@ -9,8 +9,7 @@
 #define EA_7D25CB8A_5FE7_4422_AE99_A2C2A1D6102D__INCLUDED_
 
 #include <QString>
-
-
+#include <boost/shared_ptr.hpp>
 
 namespace TIN_project {
 namespace Client {
@@ -21,13 +20,13 @@ class CommandParser
 {
 
 public:
-	CommandParser();
-	virtual ~CommandParser();
+    CommandParser();
+    virtual ~CommandParser();
 
-	Commands parseCommand(QString command);
+    boost::shared_ptr<Commands> parseCommand(const QString& command);
 
 };
 
-}//namespace Client
-}//namespace TIN_project
+} //namespace Client
+} //namespace TIN_project
 #endif // !defined(EA_7D25CB8A_5FE7_4422_AE99_A2C2A1D6102D__INCLUDED_)

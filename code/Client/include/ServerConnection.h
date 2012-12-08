@@ -15,8 +15,8 @@
 namespace TIN_project {
 
 namespace Utilities {
-	class Password;
-	class FileLocation;
+class Password;
+class FileLocation;
 }
 
 namespace Client {
@@ -25,20 +25,21 @@ class ServerConnection
 {
 
 public:
-	ServerConnection();
-	virtual ~ServerConnection();
+    ServerConnection();
+    virtual ~ServerConnection();
 
-	void connectToAlias(QString aliasName, Utilities::Password password);
-	void connectToServer(QHostAddress address, quint16 port);
-	void createAlias(QString name, Utilities::Password password);
-	void findFileInAlias(QString fileName);
-	void listAlias();
-	void pullFileFrom(Utilities::FileLocation file);
-	void pushFileToAlias(QString path);
-	void removeFileFromAlias(QString fileName);
+    void connectToAlias(const QString& aliasName,
+            const Utilities::Password& password);
+    void connectToServer(const QHostAddress& address, quint16 port);
+    void createAlias(const QString& name, const Utilities::Password& password);
+    void findFileInAlias(const QString& fileName);
+    void listAlias();
+    void pullFileFrom(const Utilities::FileLocation& file);
+    void pushFileToAlias(const QString& path);
+    void removeFileFromAlias(const QString& fileName);
 
 };
 
-}//namespace Client
-}//namespace TIN_project
+} //namespace Client
+} //namespace TIN_project
 #endif // !defined(EA_57AB8497_7A1A_44cf_B8D0_14DE9A413A5A__INCLUDED_)
