@@ -9,6 +9,9 @@ FIND_PACKAGE( Boost REQUIRED )
 #look for qt library (required for this project)
 FIND_PACKAGE( Qt4 REQUIRED )
 
+#look for doxygen to make documentation
+find_package(Doxygen REQUIRED)
+
 INCLUDE( ${QT_USE_FILE} )
 ADD_DEFINITIONS(${QT_DEFINITIONS})
 
@@ -29,4 +32,5 @@ add_subdirectory(Utilities)
 add_subdirectory(Client)
 add_subdirectory(Daemon)
 add_subdirectory(Server)
+add_subdirectory(doxygen)
 

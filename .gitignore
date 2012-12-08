@@ -1,6 +1,9 @@
 #ignore builds
 build/
 
+#ignore doxygen documentation
+doc/
+
 # Compiled source #
 ###################
 *.com
