@@ -10,23 +10,15 @@
 namespace TIN_project {
 namespace Daemon {
 
-ServerConnectionListener::ServerConnectionListener(){
+ServerConnectionListener::ServerConnectionListener()
+{
 
 }
 
-
-
-ServerConnectionListener::~ServerConnectionListener(){
-
-}
-
-
-
-
-
-void ServerConnectionListener::onFileNotRemoved(){
+ServerConnectionListener::~ServerConnectionListener()
+{
 
 }
 
-}//namespace Daemon
-}//namespace TIN_project
+} //namespace Daemon
+} //namespace TIN_project

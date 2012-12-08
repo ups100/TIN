@@ -15,11 +15,11 @@ class Commands
 {
 
 public:
-	Commands();
-	virtual ~Commands();
+    Commands();
+    virtual ~Commands();
 
 };
 
-}//namespace Client
-}//namespace TIN_project
+} //namespace Client
+} //namespace TIN_project
 #endif // !defined(EA_BF1C3997_E0EB_4819_BDC9_CF0F9B797239__INCLUDED_)

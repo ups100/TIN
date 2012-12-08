@@ -23,20 +23,22 @@ class DaemonConnection
 {
 
 public:
-	DaemonConnection();
-	virtual ~DaemonConnection();
+    DaemonConnection();
+    virtual ~DaemonConnection();
 
-	void disconnectFromServer();
-	void sendFindFile(QString fileName);
-	void sendReciveFile(QString filename, QHostAddress address, quint16 port);
-	void sendRemoveFile(QString fileName);
-	void sendSendFile(QString fileName, QHostAddress address, quint16 port);
+    void disconnectFromServer();
+    void sendFindFile(const QString& fileName);
+    void sendReciveFile(const QString& filename, const QHostAddress& address,
+            quint16 port);
+    void sendRemoveFile(const QString& fileName);
+    void sendSendFile(const QString& fileName, const QHostAddress& address,
+            quint16 port);
 
 private:
-	DaemonConnectionListener* m_connectionListener;
+    DaemonConnectionListener* m_connectionListener;
 
 };
 
-}//namespace server
-}//namespace TIN_project
+} //namespace server
+} //namespace TIN_project
 #endif // !defined(EA_6C6268DD_2EDB_44a9_98C4_B9F5505AFD3B__INCLUDED_)

@@ -10,23 +10,20 @@
 namespace TIN_project {
 namespace Daemon {
 
-DaemonApplication::DaemonApplication(){
+DaemonApplication::DaemonApplication()
+{
 
 }
 
-
-
-DaemonApplication::~DaemonApplication(){
+DaemonApplication::~DaemonApplication()
+{
 
 }
 
-
-
-
-
-int DaemonApplication::start(){
-	return 0;
+int DaemonApplication::start()
+{
+    return 0;
 }
 
-}//namespace Daemon
-}//namespace TIN_project
+} //namespace Daemon
+} //namespace TIN_project

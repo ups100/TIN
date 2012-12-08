@@ -10,30 +10,28 @@
 namespace TIN_project {
 namespace Server {
 
-FileTransferServer::FileTransferServer(){
+FileTransferServer::FileTransferServer()
+{
 
 }
 
-
-
-FileTransferServer::~FileTransferServer(){
+FileTransferServer::~FileTransferServer()
+{
 
 }
 
+const QHostAddress& FileTransferServer::getAddress()
+{
 
-
-
-
-QHostAddress FileTransferServer::getAddress(){
-
-	return  QHostAddress();
+    QHostAddress add;
+    return add;
 }
 
+quint16 FileTransferServer::getPort()
+{
 
-quint16 FileTransferServer::getPort(){
-
-	return  0;
+    return 0;
 }
 
-}//namespace server
-}//namespace TIN_project
+} //namespace server
+} //namespace TIN_project

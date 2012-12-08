@@ -10,35 +10,37 @@
 namespace TIN_project {
 namespace Utilities {
 
-Password::Password(){
+Password::Password()
+{
 
 }
 
-
-
-Password::~Password(){
+Password::~Password()
+{
 
 }
-
-
-
-
 
 /**
  * Creates an object and set it's password
  */
-Password::Password(QString password){
+Password::Password(const QString& password)
+{
 
 }
-
 
 /**
  * Check if password is correct
  */
-bool Password::check(QString password){
+bool Password::check(const QString& password) const
+{
 
-	return false;
+    return false;
 }
 
-}//namespace Utilities
-}//namespace TIN_project
+bool Password::check(const Password& password) const
+{
+
+    return false;
+}
+} //namespace Utilities
+} //namespace TIN_project

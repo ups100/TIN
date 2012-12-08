@@ -18,11 +18,11 @@ class FileLocation
 {
 
 public:
-	FileLocation();
-	virtual ~FileLocation();
+    FileLocation();
+    virtual ~FileLocation();
 
 };
 
-}//namespace Utilities
-}//namespace TIN_project
+} //namespace Utilities
+} //namespace TIN_project
 #endif // !defined(EA_F8C56EF9_6597_4618_8783_B8F31AB3B1AC__INCLUDED_)

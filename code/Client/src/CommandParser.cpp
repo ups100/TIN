@@ -11,24 +11,21 @@
 namespace TIN_project {
 namespace Client {
 
-CommandParser::CommandParser(){
+CommandParser::CommandParser()
+{
 
 }
 
-
-
-CommandParser::~CommandParser(){
+CommandParser::~CommandParser()
+{
 
 }
 
+boost::shared_ptr<Commands> parseCommand(const QString& command)
+{
 
-
-
-
-Commands CommandParser::parseCommand(QString command){
-
-	return Commands();
+    return boost::shared_ptr<Commands>((Commands*) 0L);
 }
 
-}//namespace Client
-}//namespace TIN_project
+} //namespace Client
+} //namespace TIN_project

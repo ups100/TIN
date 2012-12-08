@@ -16,7 +16,7 @@
 
 namespace TIN_project {
 namespace Utilities {
-	class Password;
+class Password;
 }
 namespace Server {
 
@@ -24,19 +24,22 @@ class MainServer : public ClientServerConnectionListener
 {
 
 public:
-	MainServer();
-	virtual ~MainServer();
+    MainServer();
+    virtual ~MainServer();
 
-	virtual void onConnectToAlias(QString name, Utilities::Password password);
-	virtual void onCreateAlias(QString name, Utilities::Password password);
-	virtual void onRemoveAlias(QString name, Utilities::Password password);
-	void start(QHostAddress address, quint16 port);
+    virtual void onConnectToAlias(boost::shared_ptr<QString> name,
+            boost::shared_ptr<Utilities::Password> password);
+    virtual void onCreateAlias(boost::shared_ptr<QString> name,
+            boost::shared_ptr<Utilities::Password> password);
+    virtual void onRemoveAlias(boost::shared_ptr<QString> name,
+            boost::shared_ptr<Utilities::Password> password);
+    void start(const QHostAddress& address, quint16 port);
 
 private:
-	QList<Alias> m_aliases;
+    QList<Alias> m_aliases;
 
 };
 
-}//namespace server
-}//namespace TIN_project
+} //namespace server
+} //namespace TIN_project
 #endif // !defined(EA_6F9FF3A4_91E1_4b50_9D38_C64AB3756BB5__INCLUDED_)

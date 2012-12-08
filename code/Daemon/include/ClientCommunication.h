@@ -8,9 +8,11 @@
 #if !defined(EA_12038366_02C4_491b_8F39_E9A6E75F2374__INCLUDED_)
 #define EA_12038366_02C4_491b_8F39_E9A6E75F2374__INCLUDED_
 
+#include <boost/shared_ptr.hpp>
+
 namespace TIN_project {
 namespace Utilities {
-	class Message;
+class Message;
 }
 namespace Daemon {
 
@@ -18,13 +20,13 @@ class ClientCommunication
 {
 
 public:
-	ClientCommunication();
-	virtual ~ClientCommunication();
+    ClientCommunication();
+    virtual ~ClientCommunication();
 
-	Utilities::Message getMessage();
+    boost::shared_ptr<Utilities::Message> getMessage();
 
 };
 
-}//namespace Daemon
-}//namespace TIN_project
+} //namespace Daemon
+} //namespace TIN_project
 #endif // !defined(EA_12038366_02C4_491b_8F39_E9A6E75F2374__INCLUDED_)

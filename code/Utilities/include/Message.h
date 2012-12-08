@@ -18,11 +18,11 @@ class Message
 {
 
 public:
-	Message();
-	virtual ~Message();
+    Message();
+    virtual ~Message();
 
 };
 
-}//namespace Utilities
-}//namespace TIN_project
+} //namespace Utilities
+} //namespace TIN_project
 #endif // !defined(EA_0E30CFF6_DCAD_423d_B631_22AE074FA14F__INCLUDED_)

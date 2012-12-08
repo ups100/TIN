@@ -8,11 +8,13 @@
 #if !defined(EA_B3F6A841_8C44_4944_A884_DC8E2DEBD789__INCLUDED_)
 #define EA_B3F6A841_8C44_4944_A884_DC8E2DEBD789__INCLUDED_
 
+#include <boost/shared_ptr.hpp>
+
 namespace TIN_project {
 
 namespace Utilities {
-	class AliasFileList;
-	class FileLocation;
+class AliasFileList;
+class FileLocation;
 }
 
 namespace Client {
@@ -21,21 +23,23 @@ class AliasCommunicationListener
 {
 
 public:
-	AliasCommunicationListener();
-	virtual ~AliasCommunicationListener();
+    AliasCommunicationListener();
+    virtual ~AliasCommunicationListener();
 
-	virtual void onAliasListed(Utilities::AliasFileList list) =0;
-	virtual void onFileFound(Utilities::FileLocation location) =0;
-	virtual void onFileNotFound() =0;
-	virtual void onFileRemoved() =0;
-	virtual void onFileRemovingError() =0;
-	virtual void onFileTransferError() =0;
-	virtual void onFileTransferFinished() =0;
-	virtual void onFileTransferStarted() =0;
+    virtual void onAliasListed(
+            boost::shared_ptr<Utilities::AliasFileList> list) =0;
+    virtual void onFileFound(
+            boost::shared_ptr<Utilities::FileLocation> location) =0;
+    virtual void onFileNotFound() =0;
+    virtual void onFileRemoved() =0;
+    virtual void onFileRemovingError() =0;
+    virtual void onFileTransferError() =0;
+    virtual void onFileTransferFinished() =0;
+    virtual void onFileTransferStarted() =0;
 
 };
 
-}//namespace Client
-}//namespace TIN_project
+} //namespace Client
+} //namespace TIN_project
 
 #endif // !defined(EA_B3F6A841_8C44_4944_A884_DC8E2DEBD789__INCLUDED_)

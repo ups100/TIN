@@ -10,15 +10,15 @@
 namespace TIN_project {
 namespace Server {
 
-ClientServerConnectionListener::ClientServerConnectionListener(){
+ClientServerConnectionListener::ClientServerConnectionListener()
+{
 
 }
 
-
-
-ClientServerConnectionListener::~ClientServerConnectionListener(){
+ClientServerConnectionListener::~ClientServerConnectionListener()
+{
 
 }
 
-}//namespace server
-}//namespace TIN_project
+} //namespace server
+} //namespace TIN_project

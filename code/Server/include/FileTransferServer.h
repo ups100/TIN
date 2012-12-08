@@ -22,22 +22,22 @@ class FileTransferServer
 {
 
 public:
-	FileTransferServer();
-	virtual ~FileTransferServer();
-	FileTransferListener *m_FileTransferListener;
+    FileTransferServer();
+    virtual ~FileTransferServer();
+    FileTransferListener *m_FileTransferListener;
 
-	QHostAddress getAddress();
-	quint16 getPort();
+    const QHostAddress& getAddress();
+    quint16 getPort();
 
 private:
-	QHostAddress m_address;
-	/**
-	 * Port number
-	 */
-	quint16 m_port;
+    QHostAddress m_address;
+    /**
+     * Port number
+     */
+    quint16 m_port;
 
 };
 
-}//namespace server
-}//namespace TIN_project
+} //namespace server
+} //namespace TIN_project
 #endif // !defined(EA_8F738BBF_D47D_472b_9E55_623B17AAECE7__INCLUDED_)

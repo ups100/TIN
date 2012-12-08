@@ -18,14 +18,14 @@ class FileTransferListener
 {
 
 public:
-	FileTransferListener();
-	virtual ~FileTransferListener();
+    FileTransferListener();
+    virtual ~FileTransferListener();
 
-	virtual void onTransferEnd(FileSender * sender) =0;
-	virtual void onTransferEnd(FileReciver * reciver) =0;
+    virtual void onTransferEnd(FileSender * sender) =0;
+    virtual void onTransferEnd(FileReciver * reciver) =0;
 
 };
 
-}//namespace Daemon
-}//namespace TIN_project
+} //namespace Daemon
+} //namespace TIN_project
 #endif // !defined(EA_CDCA04F0_86FE_4b54_BBD9_F094F10EFB6E__INCLUDED_)

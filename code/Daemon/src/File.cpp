@@ -10,15 +10,15 @@
 namespace TIN_project {
 namespace Daemon {
 
-File::File(){
+File::File()
+{
 
 }
 
-
-
-File::~File(){
+File::~File()
+{
 
 }
 
-}//namespace Daemon
-}//namespace TIN_project
+} //namespace Daemon
+} //namespace TIN_project
