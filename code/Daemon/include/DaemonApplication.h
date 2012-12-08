@@ -90,8 +90,13 @@ private:
     DaemonApplication();
     DaemonApplication(const DaemonApplication &);
 
+signals:
+    void onThreadClosedSingal(DaemonThread *dt);
+
 private slots:
+    /** Do not use this slot. Use another one below. */
     void onDaemonThreadClosedSlot();
+    void onThreadClosedSlot(DaemonThread *dt);
 
 private:
 

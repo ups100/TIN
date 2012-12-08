@@ -39,7 +39,7 @@ DaemonApplication::DaemonApplication()
           m_isClean(true),
           m_singleApplication(argc,argv) //argc,argv are static fields set by initDaemon() method
 {
-
+    connect(this, SIGNAL(onThreadClosedSingal(DaemonThread *)), this, SLOT(onThreadClosedSlot(DaemonThread *)));
 }
 
 void DaemonApplication::stopApplication()
@@ -65,8 +65,6 @@ DaemonApplication::~DaemonApplication()
 
 int DaemonApplication::start(int argc, char **argv)
 {
-    //QtSingleCoreApplication application(argc, argv);
-
     // Check if it is first instance of application
     if (m_singleApplication.isRunning()) {
         qDebug() << "Another instance of daemon is now running";
@@ -176,25 +174,32 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
 
 void DaemonApplication::onStarted(DaemonThread *dt)
 {
-    qDebug() << "DaemonThread started for alias: " << dt->getConfig()->m_aliasId;
+    qDebug() << "DaemonThread started successful for alias: " << dt->getConfig()->m_aliasId;
+    qDebug() << " with catalog" << dt->getConfig()->m_cataloguePath;
 }
 
 void DaemonApplication::onStartingError(DaemonThread *dt)
 {
-    qDebug() << "DaemonThread starting error. ";
+    qDebug() << "Error while DaemonThread tries connecting for alias: " << dt->getConfig()->m_aliasId;
+    qDebug() << " with catalog" << dt->getConfig()->m_cataloguePath;
+    // TODO usunięcie tego demona
 }
 
 void DaemonApplication::onClosed(DaemonThread *dt)  // TODO maybe I can use this pointer, but how singleShot to SLOT with value ? I can't
 {
-    QMutexLocker lock(&m_mutex);
-    qDebug() << "Server closed connection with DaemonThread " << dt->getConfig()->m_cataloguePath;
+    //QMutexLocker lock(&m_mutex); //it is not unlock when signal is emiting
+    qDebug() << "Server closed connection with DaemonThread " << dt->getConfig()->m_aliasId
+             << " with catalog: "<< dt->getConfig()->m_cataloguePath;
 
-    QTimer::singleShot(0, this, SLOT(onDaemonThreadClosedSlot()));
+    emit onThreadClosedSingal(dt);
+    //QTimer::singleShot(10, this, SLOT(onDaemonThreadClosedSlot()));
 }
 
 
+// Depreciated. Don't use anywhere
 void DaemonApplication::onDaemonThreadClosedSlot()
 {
+    qDebug() << "Depreciated method. Don't use it";
     QMutexLocker lock(&m_mutex);
 
     QList<DaemonThread*>::iterator it;
@@ -212,6 +217,21 @@ void DaemonApplication::onDaemonThreadClosedSlot()
         QTimer::singleShot(100, &m_singleApplication, SLOT(quit()));
     }
 
+}
+
+void DaemonApplication::onThreadClosedSlot(DaemonThread *dt)
+{
+    QMutexLocker lock(&m_mutex);
+
+    // TODO it can done be better:
+    removeCatalogueFromAlias(dt->getConfig()->m_cataloguePath ,dt->getConfig()->m_aliasId);
+    m_daemonThreads.removeAll(dt);
+
+    // TODO Consider this concept - closing DaemonApplication when last DaemonThread close
+     if (m_daemonThreads.isEmpty()) {
+         stopApplication();
+         QTimer::singleShot(100, &m_singleApplication, SLOT(quit()));
+     }
 }
 
 QtSingleCoreApplication* DaemonApplication::getSingleApplicationPointer()

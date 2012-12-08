@@ -60,6 +60,9 @@ void DaemonThread::onAliasConnected()
         qDebug() << "Error. Double AliasConnected information from server to DeamonThread";
     }else
         m_aliasConnected = true;
+
+    // tells DaemonApplication that connection with server is established
+    DaemonApplication::getInstance().onStarted(this);
 }
 
 void DaemonThread::onAliasConnectionError()
@@ -68,6 +71,7 @@ void DaemonThread::onAliasConnectionError()
     qDebug() << m_config->m_aliasId;
 
     m_aliasConnected = false;
+    DaemonApplication::getInstance().onStartingError(this);
 
     // TODO uzgodnic scenariusz wypadku niepołączenia się z Aliasem
     // proponuję zakończyć wtedy komunikację z serwerem, żeby potem się nie plątała niepotrzebnie
