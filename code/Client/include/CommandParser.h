@@ -9,6 +9,7 @@
 #define EA_7D25CB8A_5FE7_4422_AE99_A2C2A1D6102D__INCLUDED_
 
 #include <QString>
+#include <QStringList>
 #include <boost/shared_ptr.hpp>
 
 namespace TIN_project {
@@ -23,7 +24,11 @@ public:
     CommandParser();
     virtual ~CommandParser();
 
-    boost::shared_ptr<Commands> parseCommand(const QString& command);
+    boost::shared_ptr<Commands> parseCommand(QString const&);
+
+private:
+    enum commandListEnum {LOG,CREATE_ALIAS,ADD_ALIAS,REMOVE,FIND,READ,SYNCH,LS};
+    QStringList commandList;
 
 };
 

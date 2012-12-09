@@ -7,7 +7,9 @@
 
 #if !defined(EA_BF1C3997_E0EB_4819_BDC9_CF0F9B797239__INCLUDED_)
 #define EA_BF1C3997_E0EB_4819_BDC9_CF0F9B797239__INCLUDED_
-
+#include <QStringList>
+#include <QDebug>
+#include <QDataStream>
 namespace TIN_project {
 namespace Client {
 
@@ -16,8 +18,17 @@ class Commands
 
 public:
     Commands();
+    Commands(QStringList);
+    Commands(QString, QString, QStringList);
+    QString getCommand();
+    QString getParameter();
+    QString getArg(int);
+    QStringList getArg();
     virtual ~Commands();
-
+private:
+    QString m_command;
+    QString m_parameter;
+    QStringList m_arguments;
 };
 
 } //namespace Client
