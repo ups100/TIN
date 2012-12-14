@@ -111,7 +111,18 @@ void ClientApplication::setView(boost::shared_ptr<ClientView> view)
 
 void ClientApplication::start()
 {
+    // TODO parser inject, send message test
+    do {
+        char buf[1024];
+        std::cout << " $> ";
+        std::cin >> buf;
 
+        if (strcmp(buf, "quit") == 0)
+            break;
+
+        m_DaemonCommunication.talkToDaemon(Utilities::Message(buf));
+
+    } while (1);
 }
 
 } //namespace Client

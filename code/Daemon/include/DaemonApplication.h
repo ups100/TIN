@@ -22,7 +22,7 @@ public:
     DaemonApplication();
     virtual ~DaemonApplication();
 
-    int start();
+    void start();
 
 private:
     QList<DaemonThread> m_daemonThreads;

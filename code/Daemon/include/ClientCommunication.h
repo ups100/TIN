@@ -23,6 +23,7 @@ public:
     ClientCommunication();
     virtual ~ClientCommunication();
 
+    void waitForMessage();
     boost::shared_ptr<Utilities::Message> getMessage();
 
 };

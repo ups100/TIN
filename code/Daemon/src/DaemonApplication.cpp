@@ -20,9 +20,10 @@ DaemonApplication::~DaemonApplication()
 
 }
 
-int DaemonApplication::start()
+void DaemonApplication::start()
 {
-    return 0;
+    //TODO run in own thread
+    m_clientCommunication.waitForMessage();
 }
 
 } //namespace Daemon

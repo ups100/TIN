@@ -17,6 +17,7 @@
 #include "DaemonCommunication.h"
 #include "ServerConnectionListener.h"
 #include "AliasCommunicationListener.h"
+#include "Message.h"
 
 namespace TIN_project {
 
@@ -55,6 +56,7 @@ public:
     virtual void onFileTransferStarted();
     void setView(boost::shared_ptr<ClientView> view);
     void start();
+    void talkToDaemon(Utilities::Message message);
 
 private:
     CommandParser m_commandParser;
