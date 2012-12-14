@@ -22,10 +22,10 @@ class Password
 public:
     Password();
     virtual ~Password();
-
     Password(const QString& password);
     bool check(const QString& password) const;
     bool check(const Password& password) const;
+    QString getPassword();
 private:
     QString m_password;
 };

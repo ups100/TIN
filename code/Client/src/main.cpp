@@ -14,8 +14,13 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
     CommandParser tmpCom;
 
-    tmpCom.parseCommand(QString("synch -o"));
+    //tmpCom.parseCommand(QString("add code/Client"));
+
+    tmpCom.parseCommand(QString("ls"));
+    qDebug()<<"Tu jestesmy"<<endl;
     //Commands tmp(QString("nowy"),QString("hello"),QStringList("moto"),Argument::FILES);
-    FileLocation::checkLocation("code/Client");
+    //FileLocation::checkLocation("code/Client");
+
     return app.exec();
+    return 0;
 }

@@ -28,12 +28,12 @@ Argument::Argument(QString s, Argument::Types f)
             break;
         case Argument::FILES:
             if(FileLocation::checkLocation(s)) {
-                m_paths.push_back(FileLocation(s));
+                m_path = FileLocation(s);
             }
             else qDebug()<<"There is no such file"<<endl;
             break;
         case Argument::STRING:
-            m_file = s;
+            m_filename = s;
             break;
         default:
             return;
@@ -45,6 +45,32 @@ Argument::Types Argument::getFlague()
     return flague;
 }
 
+Password Argument::getPassword()
+{
+    if (flague != Argument::PASSWORD) {
+        qDebug()<<"Don't do that"<<endl;
+        return (Password)NULL;
+    }
+    return m_password;
+}
+
+FileLocation Argument::getFileLocation()
+{
+  if (flague != Argument::FILES) {
+      qDebug()<<"Don't do that"<<endl;
+      return (FileLocation)NULL;
+  }
+  return m_path;
+}
+
+QString Argument::getFileName()
+{
+    if(flague != Argument::STRING) {
+        qDebug()<<"Don't do that"<<endl;
+        return NULL;
+    }
+    return m_filename;
+}
 Argument::~Argument()
 {
     // TODO Auto-generated destructor stub

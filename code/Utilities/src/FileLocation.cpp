@@ -17,30 +17,29 @@ FileLocation::FileLocation()
 
 FileLocation::FileLocation(QString f)
 {
-
+    m_location = QDir(f);
 }
 
 bool FileLocation::checkLocation(QString f)
 {
-    /** Question: how to get the root of an alias in here? */
-    /*  Here should be the root of an alias */
+    /**
+     * Here should be the root of a certain alias
+     * By now, it is just "/home/marcin/repo/TIN/
+     */
     QString root = "/home/marcin/repo/TIN/";
-
-
     f.prepend(root);
     qDebug()<<f<<endl;
     QDir dir(f);
-    if(dir.exists()) {
+    if (dir.exists()) {
         qDebug()<<"PLIK ISTNIEJE"<<endl;
         return true;
     }
-
     else {
         qDebug()<<"PLIK NIE ISTNIEJE"<<endl;
         return true;
     }
-
 }
+
 
 FileLocation::~FileLocation()
 {

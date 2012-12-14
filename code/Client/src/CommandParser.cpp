@@ -82,13 +82,14 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
     }
 
     else if (tmpCommand == commandList[ADD_ALIAS]) {
+
         if(tmpParameters.size() != 0) {
             tmpParameters.clear();
         }
         if(tmpArguments.size() != 1) {
             decision = false;
         }
-        flag = Argument::PASSWORD;
+        flag = Argument::FILES;
     }
 
     else if (tmpCommand == commandList[REMOVE]) {
@@ -151,8 +152,9 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
     else
         decision = false;
 
+    /** There is some error */
     if (decision == true) {
-        return shared_ptr<Commands>(new Commands(tmpCommand,(QString) tmpParameters[0],tmpArguments, flag));
+        return shared_ptr<Commands>(new Commands(tmpCommand,tmpParameters[0], tmpArguments[0], flag));
     }
 
     else return shared_ptr<Commands>((Commands *) NULL);

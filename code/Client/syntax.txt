@@ -5,7 +5,7 @@ I created couple of commands based on linux shell commands. It includes:
 log <alias> <password>
 Client logs on specific alias (don't know, if this is ok, just typing the password)
 
-create <alias> password
+create <alias> <password>
 Obvious
 
 add <localpath>
@@ -14,10 +14,10 @@ Assuming client has logged succesfully, just types path to directory that he/she
 rm -a <alias> <password>
 Deleting the alias (user need to write password to verify, is he/she is allowed to do that)
 
-rm -l <localpath> <localpath>....
-Deleting catalog/file from local directory (but under alias). More than one fileor directory might be deleted by one command
+rm -l <localpath>
+Deleting catalog/file from local directory (but under alias).
 
-rm -r <file> <file>....
+rm -r <file> 
 Deleting file from alias
 
 find <file>

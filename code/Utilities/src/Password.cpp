@@ -20,6 +20,10 @@ Password::Password(const QString& password)
     m_password = password;
 }
 
+QString Password::getPassword()
+{
+    return m_password;
+}
 Password::~Password()
 {
 

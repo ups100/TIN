@@ -31,13 +31,16 @@ public:
     Argument();
     Argument(QString, Argument::Types);
     Argument::Types getFlague();
+    Password getPassword();
+    FileLocation getFileLocation();
+    QString getFileName();
     virtual ~Argument();
 
 private:
     Argument::Types flague;
     Password m_password;
-    QList<FileLocation> m_paths;
-    QString m_file;
+    FileLocation m_path;
+    QString m_filename;
 
 };
 

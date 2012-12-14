@@ -19,17 +19,16 @@ class Commands
 
 public:
     Commands();
-    Commands(QString, QString, QStringList, Argument::Types);
+    Commands(QString, QString, QString, Argument::Types);
     QString getCommand();
     QString getParameter();
-    Argument getArg(int);
-    QList<Argument> getArg();
+    Argument getArg();
     Argument::Types getFlague();
     virtual ~Commands();
 private:
     QString m_command;
     QString m_parameter;
-    QList<Argument> m_arguments;
+    Argument m_argument;
     Argument::Types flague;
 
 };
