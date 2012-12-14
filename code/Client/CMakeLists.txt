@@ -18,6 +18,7 @@ SET( CLIENT_SRC
 		${TIN_SOURCE_DIR}/Client/src/ServerConnection.cpp
 		${TIN_SOURCE_DIR}/Client/src/ServerConnectionListener.cpp
 		${TIN_SOURCE_DIR}/Client/src/main.cpp
+		${TIN_SOURCE_DIR}/Client/src/Argument.cpp
 )
 
 add_executable( client ${CLIENT_SRC} )

@@ -7,28 +7,31 @@
 
 #if !defined(EA_BF1C3997_E0EB_4819_BDC9_CF0F9B797239__INCLUDED_)
 #define EA_BF1C3997_E0EB_4819_BDC9_CF0F9B797239__INCLUDED_
-#include <QStringList>
+#include <QList>
 #include <QDebug>
-#include <QDataStream>
+#include <QStringList>
+#include <../include/Argument.h>
 namespace TIN_project {
 namespace Client {
-
+using namespace TIN_project::Utilities;
 class Commands
 {
 
 public:
     Commands();
-    Commands(QStringList);
-    Commands(QString, QString, QStringList);
+    Commands(QString, QString, QStringList, Argument::Types);
     QString getCommand();
     QString getParameter();
-    QString getArg(int);
-    QStringList getArg();
+    Argument getArg(int);
+    QList<Argument> getArg();
+    Argument::Types getFlague();
     virtual ~Commands();
 private:
     QString m_command;
     QString m_parameter;
-    QStringList m_arguments;
+    QList<Argument> m_arguments;
+    Argument::Types flague;
+
 };
 
 } //namespace Client

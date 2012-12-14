@@ -15,16 +15,21 @@ Commands::Commands()
 
 }
 
-Commands::Commands(QStringList list)
+Commands::Commands(QString command, QString parameter, QStringList arguments, Argument::Types flag)
 {
-
-}
-
-Commands::Commands(QString cmd, QString param, QStringList args)
-{
-    m_command = cmd;
-    m_parameter = param;
-    m_arguments = args;
+    flague = flag;
+    m_command = command;
+    m_parameter = parameter;
+    for(int i = 0; i < arguments.size(); ++i) {
+        m_arguments.push_back(Argument(arguments[i], flag));
+    }
+    /** Test if all arguments are of the same type */
+    for(int i = 0; i < m_arguments.size()-1; ++i)
+    {
+        if(m_arguments[i].getFlague() != m_arguments[i+1].getFlague()) {
+            qDebug()<<"BAD FLAGUES"<<endl;
+        }
+    }
 }
 
 /**
@@ -50,22 +55,21 @@ QString Commands::getParameter()
  * @param i index of argument (starts with 0)
  * @return one particular argument
  */
-QString Commands::getArg(int i)
+Argument Commands::getArg(int i)
 {
     if ((i >= m_arguments.size()) || (i < 0)) {
-        return NULL;
+        qDebug()<<"BAD PARAMETER"<<endl;
     }
     return m_arguments[i];
 }
 
-/**
- * @brief getter for list of arguments
- * @return list of all arguments
- */
-QStringList Commands::getArg()
+
+Argument::Types Commands::getFlague()
 {
-    return m_arguments;
+    return flague;
 }
+
+
 
 Commands::~Commands()
 {

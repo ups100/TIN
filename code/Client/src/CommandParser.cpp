@@ -28,6 +28,8 @@ CommandParser::CommandParser()
    commandList.push_back("read");
    commandList.push_back("synch");
    commandList.push_back("ls");
+   commandList.push_back("push");
+   commandList.push_back("pull");
 }
 
 
@@ -52,12 +54,14 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
     if(wordList.size() == 0)
         return shared_ptr<Commands>((Commands *) NULL);
 
-    if ((wordList.size() == 1) && (wordList[0] != commandList[LS]))
+    if ((wordList.size() == 1) && ((wordList[0] != commandList[LS]) &&
+            (wordList[0] != commandList[PUSH]) && (wordList[0] != commandList[PULL])))
                return shared_ptr<Commands>((Commands*) NULL);
 
     QString tmpCommand;
     QStringList tmpParameters;
     QStringList tmpArguments;
+    Argument::Types flag;
 
     tmpCommand = wordList[0];
     for (int i = 1; i<wordList.size(); ++i) {
@@ -71,11 +75,10 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
 
     //Logging and creating alias (both had similar syntax)
     if ((tmpCommand == commandList[LOG]) || (tmpCommand == commandList[CREATE_ALIAS])) {
-        if(tmpParameters.size() != 0) {
+        if(tmpParameters.size() != 0 || tmpArguments.size() !=2) {
             decision = false;
         }
-        if (tmpArguments.size() != 2)
-            decision = false;
+        flag = Argument::PASSWORD;
     }
 
     else if (tmpCommand == commandList[ADD_ALIAS]) {
@@ -85,27 +88,12 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
         if(tmpArguments.size() != 1) {
             decision = false;
         }
-        if(tmpArguments[0].startsWith("/")) {
-            tmpArguments[0] = tmpArguments[0].remove(0,1);
-        }
+        flag = Argument::PASSWORD;
     }
 
     else if (tmpCommand == commandList[REMOVE]) {
-        if(tmpParameters.size() != 1) {
+        if((tmpParameters.size() != 1) || (tmpArguments.size() < 1)) {
             decision = false;
-        }
-        else if (tmpArguments.size() < 1) {
-            decision = false;
-        }
-
-        //Deleting from local catalog
-        else if (tmpParameters[0] == "l") {
-
-            for (int i = 0; i<tmpArguments.size(); ++i) {
-                if(tmpArguments[i].startsWith("/")) {
-                    tmpArguments[i] = tmpArguments[i].remove(0,1);
-                }
-            }
         }
 
         //Deleting from alias
@@ -113,7 +101,7 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
             if (tmpArguments.size() < 1) {
                 decision = false;
             }
-
+            flag = Argument::FILES;
         }
 
        //Deleting whole alias
@@ -124,6 +112,7 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
             if (tmpArguments.size() != 2) {
                 decision = false;
             }
+            flag = Argument::PASSWORD;
         }
 
         else
@@ -134,6 +123,7 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
         if((tmpParameters.size() != 0) || (tmpArguments.size() != 1)) {
             decision = false;
         }
+        flag = Argument::FILES;
     }
 
     //List file on alias
@@ -141,25 +131,28 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
         if ((tmpParameters.size() != 0) || (tmpArguments.size() != 0)) {
             decision = false;
         }
+        flag = Argument::NONE;
     }
 
     else if (tmpCommand == commandList[SYNCH]) {
-        if (tmpParameters.size() != 1) {
+        if ((tmpParameters.size() != 1) || (tmpArguments.size() != 1) ) {
             decision = false;
         }
-        else if (tmpArguments.size() != 1) {
+       flag = Argument::NONE;
+    }
+
+    else if((tmpCommand == commandList[PUSH]) || (tmpCommand == commandList[PULL])) {
+        if ((tmpParameters.size() != 0) || (tmpArguments.size() != 0)) {
             decision = false;
         }
-        else if (tmpArguments[0].startsWith("/")) {
-            tmpArguments[0] = tmpArguments[0].remove(0,1);
-        }
+        flag = Argument::NONE;
     }
 
     else
         decision = false;
 
     if (decision == true) {
-        return shared_ptr<Commands>(new Commands(tmpCommand,(QString) tmpParameters[0],tmpArguments));
+        return shared_ptr<Commands>(new Commands(tmpCommand,(QString) tmpParameters[0],tmpArguments, flag));
     }
 
     else return shared_ptr<Commands>((Commands *) NULL);

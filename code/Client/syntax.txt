@@ -35,6 +35,11 @@ Synchronization, with interaction with user, anywhere there is a need to decide 
 ls
 As in Linux shell, list all files gathered under the alias
 
+push 
+//Not yet
+
+pull
+//not yet
 
 
 Things like not enough or too many parameters/arguments are cleared by CommandParser (simply accept only correct commands, returning NULL otherwise). Class Commands contains getters to each of the part of command (command itself, parameter and arguments) 

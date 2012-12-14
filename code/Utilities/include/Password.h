@@ -26,6 +26,8 @@ public:
     Password(const QString& password);
     bool check(const QString& password) const;
     bool check(const Password& password) const;
+private:
+    QString m_password;
 };
 
 } //namespace Utilities

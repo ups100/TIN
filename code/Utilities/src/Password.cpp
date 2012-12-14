@@ -15,15 +15,12 @@ Password::Password()
 
 }
 
-Password::~Password()
+Password::Password(const QString& password)
 {
-
+    m_password = password;
 }
 
-/**
- * Creates an object and set it's password
- */
-Password::Password(const QString& password)
+Password::~Password()
 {
 
 }
@@ -33,14 +30,13 @@ Password::Password(const QString& password)
  */
 bool Password::check(const QString& password) const
 {
-
-    return false;
+    return (this->m_password == password);
 }
 
 bool Password::check(const Password& password) const
 {
+    return (this->m_password == password.m_password);
 
-    return false;
 }
 } //namespace Utilities
 } //namespace TIN_project

@@ -6,7 +6,6 @@
 ///////////////////////////////////////////////////////////
 
 #include "Message.h"
-
 namespace TIN_project {
 namespace Utilities {
 
