@@ -10,6 +10,7 @@
 #include <QList>
 #include <QDebug>
 #include <QStringList>
+#include <QVariant>
 #include <../include/Argument.h>
 namespace TIN_project {
 namespace Client {
@@ -19,17 +20,28 @@ class Commands
 
 public:
     Commands();
+    Commands(QString, Argument::Types);
+    Commands(QString, QString, Argument::Types);
     Commands(QString, QString, QString, Argument::Types);
     QString getCommand();
     QString getParameter();
-    Argument getArg();
-    Argument::Types getFlague();
+    QVariant getArg(Argument::Types) const;
+    Password getPassword() const;
+    Argument::Types getFlague() const;
+    bool isCorrect() const;
     virtual ~Commands();
+    bool invoke(); /* To do */
 private:
+    QString getAlias(Argument::Types) const;
+    QString getFileName(Argument::Types) const;
+    FileLocation getFileLocation(Argument::Types) const;
+
     QString m_command;
     QString m_parameter;
     Argument m_argument;
-    Argument::Types flague;
+    Password m_password;
+    Argument::Types m_flague;
+    bool m_correct;
 
 };
 

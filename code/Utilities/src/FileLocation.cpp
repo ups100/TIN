@@ -20,6 +20,11 @@ FileLocation::FileLocation(QString f)
     m_location = QDir(f);
 }
 
+
+/**
+ * @brief static function to check if the location of file exists
+ * @return true if the location exists, false otherwise
+ */
 bool FileLocation::checkLocation(QString f)
 {
     /**
@@ -29,13 +34,19 @@ bool FileLocation::checkLocation(QString f)
     QString root = "/home/marcin/repo/TIN/";
     f.prepend(root);
     qDebug()<<f<<endl;
+    /**
+     * Delete 3 lines from the above if
+     * the path will not be resolved and will be checked
+     * by the root of an alias
+     */
+
     QDir dir(f);
     if (dir.exists()) {
-        qDebug()<<"PLIK ISTNIEJE"<<endl;
+        qDebug()<<"File exists"<<endl;
         return true;
     }
     else {
-        qDebug()<<"PLIK NIE ISTNIEJE"<<endl;
+        qDebug()<<"File does not exists"<<endl;
         return true;
     }
 }

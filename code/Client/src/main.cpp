@@ -4,6 +4,7 @@
 #include <QStringList>
 #include <QDebug>
 #include <QDir>
+#include <QVariant>
 #include <../include/CommandParser.h>
 #include <../include/Commands.h>
 #include <../include/Argument.h>
@@ -16,11 +17,10 @@ int main(int argc, char **argv)
 
     //tmpCom.parseCommand(QString("add code/Client"));
 
-    tmpCom.parseCommand(QString("ls"));
-    qDebug()<<"Tu jestesmy"<<endl;
-    //Commands tmp(QString("nowy"),QString("hello"),QStringList("moto"),Argument::FILES);
-    //FileLocation::checkLocation("code/Client");
+    boost::shared_ptr<Commands> tmp = tmpCom.parseCommand(QString("add code/Client"));
+    tmp->getArg(Argument::FILELOCATION);
+
+
 
     return app.exec();
-    return 0;
 }

@@ -9,7 +9,9 @@
 #define EA_F8C56EF9_6597_4618_8783_B8F31AB3B1AC__INCLUDED_
 #include <QString>
 #include <QDir>
+#include <QObject>
 #include <QFileInfo>
+#include <QMetaType>
 #include <QDebug>
 namespace TIN_project {
 namespace Utilities {
@@ -19,6 +21,7 @@ namespace Utilities {
  */
 class FileLocation
 {
+
 public:
     FileLocation();
     FileLocation(QString);
@@ -31,4 +34,5 @@ private:
 
 } //namespace Utilities
 } //namespace TIN_project
+Q_DECLARE_METATYPE(TIN_project::Utilities::FileLocation);
 #endif // !defined(EA_F8C56EF9_6597_4618_8783_B8F31AB3B1AC__INCLUDED_)

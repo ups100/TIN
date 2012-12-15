@@ -15,28 +15,38 @@ Password::Password()
 
 }
 
-Password::Password(const QString& password)
+Password::Password(QString& password)
 {
     m_password = password;
 }
 
+
+/* I guess something has to be done with this */
+/**
+ * @brief getter for the password
+ * @return password
+ */
 QString Password::getPassword()
 {
     return m_password;
 }
+
 Password::~Password()
 {
 
 }
 
 /**
- * Check if password is correct
+ * @brief check if password is correct
  */
 bool Password::check(const QString& password) const
 {
     return (this->m_password == password);
 }
 
+/**
+ * @brief check if password is correct
+ */
 bool Password::check(const Password& password) const
 {
     return (this->m_password == password.m_password);

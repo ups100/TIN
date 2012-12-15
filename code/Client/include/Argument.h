@@ -23,24 +23,24 @@ public:
     enum Type
     {
         NONE = 0,
-        PASSWORD = 1,
-        FILES = 2,
-        STRING = 3,
+        ALIAS = 1,
+        FILELOCATION = 2,
+        FILENAME = 3,
     };
     Q_DECLARE_FLAGS(Types, Type)
     Argument();
     Argument(QString, Argument::Types);
-    Argument::Types getFlague();
-    Password getPassword();
-    FileLocation getFileLocation();
-    QString getFileName();
+    Argument::Types getFlague() const;
+    QString getAlias() const;
+    FileLocation getFileLocation() const;
+    QString getFileName() const;
     virtual ~Argument();
 
 private:
     Argument::Types flague;
-    Password m_password;
     FileLocation m_path;
     QString m_filename;
+    QString m_alias;
 
 };
 

@@ -13,7 +13,6 @@ namespace Client {
 Argument::Argument()
 {
 
-
 }
 
 
@@ -23,16 +22,16 @@ Argument::Argument(QString s, Argument::Types f)
     switch(f) {
         case Argument::NONE:
             break;
-        case Argument::PASSWORD:
-            m_password = Password(s);
+        case Argument::ALIAS:
+            m_alias = s;
             break;
-        case Argument::FILES:
+        case Argument::FILELOCATION:
             if(FileLocation::checkLocation(s)) {
                 m_path = FileLocation(s);
             }
             else qDebug()<<"There is no such file"<<endl;
             break;
-        case Argument::STRING:
+        case Argument::FILENAME:
             m_filename = s;
             break;
         default:
@@ -40,33 +39,48 @@ Argument::Argument(QString s, Argument::Types f)
     }
 }
 
-Argument::Types Argument::getFlague()
+/**
+ * @brief getter for the flague
+ * @return flague
+ */
+Argument::Types Argument::getFlague() const
 {
     return flague;
 }
 
-Password Argument::getPassword()
+/**
+ * @brief getter for the alias
+ * @return alias
+ */
+QString Argument::getAlias() const
 {
-    if (flague != Argument::PASSWORD) {
-        qDebug()<<"Don't do that"<<endl;
-        return (Password)NULL;
+    if (flague != Argument::ALIAS) {
+        qDebug()<<"Something went wrong: Argument::getAlias()"<<endl;
     }
-    return m_password;
+    return m_alias;
 }
 
-FileLocation Argument::getFileLocation()
+/**
+ * @brief getter for the file location
+ * @return file location
+ */
+FileLocation Argument::getFileLocation() const
 {
-  if (flague != Argument::FILES) {
-      qDebug()<<"Don't do that"<<endl;
+  if (flague != Argument::FILELOCATION) {
+      qDebug()<<"Something went wrong: Argument::getFileLocation()"<<endl;
       return (FileLocation)NULL;
   }
   return m_path;
 }
 
-QString Argument::getFileName()
+/**
+ * @brief getter for the file name
+ * @return file name
+ */
+QString Argument::getFileName() const
 {
-    if(flague != Argument::STRING) {
-        qDebug()<<"Don't do that"<<endl;
+    if(flague != Argument::FILENAME) {
+        qDebug()<<"Something went wrong: Argument::getFileName()"<<endl;
         return NULL;
     }
     return m_filename;

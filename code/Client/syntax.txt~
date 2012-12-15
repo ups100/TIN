@@ -17,7 +17,7 @@ Deleting the alias (user need to write password to verify, is he/she is allowed 
 rm -l <localpath>
 Deleting catalog/file from local directory (but under alias).
 
-rm -r <path> 
+rm -r <file> 
 Deleting file from alias
 
 find <file>
