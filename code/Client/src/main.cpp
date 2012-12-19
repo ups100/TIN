@@ -21,18 +21,24 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
     QTimer::singleShot(10000, &app, SLOT(quit()));
     return app.exec();*/
-    QString str("abrakadabra");
+    QString str("aaaa");
 
     qDebug()<<str;
     QByteArray arr;
-    QDataStream stream;
+    QDataStream stream(&arr, QIODevice::WriteOnly);
 
     stream<< str;
-
+    //stream.unsetDevice();
+    QDataStream stream2(arr);
 
     QString str2;
-    stream >> str2;
+    stream2 >> str2;
+    char *data = arr.data();
 
+    for(int i = 0; i < arr.size(); ++i)
+    {
+        qDebug()<< data[i]<<i;
+    }
     qDebug() << arr.size();
     qDebug() << arr.data();
     qDebug()<< str2;
