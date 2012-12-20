@@ -8,23 +8,56 @@
 #include "ClientCommunication.h"
 #include "Message.h"
 #include "InterprocessName.h"
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <stdio.h>
+#include "DaemonApplication.h"
 
 namespace TIN_project {
 namespace Daemon {
 
-ClientCommunication::ClientCommunication()
+/**
+ * C-tor
+ */
+ClientCommunication::ClientCommunication(
+        const DaemonApplication *daemonApplication)
+        : m_socket(-1), m_daemonApplication(daemonApplication)
 {
-    // Unlink old socket if hasn't been closed properly
+
+}
+
+/**
+ * D-tor
+ * @brief Close socket and unlink socket name
+ */
+ClientCommunication::~ClientCommunication()
+{
+    if (m_socket >= 0)
+        close(m_socket);
+
     unlink(Utilities::InterprocessName::INTERPROCESS_NAME);
 }
 
-ClientCommunication::~ClientCommunication()
+/**
+ * @brief Open socket, bind it and start listening on it
+ */
+void ClientCommunication::run()
 {
+    // Unlink old socket if hasn't been closed properly
     unlink(Utilities::InterprocessName::INTERPROCESS_NAME);
+
+    // Open socket
+    m_socket = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    if (m_socket < 0)
+        throw "Daemon opening stream socket error.";
+
+    // Set socket data
+    m_server.sun_family = AF_UNIX;
+    strcpy(m_server.sun_path, Utilities::InterprocessName::INTERPROCESS_NAME);
+
+    if (bind(m_socket, (struct sockaddr *) &m_server,
+            sizeof(struct sockaddr_un)))
+        throw "Daemon binding stream socket error.";
+
+    waitForMessage();
 }
 
 /**
@@ -35,26 +68,13 @@ ClientCommunication::~ClientCommunication()
  */
 void ClientCommunication::waitForMessage()
 {
-    int sock;
     int msgsock;
     int rval;
-    struct sockaddr_un server;
 
-    sock = socket(AF_UNIX, SOCK_STREAM, 0);
-
-    if (sock < 0)
-        throw "Daemon opening stream socket error.";
-
-    server.sun_family = AF_UNIX;
-    strcpy(server.sun_path, Utilities::InterprocessName::INTERPROCESS_NAME);
-
-    if (bind(sock, (struct sockaddr *) &server, sizeof(struct sockaddr_un)))
-        throw "Daemon binding stream socket error.";
-
-    listen(sock, 5);
+    listen(m_socket, 5);
 
     while (1) {
-        msgsock = accept(sock, 0, 0);
+        msgsock = accept(m_socket, 0, 0);
 
         if (msgsock == -1) {
             throw "Daemon accept error.";
@@ -75,21 +95,13 @@ void ClientCommunication::waitForMessage()
             } while (rval > 0);
 
             // Decode message, which has been sent in HEX format to avoid Qt-BSD problems
-            Utilities::Message m(QByteArray::fromHex(array.data()));
-            // TODO send signal to daemon application
-            std::cout<<m.message().toStdString().c_str()<<"\n";// TODO remove
+            Utilities::Message message(QByteArray::fromHex(array.data()));
+
+            m_daemonApplication->dispatchMessage(message);
         }
 
         close(msgsock);
     }
-
-    // Close socket and release name
-    close(sock);
-}
-
-boost::shared_ptr<Utilities::Message> ClientCommunication::getMessage()
-{
-    return boost::shared_ptr<Utilities::Message>((Utilities::Message*) 0L);
 }
 
 } //namespace Daemon

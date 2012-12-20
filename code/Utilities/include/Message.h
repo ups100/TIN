@@ -10,7 +10,6 @@
 
 #include <QString>
 #include <QByteArray>
-#include <QDataStream>
 
 namespace TIN_project {
 namespace Utilities {
@@ -27,13 +26,11 @@ public:
     Message(const char *message);
     Message(const QByteArray &bytes);
     virtual ~Message();
+
     QString message();
+    QString message() const;
     void message(const QString message);
     QByteArray toQByteArray();
-
-    friend QDataStream &operator<<(QDataStream &out, const Message &message);
-    friend QDataStream &operator>>(QDataStream &in, Message &message);
-
 };
 
 } //namespace Utilities

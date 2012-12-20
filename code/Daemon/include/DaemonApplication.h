@@ -7,10 +7,11 @@
 
 #if !defined(EA_E9B53BF6_B582_49b8_8FDE_DA96921106D3__INCLUDED_)
 #define EA_E9B53BF6_B582_49b8_8FDE_DA96921106D3__INCLUDED_
-#include <QList>
 
 #include "ClientCommunication.h"
 #include "DaemonThread.h"
+#include "Message.h"
+#include <QList>
 
 namespace TIN_project {
 namespace Daemon {
@@ -22,7 +23,8 @@ public:
     DaemonApplication();
     virtual ~DaemonApplication();
 
-    void start();
+    int start();
+    void dispatchMessage(const Utilities::Message &message) const;
 
 private:
     QList<DaemonThread> m_daemonThreads;

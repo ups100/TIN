@@ -8,6 +8,8 @@
 #if !defined(EA_F8C56EF9_6597_4618_8783_B8F31AB3B1AC__INCLUDED_)
 #define EA_F8C56EF9_6597_4618_8783_B8F31AB3B1AC__INCLUDED_
 
+#include <QByteArray>
+
 namespace TIN_project {
 namespace Utilities {
 
@@ -19,8 +21,10 @@ class FileLocation
 
 public:
     FileLocation();
+    FileLocation(const QByteArray &bytes);
     virtual ~FileLocation();
 
+    QByteArray toQByteArray();
 };
 
 } //namespace Utilities
