@@ -9,7 +9,7 @@ function TIN_project.dissector (buffer, pinfo, tree)
 	local subtree = tree:add(TIN_project, buffer())
 	local offset = 0
 	
-	local msgid = buffer(offset,1)
+	local msgid = buffer(offset,1):uint()
 	
 	pinfo.cols.protocol = "TIN_project"
 	pinfo.cols.info = "Message ID: "
@@ -23,5 +23,6 @@ end
 
 function TIN_project.init()
 end
+
 tcp_table = DissectorTable.get("tcp.port")
 tcp_table:add(8080,TIN_project)
