@@ -26,6 +26,9 @@ public:
     Password(const QString& password);
     bool check(const QString& password) const;
     bool check(const Password& password) const;
+    QByteArray toQByteArray() const;
+    Password& operator=(const Password& other);
+
 };
 
 } //namespace Utilities

@@ -25,21 +25,21 @@ int main(int argc, char **argv)
 
     qDebug()<<str;
     QByteArray arr;
+    QByteArray arr2;
     QDataStream stream(&arr, QIODevice::WriteOnly);
 
     stream<< str;
-    //stream.unsetDevice();
-    QDataStream stream2(arr);
 
-    QString str2;
-    stream2 >> str2;
-    char *data = arr.data();
+    stream.unsetDevice();
+    QDataStream stream2(&arr2, QIODevice::WriteOnly);
+    stream2<<32.0;
 
-    for(int i = 0; i < arr.size(); ++i)
-    {
-        qDebug()<< data[i]<<i;
-    }
-    qDebug() << arr.size();
-    qDebug() << arr.data();
-    qDebug()<< str2;
+    QByteArray arr3 = arr + arr2;
+    QDataStream stream3(arr3);
+
+    double d;
+    QString name;
+    stream3>>name;
+    qDebug()<<name;
 }
+

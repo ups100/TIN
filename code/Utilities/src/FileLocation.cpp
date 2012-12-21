@@ -19,6 +19,9 @@ FileLocation::~FileLocation()
 {
 
 }
-
+QByteArray FileLocation::toQByteArray()
+{
+    return QByteArray();
+}
 } //namespace Utilities
 } //namespace TIN_project

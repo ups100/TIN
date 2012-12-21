@@ -42,5 +42,16 @@ bool Password::check(const Password& password) const
 
     return false;
 }
+
+Password& Password::operator=(const Password& other)
+{
+    return *this;
+}
+
+QByteArray Password::toQByteArray() const
+{
+    return QByteArray();
+}
+
 } //namespace Utilities
 } //namespace TIN_project

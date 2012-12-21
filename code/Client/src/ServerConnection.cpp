@@ -20,11 +20,15 @@
 #include "FileLocation.h"
 #include "ServerConnectionListener.h"
 #include "AliasCommunicationListener.h"
+#include "CommunicationProtocol.h"
 
 #include <QEventLoop>
 #include <QTimer>
 
 namespace TIN_project {
+
+using Utilities::CommunicationProtocol;
+
 namespace Client {
 
 ServerConnection::ServerConnection(ServerConnectionListener *serverListener,
@@ -57,7 +61,15 @@ ServerConnection::~ServerConnection()
 void ServerConnection::connectToAlias(const QString& aliasName,
         const Utilities::Password& password)
 {
-
+    QMutexLocker locker(&this->m_mutex);
+    if (m_isReadyState) {
+        CommunicationProtocol::Communicate<
+                CommunicationProtocol::CONNECT_TO_ALIAS> message(aliasName,
+                password);
+        emit sendData(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
 }
 
 void ServerConnection::connectToServer(const QHostAddress& address,
@@ -81,30 +93,64 @@ void ServerConnection::connectToServer(const QHostAddress& address,
 void ServerConnection::createAlias(const QString& name,
         const Utilities::Password& password)
 {
-
+    QMutexLocker locker(&this->m_mutex);
+    if (m_isReadyState) {
+        CommunicationProtocol::Communicate<CommunicationProtocol::CREATE_ALIAS> message(
+                name, password);
+        emit sendData(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
 }
 
 void ServerConnection::findFileInAlias(const QString& fileName)
 {
-
+    QMutexLocker locker(&this->m_mutex);
+    if (m_isReadyState) {
+        CommunicationProtocol::Communicate<CommunicationProtocol::FIND_FILE> message(
+                fileName);
+        emit sendData(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
 }
 
 void ServerConnection::listAlias()
 {
-
+    QMutexLocker locker(&this->m_mutex);
+    if (m_isReadyState) {
+        CommunicationProtocol::Communicate<CommunicationProtocol::LIST_ALIAS> message;
+        emit sendData(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
 }
 
 void ServerConnection::pullFileFrom(const Utilities::FileLocation& file)
 {
-
+    QMutexLocker locker(&this->m_mutex);
+    if (m_isReadyState) {
+        CommunicationProtocol::Communicate<CommunicationProtocol::PULL_FILE> message(
+                file);
+        emit sendData(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
 }
 
 /**
  * not sure about semantic of this method
  */
-void ServerConnection::pushFileToAlias(const QString& path)
+void ServerConnection::pushFileToAlias(const QString& path, qint64 size)
 {
-
+    QMutexLocker locker(&this->m_mutex);
+    if (m_isReadyState) {
+        CommunicationProtocol::Communicate<CommunicationProtocol::PUSH_FILE> message(
+                path, size);
+        emit sendData(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
 }
 
 /**
@@ -112,7 +158,14 @@ void ServerConnection::pushFileToAlias(const QString& path)
  */
 void ServerConnection::removeFileFromAlias(const QString& fileName)
 {
-
+    QMutexLocker locker(&this->m_mutex);
+    if (m_isReadyState) {
+        CommunicationProtocol::Communicate<
+                CommunicationProtocol::DELETE_FROM_ALIAS> message(fileName);
+        emit sendData(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
 }
 
 void ServerConnection::disconnectFromServer()
@@ -131,7 +184,14 @@ void ServerConnection::disconnectFromServer()
 void ServerConnection::removeAlias(const QString& name,
         const Utilities::Password& password)
 {
-
+    QMutexLocker locker(&this->m_mutex);
+    if (m_isReadyState) {
+        CommunicationProtocol::Communicate<CommunicationProtocol::REMOVE_ALIAS> message(
+                name, password);
+        emit sendData(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
 }
 
 void ServerConnection::threadStartedSlot()
@@ -207,9 +267,9 @@ void ServerConnection::sendSlot(QByteArray* array)
     quint64 send = 0;
 
     do {
-        QByteArray arrayTmp = array->right( size - send);
+        QByteArray arrayTmp = array->right(size - send);
         send += m_socket->write(arrayTmp);
-    } while(send < size);
+    } while (send < size);
 
     delete array;
 }

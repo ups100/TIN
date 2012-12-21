@@ -197,7 +197,7 @@ public:
     /**
      * @todo not sure about semantic of this method
      */
-    void pushFileToAlias(const QString& path);
+    void pushFileToAlias(const QString& path, qint64 size);
 
     /**
      * @brief Removes all occurrences of file/directory from alias
@@ -210,6 +210,10 @@ public:
      * @param[in] fileName name of file or directory to be removed
      */
     void removeFileFromAlias(const QString& fileName);
+
+signals:
+
+    void sendData(QByteArray data);
 
 private slots:
 
