@@ -31,15 +31,15 @@ class CommunicationProtocol
 public:
 
     enum CommunicateType {
-        CONNECT_TO_ALIAS,
-        CONNECTED_TO_ALIAS,
-        NOT_CONNECTED_TO_ALIAS,
-        CREATE_ALIAS,
-        ALIAS_CREATED,
-        ALIAS_NOT_CREATED,
-        REMOVE_ALIAS,
-        ALIAS_REMOVED,
-        ALIAS_NOT_REMOVED,
+        CONNECT_TO_ALIAS = 1,
+        CONNECTED_TO_ALIAS = 2,
+        NOT_CONNECTED_TO_ALIAS = 3,
+        CREATE_ALIAS = 4,
+        ALIAS_CREATED = 5,
+        ALIAS_NOT_CREATED = 6,
+        REMOVE_ALIAS = 7,
+        ALIAS_REMOVED = 8,
+        ALIAS_NOT_REMOVED = 9,
 
         LIST_ALIAS,
         ALIAS_LISTED,
@@ -79,17 +79,19 @@ public:
 
         Communicate(char code, const QList<QVariant> &args);
 
-        template <class T> void invokeFunction(T function, char code = m_code)
+        template<class T> void invokeFunction(T function)
         {
-            switch(CommunicationProtocol::getType(m_code)) {
+            switch (CommunicationProtocol::getType(m_code)) {
                 case CONNECT_TO_ALIAS:
                 case CREATE_ALIAS:
                 case REMOVE_ALIAS: //nazwa aliasu i haslo
                 case ADD_DIRECTORY:
+                    groupe = QSTRING_AND_PASSWORD;
                     break;
 
                 case ALIAS_LISTED: // alias file list
                 case FILES_LIST:
+                    groupe = ALIAS_FILE_LIST;
                     break;
 
                 case FIND_FILE: // nazwa
@@ -98,30 +100,106 @@ public:
                 case SEND_FILE: // nazwa
                 case DELETE_YOUR_FILE: //nazwa
                 case FIND_YOUR_FILE:
-                    function(m_args.at(0).toString());
+                    groupe = QSTRING;
                     break;
 
                 case FILE_LOCATION: //fileLocation
                 case FILE_FOUND_HERE:
                 case PULL_FILE:
+                    groupe = FILE_LOCATION;
                     break;
 
                 case PUSH_FILE: //nazwa, dlugosc pliku
-                    function(m_args.at(0).toString(), m_args.at(0).toULongLong());
+                    groupe = QSTRING_AND_ULONGLONG;
                     break;
 
                 default:
-                    function();
+                    groupe = EMPTY;
                     break;
             }
+            return groupe;
         }
 
 
 
     private:
-        enum ParameterGroupe {
+        struct QStringAndPasswordTrait {};
+        struct AliasFileListTrait {};
+        struct QStringTrait{};
+        struct FileLocationTrait {};
+        struct QStringAndULongLongTrait {};
+        struct EmptyTrait {};
+
+
+
+        struct QStringAndPasswordCategory
+        {
+            typedef QStringAndPasswordTrait FunctionCategory;
+        };
+
+        struct AliasFileListCategory
+        {
+            typedef AliasFileListTrait FunctionCategory;
+        };
+
+        struct QStringCategory
+        {
+            typedef QStringTrait FunctionCategory;
+        };
+
+        struct FileLocationCategory
+        {
+            typedef FileLocationTrait FunctionCategory;
+        };
+
+        struct QStringAndULongLongCategory
+        {
+            typedef QStringAndULongLongTrait FunctionCategory;
+        };
+
+        struct EmptyCategory
+        {
+            typedef EmptyTrait FunctionCategory;
+        };
+
+        template<char c> struct CheckCategory : public EmptyCategory {};
+        template<
+
+        template <char ch> struct getTrait
+        {
 
         };
+        template <class T, int i> void invokeFunctionImpl(T function)
+        {
+            function();
+        }
+
+        template <class T, QSTRING_AND_PASSWORD> void invokeFunctionImpl(T function)
+        {
+            //to implement
+            ;;;;
+        }
+
+        template <class T, ALIAS_FILE_LIST> void invokeFunctionImpl(T function)
+        {
+            //to implement
+        }
+
+        template <class T, QSTRING> void invokeFunctionImpl(T function)
+        {
+            function(m_args.at(0).toString());
+        }
+
+        template <class T, FILE_LOCATION> void invokeFunctionImpl(T function)
+        {
+            //to implement
+        }
+
+        template <class T, QSTRING_AND_ULONGLONG> void invokeFunctionImpl(T function)
+        {
+            function(m_args.at(0).toString(), m_args.at(0).toULongLong());
+        }
+
         char m_code;
         QList<QVariant> m_args;
     };
