@@ -66,7 +66,7 @@ void ServerConnection::connectToAlias(const QString& aliasName,
         CommunicationProtocol::Communicate<
                 CommunicationProtocol::CONNECT_TO_ALIAS> message(aliasName,
                 password);
-        emit sendData(message.toQByteArray());
+        emit sendData(new QByteArray(message.toQByteArray()));
     } else {
         qDebug() << "Trying to send but connection is not opened";
     }
@@ -97,7 +97,7 @@ void ServerConnection::createAlias(const QString& name,
     if (m_isReadyState) {
         CommunicationProtocol::Communicate<CommunicationProtocol::CREATE_ALIAS> message(
                 name, password);
-        emit sendData(message.toQByteArray());
+        emit sendData(new QByteArray(message.toQByteArray()));
     } else {
         qDebug() << "Trying to send but connection is not opened";
     }
@@ -109,7 +109,7 @@ void ServerConnection::findFileInAlias(const QString& fileName)
     if (m_isReadyState) {
         CommunicationProtocol::Communicate<CommunicationProtocol::FIND_FILE> message(
                 fileName);
-        emit sendData(message.toQByteArray());
+        emit sendData(new QByteArray(message.toQByteArray()));
     } else {
         qDebug() << "Trying to send but connection is not opened";
     }
@@ -120,7 +120,7 @@ void ServerConnection::listAlias()
     QMutexLocker locker(&this->m_mutex);
     if (m_isReadyState) {
         CommunicationProtocol::Communicate<CommunicationProtocol::LIST_ALIAS> message;
-        emit sendData(message.toQByteArray());
+        emit sendData(new QByteArray(message.toQByteArray()));
     } else {
         qDebug() << "Trying to send but connection is not opened";
     }
@@ -132,7 +132,7 @@ void ServerConnection::pullFileFrom(const Utilities::FileLocation& file)
     if (m_isReadyState) {
         CommunicationProtocol::Communicate<CommunicationProtocol::PULL_FILE> message(
                 file);
-        emit sendData(message.toQByteArray());
+        emit sendData(new QByteArray(message.toQByteArray()));
     } else {
         qDebug() << "Trying to send but connection is not opened";
     }
@@ -147,7 +147,7 @@ void ServerConnection::pushFileToAlias(const QString& path, qint64 size)
     if (m_isReadyState) {
         CommunicationProtocol::Communicate<CommunicationProtocol::PUSH_FILE> message(
                 path, size);
-        emit sendData(message.toQByteArray());
+        emit sendData(new QByteArray(message.toQByteArray()));
     } else {
         qDebug() << "Trying to send but connection is not opened";
     }
@@ -162,7 +162,7 @@ void ServerConnection::removeFileFromAlias(const QString& fileName)
     if (m_isReadyState) {
         CommunicationProtocol::Communicate<
                 CommunicationProtocol::DELETE_FROM_ALIAS> message(fileName);
-        emit sendData(message.toQByteArray());
+        emit sendData(new QByteArray(message.toQByteArray()));
     } else {
         qDebug() << "Trying to send but connection is not opened";
     }
@@ -188,7 +188,7 @@ void ServerConnection::removeAlias(const QString& name,
     if (m_isReadyState) {
         CommunicationProtocol::Communicate<CommunicationProtocol::REMOVE_ALIAS> message(
                 name, password);
-        emit sendData(message.toQByteArray());
+        emit sendData(new QByteArray(message.toQByteArray()));
     } else {
         qDebug() << "Trying to send but connection is not opened";
     }
@@ -276,6 +276,157 @@ void ServerConnection::sendSlot(QByteArray* array)
 
 void ServerConnection::socketReadyReadSlot()
 {
+    do {
+        if (m_currentMessageId != CHAR_MAX) {
+            m_socket->read(&m_currentMessageId, 1);
+        }
+
+        QByteArray size;
+        QByteArray data;
+        qint64 currentLeftSize = 0;
+
+        switch (CommunicationProtocol::getType(m_currentMessageId)) {
+            case CommunicationProtocol::CONNECTED_TO_ALIAS:
+                if (m_serverListener != 0L) {
+                    m_serverListener->onAliasConnected();
+                }
+                break;
+
+            case CommunicationProtocol::NOT_CONNECTED_TO_ALIAS:
+                if (m_serverListener != 0L) {
+                    m_serverListener->onAliasConnectionError();
+                }
+                break;
+
+            case CommunicationProtocol::ALIAS_CREATED:
+                if (m_serverListener != 0L) {
+                    m_serverListener->onAliasCreated();
+                }
+                break;
+
+            case CommunicationProtocol::ALIAS_NOT_CREATED:
+                if (m_serverListener != 0L) {
+                    m_serverListener->onAliasCreationError();
+                }
+                break;
+
+            case CommunicationProtocol::ALIAS_REMOVED:
+                if (m_serverListener != 0L) {
+                    m_serverListener->onAliasDeleted();
+                }
+                break;
+
+            case CommunicationProtocol::ALIAS_NOT_REMOVED:
+                if (m_serverListener != 0L) {
+                    m_serverListener->onAliasDeletionError();
+                }
+                break;
+
+            case CommunicationProtocol::ALIAS_LISTED: {
+                if (!m_sizeOk) {
+                    if (m_socket->bytesAvailable() < 4) {
+                        return;
+                    }
+                    size = m_socket->read(4);
+                    m_sizeOk = true;
+                }
+                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                        size);
+
+                if (m_socket->bytesAvailable() < m_messageSize) {
+                    return;
+                }
+
+                data = m_socket->read(m_messageSize);
+                m_currentMessageId = CHAR_MAX;
+                m_sizeOk = false;
+                m_messageSize = -1;
+
+                CommunicationProtocol::Communicate<
+                        CommunicationProtocol::ALIAS_LISTED> message(data);
+
+                if (m_aliasListener != 0L) {
+                    m_aliasListener->onAliasListed(
+                            boost::shared_ptr<Utilities::AliasFileList>(
+                                    new Utilities::AliasFileList(
+                                            message.getList())));
+                }
+            }
+                break;
+
+            case CommunicationProtocol::FILE_LOCATION: {
+                if (!m_sizeOk) {
+                    if (m_socket->bytesAvailable() < 4) {
+                        return;
+                    }
+                    size = m_socket->read(4);
+                    m_sizeOk = true;
+                }
+                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                        size);
+
+                if (m_socket->bytesAvailable() < m_messageSize) {
+                    return;
+                }
+
+                data = m_socket->read(m_messageSize);
+                m_currentMessageId = CHAR_MAX;
+                m_sizeOk = false;
+                m_messageSize = -1;
+
+                CommunicationProtocol::Communicate<
+                        CommunicationProtocol::FILE_LOCATION> message(data);
+
+                if (m_aliasListener != 0L) {
+                    m_aliasListener->onFileFound(
+                            boost::shared_ptr<Utilities::FileLocation>(
+                                    new Utilities::FileLocation(
+                                            message.getLocation())));
+                }
+            }
+                break;
+
+            case CommunicationProtocol::FILE_NOT_FOUND:
+                if (m_aliasListener != 0L) {
+                    m_aliasListener->onFileNotFound();
+                }
+                break;
+
+            case CommunicationProtocol::DELETED_FROM_ALIAS:
+                if (m_aliasListener != 0L) {
+                    m_aliasListener->onFileRemoved();
+                }
+                break;
+
+            case CommunicationProtocol::NOT_DELETED_FROM_ALIAS:
+                if (m_aliasListener != 0L) {
+                    m_aliasListener->onFileRemovingError();
+                }
+                break;
+
+            case CommunicationProtocol::TRANSFER_ERROR:
+                if (m_aliasListener != 0L) {
+                    m_aliasListener->onFileTransferError();
+                }
+                break;
+
+            case CommunicationProtocol::TRANSFER_FINISHED:
+                if (m_aliasListener != 0L) {
+                    m_aliasListener->onFileTransferFinished();
+                }
+                break;
+
+            case CommunicationProtocol::TRANSFER_IN_PROGRESS:
+                if (m_aliasListener != 0L) {
+                    m_aliasListener->onFileTransferStarted();
+                }
+                break;
+
+            default:
+                qDebug() << "Unknown code received " << m_currentMessageId;
+                break;
+        }
+    } while (m_socket->bytesAvailable() != 0);
 
 }
 

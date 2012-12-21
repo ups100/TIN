@@ -26,6 +26,7 @@
 #include <QTcpSocket>
 #include <QMutex>
 #include <QMutexLocker>
+#include <climits>
 
 namespace TIN_project {
 
@@ -73,7 +74,7 @@ class AliasCommunicationListener;
 class ServerConnection : public QObject
 {
 
-    Q_OBJECT
+Q_OBJECT
 
 public:
     /**
@@ -213,49 +214,133 @@ public:
 
 signals:
 
-    void sendData(QByteArray data);
+    /**
+     * @brief Signal emited to send some data.
+     *
+     * @param[in] data to be send
+     *
+     * @warning Do not connect this signal to any of your slots due to
+     * arguments deletion.
+     */
+    void sendData(QByteArray *data);
 
 private slots:
 
+    /**
+     * @brief Helper slot used for disconnecting
+     */
     void disconnectSlot();
 
-    void sendSlot(QByteArray* array);
+    /**
+     * @brief Helper slot for data sending.
+     *
+     * @param[in] array data to be send
+     *
+     * @warning This function takes the ownership of it's argument!
+     */
+    void sendSlot(QByteArray *array);
 
+    /**
+     * @brief Helper slot used while starting additional thread.
+     */
     void threadStartedSlot();
 
+    /**
+     * @brief Helper slot used while finishing additional thread.
+     */
     void threadFinishedSlot();
 
+    /**
+     * @brief Helper slot used while socket connecting.
+     */
     void socketConnectedSlot();
 
+    /**
+     * @brief Helper slot used for handling socket errors
+     */
     void socketErrorSlot(QAbstractSocket::SocketError socketError);
 
+    /**
+     * @brief Helper slot used while socket disconnecting
+     */
     void socketDisconnectedSlot();
 
+    /**
+     * @brief Helper slot used for data reading
+     */
     void socketReadyReadSlot();
 
 private:
 
+    /**
+     * @brief Additional thread for handling connection
+     */
     QThread m_additionalThread;
 
+    /**
+     * @brief Socket used for data reading and sending
+     */
     QTcpSocket *m_socket;
 
+    /**
+     * @brief Thread which created this object
+     */
     QThread *m_creatorThread;
 
+    /**
+     * @brief Listener notified about received messages.
+     */
     ServerConnectionListener *m_serverListener;
 
+    /**
+     * @brief Listener notified about received messages.
+     */
     AliasCommunicationListener *m_aliasListener;
 
+    /**
+     * @brief Mutex for cross-thread synchronization.
+     */
     QMutex m_mutex;
 
+    /**
+     * @brief Informs if additional thread and socket are in ready to use state.
+     */
     bool m_isReadyState;
 
+    /**
+     * @brief Informs if additional thread and socket are preparing.
+     */
     bool m_isConnecting;
 
+    /**
+     * @brief Informs if additional thread and socket are closing.
+     */
     bool m_isClosing;
 
+    /**
+     * @brief Address of server.
+     */
     QHostAddress m_serverAddress;
 
+    /**
+     * @brief Server's port.
+     */
     quint16 m_serverPort;
+
+    /**
+     * @brief ID of lastly received message
+     */
+    char m_currentMessageId;
+
+    /**
+     * @brief Informs if there was enough data to determine message's size
+     */
+    bool m_sizeOk;
+
+    /**
+     * @brief Size of lastly received message
+     */
+    qint32 m_messageSize;
 };
 
 } //namespace Client

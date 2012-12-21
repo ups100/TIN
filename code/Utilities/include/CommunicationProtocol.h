@@ -284,7 +284,7 @@ public:
         /**
          * @brief Constructor
          *
-         * @param data to form an object
+         * @param[in] data to form an object
          */
         CommunicateNameAndPassword(const QByteArray &data);
 
@@ -508,6 +508,17 @@ public:
 
         }
 
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateNameAndPassword(data)
+        {
+
+        }
+
         virtual QByteArray toQByteArray()
         {
             QByteArray buff = CommunicateNameAndPassword::getQByteArray();
@@ -520,35 +531,45 @@ public:
     };
 
     /**
-         * @brief Specialization of template class for #CREATE_ALIAS message
+     * @brief Specialization of template class for #CREATE_ALIAS message
+     */
+    template<typename T> class Communicate<3, T> : public CommunicateBase,
+            public CommunicateNameAndPassword
+    {
+    public:
+        /**
+         * @brief Constructor
+         *
+         * @param[in] name alias name
+         *
+         * @param[in] password alias password
          */
-        template<typename T> class Communicate<3, T> : public CommunicateBase,
-                public CommunicateNameAndPassword
+        Communicate(const QString& name, const Password& password)
+                : CommunicateNameAndPassword(name, password)
         {
-        public:
-            /**
-             * @brief Constructor
-             *
-             * @param[in] name alias name
-             *
-             * @param[in] password alias password
-             */
-            Communicate(const QString& name, const Password& password)
-                    : CommunicateNameAndPassword(name, password)
-            {
 
-            }
+        }
 
-            virtual QByteArray toQByteArray()
-            {
-                QByteArray buff = CommunicateNameAndPassword::getQByteArray();
-                return QByteArray()
-                        + CommunicationProtocol::getCode(CREATE_ALIAS)
-                        + CommunicationProtocol::getQByteArrayFromInt(buff.size())
-                        + buff;
-            }
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateNameAndPassword(data)
+        {
 
-        };
+        }
+
+        virtual QByteArray toQByteArray()
+        {
+            QByteArray buff = CommunicateNameAndPassword::getQByteArray();
+            return QByteArray() + CommunicationProtocol::getCode(CREATE_ALIAS)
+                    + CommunicationProtocol::getQByteArrayFromInt(buff.size())
+                    + buff;
+        }
+
+    };
 
     /**
      * @brief Specialization of template class for #REMOVE_ALIAS message
@@ -566,6 +587,17 @@ public:
          */
         Communicate(const QString& name, const Password& password)
                 : CommunicateNameAndPassword(name, password)
+        {
+
+        }
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateNameAndPassword(data)
         {
 
         }
@@ -600,6 +632,17 @@ public:
 
         }
 
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateNameAndPassword(data)
+        {
+
+        }
+
         virtual QByteArray toQByteArray()
         {
             QByteArray buff = CommunicateNameAndPassword::getQByteArray();
@@ -625,6 +668,17 @@ public:
          */
         Communicate(const AliasFileList &list)
                 : CommunicateAliasFileList(list)
+        {
+
+        }
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateAliasFileList(data)
         {
 
         }
@@ -658,6 +712,17 @@ public:
 
         }
 
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateAliasFileList(data)
+        {
+
+        }
+
         virtual QByteArray toQByteArray()
         {
             QByteArray buff = CommunicateAliasFileList::getQByteArray();
@@ -686,6 +751,17 @@ public:
 
         }
 
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateName(data)
+        {
+
+        }
+
         virtual QByteArray toQByteArray()
         {
             QByteArray buff = CommunicateName::getQByteArray();
@@ -710,6 +786,17 @@ public:
          */
         Communicate(const QString &name)
                 : CommunicateName(name)
+        {
+
+        }
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateName(data)
         {
 
         }
@@ -743,6 +830,17 @@ public:
 
         }
 
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateName(data)
+        {
+
+        }
+
         virtual QByteArray toQByteArray()
         {
             QByteArray buff = CommunicateName::getQByteArray();
@@ -771,6 +869,17 @@ public:
 
         }
 
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateName(data)
+        {
+
+        }
+
         virtual QByteArray toQByteArray()
         {
             QByteArray buff = CommunicateName::getQByteArray();
@@ -795,6 +904,17 @@ public:
          */
         Communicate(const QString &name)
                 : CommunicateName(name)
+        {
+
+        }
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateName(data)
         {
 
         }
@@ -828,6 +948,17 @@ public:
 
         }
 
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateName(data)
+        {
+
+        }
+
         virtual QByteArray toQByteArray()
         {
             QByteArray buff = CommunicateName::getQByteArray();
@@ -857,6 +988,17 @@ public:
 
         }
 
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateAliasFileLocation(data)
+        {
+
+        }
+
         virtual QByteArray toQByteArray()
         {
             QByteArray buff = CommunicateAliasFileLocation::getQByteArray();
@@ -882,6 +1024,17 @@ public:
          */
         Communicate(const FileLocation &location)
                 : CommunicateAliasFileLocation(location)
+        {
+
+        }
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateAliasFileLocation(data)
         {
 
         }
@@ -916,6 +1069,17 @@ public:
 
         }
 
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateAliasFileLocation(data)
+        {
+
+        }
+
         virtual QByteArray toQByteArray()
         {
             QByteArray buff = CommunicateAliasFileLocation::getQByteArray();
@@ -943,6 +1107,17 @@ public:
          */
         Communicate(const QString &name, qint64 size)
                 : CommunicateNameAndLong(name, size)
+        {
+
+        }
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateNameAndLong(data)
         {
 
         }

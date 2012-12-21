@@ -15,6 +15,10 @@ FileLocation::FileLocation()
 
 }
 
+FileLocation::FileLocation(const QByteArray& data)
+{
+
+}
 FileLocation::~FileLocation()
 {
 
