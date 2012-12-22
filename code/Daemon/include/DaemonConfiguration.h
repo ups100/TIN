@@ -8,25 +8,95 @@
 namespace TIN_project {
 namespace Daemon {
 
+/**
+ * Class containing and manage daemon threads configurations
+ *
+ * @author Kajo0
+ */
 class DaemonConfiguration
 {
-    /** Structure for storing daemon threads information */
-    typedef struct
-    {
-        QString m_ip;
-        QString m_port;
-        QString m_aliasId;
-        QString m_password;
-        QString m_cataloguePath;
-    } Config;
+public:
 
-    /**  Vector of daemon threads configuration */
+    /**
+     * Structure for storing daemon threads information
+     *
+     * @author Kajo0
+     */
+    struct Config
+    {
+        /** Server IP */
+        QString m_ip;
+        /** Server Port */
+        QString m_port;
+        /** Alias name */
+        QString m_aliasId;
+        /** Password to alias */
+        QString m_password;
+        /** Absolute path to catalogue */
+        QString m_cataloguePath;
+
+        /**
+         * @brief Empty C-tor
+         */
+        Config()
+        {
+
+        }
+
+        /**
+         * @brief C-tor
+         * @param ip
+         * @param port
+         * @param aliasId
+         * @param password
+         * @param cataloguePath
+         */
+        Config(const QString ip, const QString port, const QString aliasId, const QString password,
+                const QString cataloguePath)
+                : m_ip(ip), m_port(port), m_aliasId(aliasId),
+                        m_password(password), m_cataloguePath(cataloguePath)
+        {
+
+        }
+
+        /**
+         * @breif C-tor
+         * @param aliasId
+         * @param cataloguePath
+         */
+        Config(const QString aliasId, const QString cataloguePath)
+                : m_aliasId(aliasId), m_cataloguePath(cataloguePath)
+        {
+
+        }
+
+        /**
+         * @brief Check equality of configs by aliasId and cataloguePath
+         * @param other Other config to check with
+         * @return true if aliases & paths are equal
+         */
+        bool operator==(const Config &other)
+        {
+            if (m_aliasId == other.m_aliasId
+                    && m_cataloguePath == other.m_cataloguePath)
+                return true;
+
+            return false;
+        }
+    };
+
+    typedef struct Config Config;
+
+private:
+
+    /**  List of daemon threads configuration */
     QList<boost::shared_ptr<DaemonConfiguration::Config> > m_config;
 
     /** MAC Address of current machine */
     QString m_macAddress;
 
 public:
+
     /** Path to configuration file */
     static const char* DAEMON_CONFIG_FILEPATH;
 
@@ -73,6 +143,27 @@ public:
      * @return Only the first non-loopback MAC Address
      */
     QString getMacAddress();
+
+    /**
+     * @brief Get list of threads configuration
+     * @return List of configs
+     */
+    const QList<boost::shared_ptr<DaemonConfiguration::Config> >& getConfig();
+
+    /**
+     * @brief Add new thread configuration
+     * @param Thread configuration with address, pass, alias etc
+     * @return true if added, false otherwise (if already exists)
+     */
+    bool addConfig(boost::shared_ptr<DaemonConfiguration::Config> config);
+
+    /**
+     * @brief Remove thread config by given alias & path
+     * @param aliasId Id of alias
+     * @param path Path to catalogue
+     * @return true if removed, false otherwise (if no given config)
+     */
+    bool removeConfig(const QString &aliasId, const QString &path);
 
 };
 

@@ -22,6 +22,11 @@ class Message;
 namespace Daemon {
 class DaemonApplication;
 
+/**
+ * Class responsible for communication between client and daemon app
+ *
+ * @author Kajo0
+ */
 class ClientCommunication : public QThread
 {
     /** Socket descriptor */
@@ -34,10 +39,28 @@ class ClientCommunication : public QThread
     const DaemonApplication *m_daemonApplication;
 
 public:
+
+    /**
+     * @brief C-tor
+     */
     ClientCommunication(const DaemonApplication *daemonApplication);
+
+    /**
+     * @brief D-tor, Close socket and unlink socket name
+     */
     virtual ~ClientCommunication();
 
+    /**
+     * @brief Open socket, bind it and start listening on it
+     */
     void run();
+
+    /**
+     * @brief Standard BSD socket listening for a message
+     * When receive message, convert it into proper object and invoke appropriate action
+     * sending signal to the DaemonApplication
+     * @throw exception when some socket error came in
+     */
     void waitForMessage();
 };
 

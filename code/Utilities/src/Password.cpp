@@ -38,6 +38,7 @@ Password::~Password()
  * Creates an object and set it's password
  */
 Password::Password(const QString& password)
+        : m_password(password)
 {
 
 }
@@ -57,6 +58,11 @@ bool Password::check(const Password& password) const
     return false;
 }
 
+QString Password::password() const
+{
+    return m_password;
+}
+
 /**
  * @brief Convert (serialize) Message object into QByteArray
  * @return Serialized object as QByteArray with size at the beginning
@@ -72,7 +78,7 @@ QByteArray Password::toQByteArray()
     // TODO implement that
 //    out << ?!;
 
-    // Set size
+// Set size
     out.device()->seek(0);
     out << (quint16) (bytes.size() - sizeof(quint16));
 

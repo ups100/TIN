@@ -19,6 +19,7 @@ namespace Utilities {
  */
 class Password
 {
+    QString m_password;
 
 public:
     Password();
@@ -28,6 +29,7 @@ public:
     Password(const QString& password);
     bool check(const QString& password) const;
     bool check(const Password& password) const;
+    QString password() const;
     QByteArray toQByteArray();
 };
 

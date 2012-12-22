@@ -147,5 +147,37 @@ QString DaemonConfiguration::getMacAddress()
 return QString();
 }
 
+const QList<boost::shared_ptr<DaemonConfiguration::Config> >& DaemonConfiguration::getConfig()
+{
+    return m_config;
+}
+
+bool DaemonConfiguration::addConfig(
+        boost::shared_ptr<DaemonConfiguration::Config> config)
+{
+    foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config){
+    if (*cnf == *config)
+    return false;
+}
+
+m_config.append(config);
+return true;
+}
+
+bool DaemonConfiguration::removeConfig(const QString &aliasId,
+        const QString &path)
+{
+    boost::shared_ptr<Config> config(new Config(aliasId, path));
+
+    foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config){
+    if (*cnf == *config) {
+        m_config.removeAll(cnf);
+        return true;
+    }
+}
+
+    return false;
+}
+
 } //namespace Daemon
 } //namespace TIN_project

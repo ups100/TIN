@@ -14,9 +14,6 @@
 namespace TIN_project {
 namespace Daemon {
 
-/**
- * C-tor
- */
 ClientCommunication::ClientCommunication(
         const DaemonApplication *daemonApplication)
         : m_socket(-1), m_daemonApplication(daemonApplication)
@@ -24,10 +21,6 @@ ClientCommunication::ClientCommunication(
 
 }
 
-/**
- * D-tor
- * @brief Close socket and unlink socket name
- */
 ClientCommunication::~ClientCommunication()
 {
     if (m_socket >= 0)
@@ -36,9 +29,6 @@ ClientCommunication::~ClientCommunication()
     unlink(Utilities::InterprocessName::INTERPROCESS_NAME);
 }
 
-/**
- * @brief Open socket, bind it and start listening on it
- */
 void ClientCommunication::run()
 {
     // Unlink old socket if hasn't been closed properly
@@ -61,12 +51,6 @@ void ClientCommunication::run()
     waitForMessage();
 }
 
-/**
- * @brief Standard BSD socket listening for a message
- * When receive message, convert it into proper object and invoke appropriate action
- * sending signal to the DaemonApplication
- * @throw exception when some socket error came in
- */
 void ClientCommunication::waitForMessage()
 {
     int msgsock;
