@@ -8,33 +8,21 @@
 #include "DaemonCommunication.h"
 #include "Message.h"
 #include "InterprocessName.h"
+#include <stdexcept>
 
 namespace TIN_project {
 namespace Client {
 
-/**
- * C-tor
- */
 DaemonCommunication::DaemonCommunication()
 {
 
 }
 
-/**
- * D-tor
- */
 DaemonCommunication::~DaemonCommunication()
 {
 
 }
 
-/**
- * @brief Open socket and connect to daemon.
- * Send some message to daemon
- * @note If connection fails, start DaemonApplication
- * @param message Message to send
- * @throw exception if no daemon listening for a message
- */
 void DaemonCommunication::talkToDaemon(Utilities::Message message)
 {
     int m_socket;
@@ -63,11 +51,11 @@ void DaemonCommunication::talkToDaemon(Utilities::Message message)
         }
 
         if (tries == 9)
-            throw "Client unable to connect. Couldn't connect(run) to DaemonApplication.";
+            throw std::runtime_error("Client unable to connect. Couldn't connect(run) to DaemonApplication.");
     }
 
     if (write(m_socket, array.data(), array.size()) < 0)
-        throw "Client writing on stream socket error.";
+        throw std::runtime_error("Client writing on stream socket error.");
 
     close(m_socket);
 }

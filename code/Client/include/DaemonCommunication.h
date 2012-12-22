@@ -22,9 +22,23 @@ namespace Client {
 class DaemonCommunication
 {
 public:
+    /**
+     * @brief C-tor
+     */
     DaemonCommunication();
+
+    /**
+     * @brief D-tor
+     */
     virtual ~DaemonCommunication();
 
+    /**
+     * @brief Open socket and connect to daemon.
+     * Send some message to daemon
+     * @note If connection fails, start DaemonApplication
+     * @param message Message to send
+     * @throw exception if no daemon listening for a message or writing error
+     */
     void talkToDaemon(Utilities::Message message);
 };
 

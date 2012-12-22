@@ -10,6 +10,7 @@ namespace Utilities {
 class InterprocessName
 {
 public:
+    /** Name for Unix socket to client-daemon communication */
     static const char *INTERPROCESS_NAME;
 };
 

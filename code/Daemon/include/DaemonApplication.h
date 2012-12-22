@@ -11,6 +11,7 @@
 #include "ClientCommunication.h"
 #include "DaemonThread.h"
 #include "Message.h"
+#include "DaemonConfiguration.h"
 #include <QList>
 
 namespace TIN_project {
@@ -18,7 +19,6 @@ namespace Daemon {
 
 class DaemonApplication
 {
-
 public:
     DaemonApplication();
     virtual ~DaemonApplication();
@@ -30,6 +30,8 @@ private:
     QList<DaemonThread> m_daemonThreads;
     ClientCommunication m_clientCommunication;
 
+    /** Daemon threads configuration */
+    DaemonConfiguration m_config;
 };
 
 } //namespace Daemon

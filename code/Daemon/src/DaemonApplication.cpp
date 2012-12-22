@@ -29,10 +29,10 @@ int DaemonApplication::start()
     m_clientCommunication.start();
 
     // TODO remove demo loop
-    qDebug()<<"Waiting 4 a message";
+    qDebug() << "Waiting 4 a message";
     while (1)
     {
-        qDebug()<<".";
+        qDebug() << ".";
         sleep(1);
     }
 
@@ -42,8 +42,8 @@ int DaemonApplication::start()
 // TODO dispatch message to do what is needed
 void DaemonApplication::dispatchMessage(const Utilities::Message &message) const
 {
-    qDebug()<<message.message();
-    qDebug()<<"Waiting 4 a message";
+    qDebug() << message.message();
+    qDebug() << "Waiting 4 a message";
 }
 
 } //namespace Daemon

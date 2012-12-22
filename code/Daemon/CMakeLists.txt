@@ -19,6 +19,7 @@ SET( DAEMON_SRC
 		${TIN_SOURCE_DIR}/Daemon/src/ServerConnection.cpp
 		${TIN_SOURCE_DIR}/Daemon/src/ServerConnectionListener.cpp
 		${TIN_SOURCE_DIR}/Daemon/src/main.cpp
+		${TIN_SOURCE_DIR}/Daemon/src/DaemonConfiguration.cpp
 )
 
 add_executable( daemon ${DAEMON_SRC} )

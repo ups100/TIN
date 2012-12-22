@@ -19,17 +19,51 @@ namespace Utilities {
  */
 class Message
 {
+    /** Message value */
     QString m_message;
 
 public:
     Message();
+
+    /**
+     * @brief C-tor, construct message
+     * @param message Char sequence to save in message
+     */
     Message(const char *message);
+
+    /**
+     * @brief C-tor, creates message instance from given QByteArray
+     * @param bytes QByteArray object made of serialized message
+     */
     Message(const QByteArray &bytes);
+
+    /**
+     * @brief D-tor
+     */
     virtual ~Message();
 
+    /**
+     * @brief Get value of message
+     * @return message
+     */
     QString message();
+
+    /**
+     * @see Message::message()
+     * @return message
+     */
     QString message() const;
+
+    /**
+     * @brief Set new message
+     * @param message New message
+     */
     void message(const QString message);
+
+    /**
+     * @brief Convert (serialize) Message object into QByteArray
+     * @return Serialized object as QByteArray with size at the beginning
+     */
     QByteArray toQByteArray();
 };
 

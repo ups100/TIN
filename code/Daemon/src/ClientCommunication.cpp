@@ -9,6 +9,7 @@
 #include "Message.h"
 #include "InterprocessName.h"
 #include "DaemonApplication.h"
+#include <stdexcept>
 
 namespace TIN_project {
 namespace Daemon {
@@ -47,7 +48,7 @@ void ClientCommunication::run()
     m_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 
     if (m_socket < 0)
-        throw "Daemon opening stream socket error.";
+        throw std::runtime_error("Daemon opening stream socket error.");
 
     // Set socket data
     m_server.sun_family = AF_UNIX;
@@ -55,7 +56,7 @@ void ClientCommunication::run()
 
     if (bind(m_socket, (struct sockaddr *) &m_server,
             sizeof(struct sockaddr_un)))
-        throw "Daemon binding stream socket error.";
+        throw std::runtime_error("Daemon binding stream socket error.");
 
     waitForMessage();
 }
@@ -77,7 +78,7 @@ void ClientCommunication::waitForMessage()
         msgsock = accept(m_socket, 0, 0);
 
         if (msgsock == -1) {
-            throw "Daemon accept error.";
+            throw std::runtime_error("Daemon accept error.");
         } else {
             // For a message
             QByteArray array;
@@ -87,7 +88,7 @@ void ClientCommunication::waitForMessage()
                 bzero(buf, sizeof(buf));
 
                 if ((rval = read(msgsock, buf, 1024)) < 0) {
-                    throw "Daemon reading stream message error.";
+                    throw std::runtime_error("Daemon reading stream message error.");
                 } else if (rval == 0) {} // ending connection
                 else {
                     array.append(buf);
