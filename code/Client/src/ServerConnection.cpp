@@ -35,7 +35,8 @@ ServerConnection::ServerConnection(ServerConnectionListener *serverListener,
         AliasCommunicationListener *aliasListener)
         : m_socket(0L), m_creatorThread(0L), m_serverListener(serverListener),
                 m_aliasListener(aliasListener), m_isReadyState(false),
-                m_isConnecting(false), m_isClosing(false)
+                m_isConnecting(false), m_isClosing(false),
+                m_currentMessageId(CHAR_MAX), m_sizeOk(false), m_messageSize(-1)
 {
     m_creatorThread = QThread::currentThread();
 
@@ -277,7 +278,7 @@ void ServerConnection::sendSlot(QByteArray* array)
 void ServerConnection::socketReadyReadSlot()
 {
     do {
-        if (m_currentMessageId != CHAR_MAX) {
+        if (m_currentMessageId == CHAR_MAX) {
             m_socket->read(&m_currentMessageId, 1);
         }
 

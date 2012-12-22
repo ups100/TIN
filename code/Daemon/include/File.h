@@ -8,6 +8,8 @@
 #if !defined(EA_328445A5_F04D_4c91_A405_6FFD7A180A29__INCLUDED_)
 #define EA_328445A5_F04D_4c91_A405_6FFD7A180A29__INCLUDED_
 
+#include <QString>
+
 namespace TIN_project {
 namespace Daemon {
 
@@ -16,6 +18,7 @@ class File
 
 public:
     File();
+    File(const QString &fileName);
     virtual ~File();
 
 };

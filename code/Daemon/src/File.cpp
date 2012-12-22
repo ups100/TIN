@@ -14,6 +14,10 @@ File::File()
 {
 
 }
+File::File(const QString &fileName)
+{
+
+}
 
 File::~File()
 {

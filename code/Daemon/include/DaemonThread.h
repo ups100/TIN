@@ -38,13 +38,13 @@ public:
     virtual void onReciveFile(boost::shared_ptr<File> file);
     virtual void onRemoveFile(boost::shared_ptr<QString> fileName);
     virtual void onSendFile(boost::shared_ptr<File> file);
-    void onTransferEnd(FileSender * sender);
-    void onTransferEnd(FileReciver * reciver);
+    virtual void onTransferEnd(FileSender * sender);
+    virtual void onTransferEnd(FileReciver * reciver);
     void stopThread();
 
 private:
     QString m_path;
-    ServerConnection m_ServerConnection;
+    ServerConnection *m_ServerConnection;
 
 };
 
