@@ -23,6 +23,7 @@ namespace Daemon {
 class DaemonApplication
 {
 public:
+
     DaemonApplication();
     virtual ~DaemonApplication();
 
@@ -49,9 +50,15 @@ public:
      */
     void removeCatalogueFromAlias(const QString &path, const QString &aliasId);
 
+    /**
+     * @brief Get MAC address
+     * @return Only the first non-loopback MAC Address
+     */
+    static QString getMacAddress();
+
 private:
 
-    QList<DaemonThread> m_daemonThreads;
+    QList<DaemonThread*> m_daemonThreads;
 
     /** Client communication thread filed */
     ClientCommunication m_clientCommunication;

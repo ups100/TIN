@@ -13,6 +13,7 @@ SET( UTILITIES_SRC
 		${TIN_SOURCE_DIR}/Utilities/src/Message.cpp
 		${TIN_SOURCE_DIR}/Utilities/src/Password.cpp
 		${TIN_SOURCE_DIR}/Utilities/src/InterprocessName.cpp
+		${TIN_SOURCE_DIR}/Utilities/src/FileTree.cpp
 )
 
 add_library( utilities STATIC

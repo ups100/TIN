@@ -1,5 +1,6 @@
 #include "DaemonApplication.h"
 #include <signal.h>
+#include <QCoreApplication>
 
 TIN_project::Daemon::DaemonApplication *app;
 
@@ -13,11 +14,13 @@ void signal_handler(int sig)
 
 int main(int argc, char **argv)
 {
+    QCoreApplication a(argc, argv);
+
     signal(SIGINT, signal_handler);
 
     TIN_project::Daemon::DaemonApplication daemon;
     app = &daemon;
     daemon.start();
 
-    return 0;
+    return a.exec();
 }

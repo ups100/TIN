@@ -92,9 +92,6 @@ private:
     /**  List of daemon threads configuration */
     QList<boost::shared_ptr<DaemonConfiguration::Config> > m_config;
 
-    /** MAC Address of current machine */
-    QString m_macAddress;
-
 public:
 
     /** Path to configuration file */
@@ -116,7 +113,8 @@ public:
     static const char* DAEMON_CONFIG_XML_CATALOGUE_ATTR_PATH;
 
     /**
-     * @brief C-tor
+     * @brief C-tor,
+     *  Load Threads configuration,
      *  Get MAC address as field
      */
     DaemonConfiguration();
@@ -137,12 +135,6 @@ public:
      * @brief Save to config file actual daemon configurations for threads
      */
     void saveConfiguration();
-
-    /**
-     * @brief Get MAC address
-     * @return Only the first non-loopback MAC Address
-     */
-    QString getMacAddress();
 
     /**
      * @brief Get list of threads configuration

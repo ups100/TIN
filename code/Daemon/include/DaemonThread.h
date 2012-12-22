@@ -12,7 +12,7 @@
 #include <QtGlobal>
 #include <QString>
 #include <boost/shared_ptr.hpp>
-
+#include <QThread>
 #include "FileTransferListener.h"
 #include "ServerConnectionListener.h"
 #include "ServerConnection.h"
@@ -21,7 +21,7 @@ namespace TIN_project {
 namespace Daemon {
 
 class DaemonThread : public FileTransferListener,
-        public ServerConnectionListener
+        public ServerConnectionListener, public QThread
 {
 
 public:
@@ -33,6 +33,7 @@ public:
     virtual void onAliasConnectionError();
     virtual void onConnected();
     virtual void onDisconnected();
+    virtual void onFileNotRemoved();
     virtual void onFindFile(boost::shared_ptr<QString> fileName);
     virtual void onListFiles();
     virtual void onReciveFile(boost::shared_ptr<File> file);
@@ -41,6 +42,7 @@ public:
     void onTransferEnd(FileSender * sender);
     void onTransferEnd(FileReciver * reciver);
     void stopThread();
+    void run();
 
 private:
     QString m_path;

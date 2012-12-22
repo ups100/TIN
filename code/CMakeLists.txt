@@ -4,10 +4,10 @@ cmake_minimum_required (VERSION 2.6)
 project (TIN) 
 
 #look for boost library (required for this project)
-FIND_PACKAGE( Boost COMPONENTS system filesystem REQUIRED )
+FIND_PACKAGE( Boost REQUIRED )
 
 #look for qt library (required for this project)
-FIND_PACKAGE( Qt4 COMPONENTS QtNetwork REQUIRED )
+FIND_PACKAGE( Qt4 COMPONENTS QtNetwork QtXmlPatterns REQUIRED )
 
 #look for doxygen to make documentation
 find_package(Doxygen REQUIRED)

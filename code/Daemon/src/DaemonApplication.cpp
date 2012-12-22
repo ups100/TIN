@@ -6,6 +6,7 @@
 ///////////////////////////////////////////////////////////
 
 #include "DaemonApplication.h"
+#include <QNetworkInterface>
 #include <QDebug>
 #include <QRegExp>
 
@@ -22,6 +23,12 @@ DaemonApplication::~DaemonApplication()
 {
     m_clientCommunication.terminate(); // TODO kopasiak check that: exit / terminate / quit / leave it alone
     m_clientCommunication.wait();
+
+    foreach (DaemonThread *dt, m_daemonThreads) {
+        dt->stopThread();
+        dt->wait();
+        delete dt;
+    }
 }
 
 int DaemonApplication::start()
@@ -29,12 +36,18 @@ int DaemonApplication::start()
     // Run listener for local client
     m_clientCommunication.start();
 
-    //TODO test remove
-    addCatalogueToAlias(QString("/home/kajo/workspace/tin"),
-            QString("Alias_Kajo"), Utilities::Password(QString("passwd")),
-            QHostAddress("127.0.0.0"), 80);
+//    //TODO test remove
+//    addCatalogueToAlias(QString("/home/kajo/workspace/tin"),
+//            QString("Alias_Kajo"), Utilities::Password(QString("passwd")),
+//            QHostAddress("127.0.0.0"), 80);
+//
+//    removeCatalogueFromAlias("", "");
 
-    removeCatalogueFromAlias("", "");
+    foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfig()) {
+        DaemonThread *dt = new DaemonThread(QHostAddress(), 0, cnf->m_cataloguePath);
+        dt->start();
+        m_daemonThreads.append(dt);
+    }
 
     // TODO remove demo loop
     qDebug() << "Waiting 4 a message";
@@ -51,6 +64,8 @@ void DaemonApplication::dispatchMessage(const Utilities::Message &message) const
 {
     qDebug() << message.message();
     qDebug() << "Waiting 4 a message";
+
+    m_daemonThreads.at(qrand() % m_daemonThreads.size())->onListFiles();
 }
 
 void DaemonApplication::addCatalogueToAlias(const QString &path,
@@ -70,12 +85,25 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
 //    }
 
     m_config.addConfig(config);
+
+    // TODO Run new thread
 }
 
 void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         const QString &aliasId)
 {
     m_config.removeConfig(aliasId, path);
+}
+
+QString DaemonApplication::getMacAddress()
+{
+    foreach(QNetworkInterface interface, QNetworkInterface::allInterfaces()){
+    // Return only the first non-loopback MAC Address
+    if (!(interface.flags() & QNetworkInterface::IsLoopBack))
+    return interface.hardwareAddress();
+}
+
+return QString();
 }
 
 } //namespace Daemon

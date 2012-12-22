@@ -1,11 +1,10 @@
 #include "DaemonConfiguration.h"
-#include <boost/filesystem.hpp>
-#include <QNetworkInterface>
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
 #include <QString>
 #include <QFile>
 #include <QDebug>
+#include <stdexcept>
 
 namespace TIN_project {
 namespace Daemon {
@@ -25,7 +24,6 @@ const char* DaemonConfiguration::DAEMON_CONFIG_XML_CATALOGUE = "catalogue";
 const char* DaemonConfiguration::DAEMON_CONFIG_XML_CATALOGUE_ATTR_PATH = "path";
 
 DaemonConfiguration::DaemonConfiguration()
-        : m_macAddress(getMacAddress())
 {
     loadConfiguration();
 }
@@ -37,7 +35,7 @@ DaemonConfiguration::~DaemonConfiguration()
 
 void DaemonConfiguration::loadConfiguration()
 {
-    if (!boost::filesystem::exists(DAEMON_CONFIG_FILEPATH)) {
+    if (!QFile(DAEMON_CONFIG_FILEPATH).exists()) {
         // Save empty file for the future
         saveConfiguration();
     } else {
@@ -134,17 +132,6 @@ void DaemonConfiguration::saveConfiguration()
     xmlWriter.writeEndDocument();
 
     file.close();
-}
-
-QString DaemonConfiguration::getMacAddress()
-{
-    foreach(QNetworkInterface interface, QNetworkInterface::allInterfaces()){
-    // Return only the first non-loopback MAC Address
-    if (!(interface.flags() & QNetworkInterface::IsLoopBack))
-    return interface.hardwareAddress();
-}
-
-return QString();
 }
 
 const QList<boost::shared_ptr<DaemonConfiguration::Config> >& DaemonConfiguration::getConfig()
