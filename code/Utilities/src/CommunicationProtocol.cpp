@@ -41,7 +41,8 @@ CommunicationProtocol::CommunicateType CommunicationProtocol::getType(char code)
     {
         return (CommunicateType)code;
     }
-    throw "Unknown code";
+
+    return END_OF_CODES;
 }
 
 QByteArray CommunicationProtocol::getQByteArrayFromInt(qint32 toConvert)
@@ -99,7 +100,7 @@ CommunicationProtocol::CommunicateNameAndPassword::CommunicateNameAndPassword(
     if (data.size() < size + 4)
         throw "wrong size of data";
 
-    QByteArray name = data.mid(5, size);
+    QByteArray name = data.mid(4, size);
     m_name.append(name);
 
     QByteArray password = data.right(data.size() - 4 - size);
@@ -131,7 +132,7 @@ CommunicationProtocol::CommunicateNameAndLong::CommunicateNameAndLong(
 
     if (data.size() < size + 4)
         throw "wrong size of data";
-    QByteArray name = data.mid(5, size);
+    QByteArray name = data.mid(4, size);
     m_name.append(name);
 
     QByteArray length = data.mid(4 + size);

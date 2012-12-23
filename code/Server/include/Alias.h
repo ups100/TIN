@@ -17,6 +17,7 @@
 #include "Password.h"
 #include "FileLocation.h"
 #include "AliasFileList.h"
+#include "UnknownConnection.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -39,8 +40,12 @@ public:
     DaemonConnection *m_DaemonConnection;
 
     Alias(const QString& name, Utilities::Password password);
-    void addClient(boost::shared_ptr<ClientConnection> client);
-    void addDaemon(boost::shared_ptr<DaemonConnection> daemon);
+
+    //should not be executed in context of alias thread
+    void addClient(boost::shared_ptr<UnknownConnection> client);
+
+    //should not be executed in context of alias thread
+    void addDaemon(boost::shared_ptr<UnknownConnection> daemon);
     bool checkPassword(const Utilities::Password& password);
     virtual void onConnectionClose(ClientConnection* client);
     virtual void onConnectionClose(DaemonConnection* daemon);
@@ -61,6 +66,10 @@ public:
     virtual void onRemoveFromAlias(ClientConnection* client,
             boost::shared_ptr<QString> fileName);
 
+    const QString& getName();
+    bool getAccess(const Utilities::Password& password);
+    void start();
+    void stop();
 private:
     /**
      * List of connected clients

@@ -29,7 +29,7 @@ Alias::Alias(const QString& name, Utilities::Password password)
 /**
  * We assume that password has been checked
  */
-void Alias::addClient(boost::shared_ptr<ClientConnection> client)
+void Alias::addClient(boost::shared_ptr<UnknownConnection> client)
 {
 
 }
@@ -37,7 +37,7 @@ void Alias::addClient(boost::shared_ptr<ClientConnection> client)
 /**
  * We assume that password has been checked
  */
-void Alias::addDaemon(boost::shared_ptr<DaemonConnection> daemon)
+void Alias::addDaemon(boost::shared_ptr<UnknownConnection> daemon)
 {
 
 }
@@ -119,6 +119,26 @@ void Alias::onPushFileToAlias(ClientConnection* client,
 
 void Alias::onRemoveFromAlias(ClientConnection* client,
         boost::shared_ptr<QString> fileName)
+{
+
+}
+
+const QString& Alias::getName()
+{
+    return m_name;
+}
+
+bool Alias::getAccess(const Utilities::Password& password)
+{
+    return m_password.check(password);
+}
+
+void Alias::start()
+{
+
+}
+
+void Alias::stop()
 {
 
 }

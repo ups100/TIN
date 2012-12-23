@@ -316,7 +316,7 @@ public:
         /**
          * @brief Gets the list
          *
-         * @return list fo files
+         * @return list of files
          */
         inline const AliasFileList& getList()
         {

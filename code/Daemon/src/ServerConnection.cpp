@@ -40,6 +40,8 @@ ServerConnection::ServerConnection(
             SLOT(threadStartedSlot()));
     connect(&m_additionalThread, SIGNAL(finished()), this,
             SLOT(threadFinishedSlot()));
+    connect(this, SIGNAL(sendData(QByteArray*)), this,
+            SLOT(sendSlot(QByteArray*)));
 }
 
 ServerConnection::~ServerConnection()
@@ -200,8 +202,9 @@ void ServerConnection::socketConnectedSlot()
 
 void ServerConnection::socketErrorSlot(QAbstractSocket::SocketError socketError)
 {
-    //maybe in future will be implemented in other way but now just
-    socketDisconnectedSlot();
+    if (socketError != QAbstractSocket::RemoteHostClosedError) {
+        qDebug() << "Socket error " << socketError;
+    }
 }
 
 void ServerConnection::socketDisconnectedSlot()
@@ -338,7 +341,7 @@ void ServerConnection::socketReadyReadSlot()
                                     new QString(message.getName())));
                 }
             }
-            break;
+                break;
 
             case CommunicationProtocol::FIND_YOUR_FILE: {
                 if (!m_sizeOk) {

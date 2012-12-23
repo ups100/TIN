@@ -44,6 +44,8 @@ ServerConnection::ServerConnection(ServerConnectionListener *serverListener,
             SLOT(threadStartedSlot()));
     connect(&m_additionalThread, SIGNAL(finished()), this,
             SLOT(threadFinishedSlot()));
+    connect(this, SIGNAL(sendData(QByteArray*)), this,
+            SLOT(sendSlot(QByteArray*)));
 }
 
 ServerConnection::~ServerConnection()
@@ -221,6 +223,7 @@ void ServerConnection::socketConnectedSlot()
     if (m_serverListener != 0L) {
         m_serverListener->onConnected();
     }
+    this->disconnectFromServer();
 }
 
 void ServerConnection::socketDisconnectedSlot()
@@ -239,8 +242,11 @@ void ServerConnection::socketDisconnectedSlot()
 void ServerConnection::socketErrorSlot(QAbstractSocket::SocketError socketError)
 {
     //maybe in future will be implemented in other way but now just
-    socketDisconnectedSlot();
+    if (socketError != QAbstractSocket::RemoteHostClosedError) {
+        qDebug() << "Socket error " << socketError;
+    }
 }
+
 void ServerConnection::threadFinishedSlot()
 {
     m_mutex.lock();
@@ -266,7 +272,6 @@ void ServerConnection::sendSlot(QByteArray* array)
 {
     quint64 size = array->size();
     quint64 send = 0;
-
     do {
         QByteArray arrayTmp = array->right(size - send);
         send += m_socket->write(arrayTmp);
