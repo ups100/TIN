@@ -16,6 +16,7 @@
 #include "FileTransferListener.h"
 #include "ServerConnectionListener.h"
 #include "ServerConnection.h"
+#include "DaemonConfiguration.h"
 
 namespace TIN_project {
 namespace Daemon {
@@ -28,24 +29,26 @@ public:
     DaemonThread();
     virtual ~DaemonThread();
 
-    DaemonThread(const QHostAddress& ip, quint16 port, const QString& path);
+    DaemonThread(boost::shared_ptr<DaemonConfiguration::Config> config);
     virtual void onAliasConnected();
     virtual void onAliasConnectionError();
     virtual void onConnected();
     virtual void onDisconnected();
     virtual void onFileNotRemoved();
-    virtual void onFindFile(boost::shared_ptr<QString> fileName);
+    virtual void onFindFile(QString fileName);
     virtual void onListFiles();
     virtual void onReciveFile(boost::shared_ptr<File> file);
-    virtual void onRemoveFile(boost::shared_ptr<QString> fileName);
+    virtual void onRemoveFile(boost::shared_ptr<Utilities::FileLocation> fileLocation);
     virtual void onSendFile(boost::shared_ptr<File> file);
     void onTransferEnd(FileSender * sender);
     void onTransferEnd(FileReciver * reciver);
     void stopThread();
     void run();
 
+    boost::shared_ptr<DaemonConfiguration::Config> config();
+
 private:
-    QString m_path;
+    boost::shared_ptr<DaemonConfiguration::Config> m_config;
     ServerConnection m_ServerConnection;
 
 };

@@ -12,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "File.h"
+#include "FileLocation.h"
 
 namespace TIN_project {
 namespace Daemon {
@@ -28,10 +29,10 @@ public:
     virtual void onConnected() =0;
     virtual void onDisconnected() =0;
     virtual void onFileNotRemoved() =0;
-    virtual void onFindFile(boost::shared_ptr<QString> fileName) =0;
+    virtual void onFindFile(QString fileName) =0;
     virtual void onListFiles() =0;
     virtual void onReciveFile(boost::shared_ptr<File> file) =0;
-    virtual void onRemoveFile(boost::shared_ptr<QString> fileName) =0;
+    virtual void onRemoveFile(boost::shared_ptr<Utilities::FileLocation> fileLocation) =0;
     virtual void onSendFile(boost::shared_ptr<File> file) =0;
 
 };

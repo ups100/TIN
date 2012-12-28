@@ -28,7 +28,7 @@ public:
     virtual ~DaemonApplication();
 
     int start();
-    void dispatchMessage(const Utilities::Message &message) const;
+    void dispatchMessage(const Utilities::Message &message);
 
     /**
      * @brief Add catalogue to alias, start DaemonThread, and add daemon data to config

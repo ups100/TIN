@@ -8,10 +8,13 @@
 #include "DaemonThread.h"
 #include "FileTree.h"
 #include "DaemonApplication.h"
+#include <QDir>
 #include <QFile>
 #include <QBuffer>
 #include <QXmlFormatter>
 #include <QRegExp>
+#include <QDirIterator>
+#include <stdexcept>
 
 namespace TIN_project {
 namespace Daemon {
@@ -26,9 +29,9 @@ DaemonThread::~DaemonThread()
 
 }
 
-DaemonThread::DaemonThread(const QHostAddress& ip, quint16 port,
-        const QString& path)
-        : m_path(path)
+DaemonThread::DaemonThread(
+        boost::shared_ptr<DaemonConfiguration::Config> config)
+        : m_config(config)
 {
 
 }
@@ -58,20 +61,49 @@ void DaemonThread::onFileNotRemoved()
 
 }
 
-void DaemonThread::onFindFile(boost::shared_ptr<QString> fileName)
+void DaemonThread::onFindFile(QString fileName)
 {
+    QDirIterator it(m_config->m_cataloguePath, QDirIterator::Subdirectories);
+    QList<QString> foundPaths;
+    QRegExp regex(QRegExp::escape(fileName));
 
+    while (it.hasNext()) {
+        QFileInfo info = it.fileInfo();
+
+        if (info.isFile()) {
+            if (regex.indexIn(info.fileName()) != -1) {
+//                qDebug()<<"\t\t\tFOUND!!: "<<info.filePath();
+                foundPaths.append(info.filePath());
+            }
+        }
+
+        it.next();
+    }
+
+    //TODO remove
+    foreach (QString str, foundPaths) {
+        qDebug()<<"\t"<<str;
+    }
+    // TODO create fileLocations and send them
+//    if (foundPaths.size())
+//        onFoundFile(); // ?
+//    else
+//        onFileNotFound(); // ?
 }
 
 void DaemonThread::onListFiles()
 {
-    // Recursive read alias catalogue
-    QXmlNamePool m_namePool;
-    Utilities::FileTree m_fileTree(m_namePool);
-    QXmlNodeModelIndex m_fileNode = m_fileTree.nodeFor(m_path);
+    QDir dir(m_config->m_cataloguePath);
+    if (!dir.exists()) // TODO what then ?!
+        throw std::runtime_error("Path doesn't exit.");
 
-    QXmlQuery query(m_namePool);
-    query.bindVariable("fileTree", m_fileNode);
+    // Recursive read alias catalogue
+    QXmlNamePool namePool;
+    Utilities::FileTree fileTree(namePool);
+    QXmlNodeModelIndex fileNode = fileTree.nodeFor(m_config->m_cataloguePath);
+
+    QXmlQuery query(namePool);
+    query.bindVariable("fileTree", fileNode);
     query.setQuery("$fileTree");
 
     QByteArray output;
@@ -83,9 +115,9 @@ void DaemonThread::onListFiles()
 
     // Remove absolute path, make it relative
     QString str(output.data());
-    str.replace(QRegExp(QString() + m_path + "/?"), "/");
+    str.replace(QRegExp(QString() + m_config->m_cataloguePath + "/?"), "/");
 
-    qDebug()<<str;
+    qDebug() << str;
     // TODO send QString with 'xmlified' data
 }
 
@@ -94,9 +126,16 @@ void DaemonThread::onReciveFile(boost::shared_ptr<File> file)
 
 }
 
-void DaemonThread::onRemoveFile(boost::shared_ptr<QString> fileName)
+void DaemonThread::onRemoveFile(boost::shared_ptr<Utilities::FileLocation> fileLocation)
 {
-
+//    QFile file(QString(m_config->m_cataloguePath) + QString(fileLocation->path));
+//    if (file.exists())
+//        if (file.remove()) {
+//            onFileRemoved();
+//            return;
+//        }
+//
+//    onFileNotRemoved();
 }
 
 void DaemonThread::onSendFile(boost::shared_ptr<File> file)
@@ -121,10 +160,17 @@ void DaemonThread::stopThread()
 
 void DaemonThread::run()
 {
-    // TODO ?!
+    // TODO connect to server and start listening
     while (1) {
-        sleep(1);
+        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
+                << m_config->m_aliasId;
+        sleep(5);
     }
+}
+
+boost::shared_ptr<DaemonConfiguration::Config> DaemonThread::config()
+{
+    return m_config;
 }
 
 } //namespace Daemon

@@ -59,7 +59,7 @@ void DaemonConfiguration::loadConfiguration()
                                     .toString();
                     tmp->m_port = attribs.value(
                             QString(DAEMON_CONFIG_XML_ADDRESS_ATTR_PORT))
-                            .toString();
+                            .toString().toUShort();
                 } else if (reader.name() == DAEMON_CONFIG_XML_ALIAS) {
                     tmp->m_aliasId =
                             reader.attributes().value(
@@ -76,7 +76,7 @@ void DaemonConfiguration::loadConfiguration()
                 }
             } else if (reader.isEndElement()
                     && reader.name() == DAEMON_CONFIG_XML_THREAD) {
-                m_config.append(tmp);
+                m_configs.append(tmp);
                 tmp.reset(new Config());
             }
 
@@ -89,6 +89,7 @@ void DaemonConfiguration::loadConfiguration()
 
 void DaemonConfiguration::saveConfiguration()
 {
+    qDebug()<<"SAveuje "<<m_configs.size();
     QFile file(DAEMON_CONFIG_FILEPATH);
     file.open(QIODevice::WriteOnly);
 
@@ -99,14 +100,14 @@ void DaemonConfiguration::saveConfiguration()
 
     xmlWriter.writeStartElement(DAEMON_CONFIG_XML_THREADS);
 
-    foreach(boost::shared_ptr<Config> it, m_config){
+    foreach(boost::shared_ptr<Config> it, m_configs){
     xmlWriter.writeStartElement(DAEMON_CONFIG_XML_THREAD);
 
     xmlWriter.writeStartElement(DAEMON_CONFIG_XML_ADDRESS);
     xmlWriter.writeAttribute(DAEMON_CONFIG_XML_ADDRESS_ATTR_IP,
             (*it).m_ip);
     xmlWriter.writeAttribute(DAEMON_CONFIG_XML_ADDRESS_ATTR_PORT,
-            (*it).m_port);
+            QString::number((*it).m_port));
     xmlWriter.writeEndElement();
 
     xmlWriter.writeStartElement(DAEMON_CONFIG_XML_ALIAS);
@@ -134,20 +135,22 @@ void DaemonConfiguration::saveConfiguration()
     file.close();
 }
 
-const QList<boost::shared_ptr<DaemonConfiguration::Config> >& DaemonConfiguration::getConfig()
+const QList<boost::shared_ptr<DaemonConfiguration::Config> >& DaemonConfiguration::getConfigs()
 {
-    return m_config;
+    return m_configs;
 }
 
 bool DaemonConfiguration::addConfig(
         boost::shared_ptr<DaemonConfiguration::Config> config)
 {
-    foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config){
+    foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_configs){
     if (*cnf == *config)
     return false;
 }
 
-m_config.append(config);
+m_configs.append(config);
+saveConfiguration();
+
 return true;
 }
 
@@ -156,9 +159,11 @@ bool DaemonConfiguration::removeConfig(const QString &aliasId,
 {
     boost::shared_ptr<Config> config(new Config(aliasId, path));
 
-    foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config){
+    foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_configs){
     if (*cnf == *config) {
-        m_config.removeAll(cnf);
+        m_configs.removeOne(cnf);
+        saveConfiguration();
+
         return true;
     }
 }

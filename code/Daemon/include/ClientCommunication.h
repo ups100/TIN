@@ -36,14 +36,14 @@ class ClientCommunication : public QThread
     struct sockaddr_un m_server;
 
     /** DaemonApplication handler */
-    const DaemonApplication *m_daemonApplication;
+    DaemonApplication &m_daemonApplication;
 
 public:
 
     /**
      * @brief C-tor
      */
-    ClientCommunication(const DaemonApplication *daemonApplication);
+    ClientCommunication(DaemonApplication &daemonApplication);
 
     /**
      * @brief D-tor, Close socket and unlink socket name

@@ -27,7 +27,7 @@ public:
         /** Server IP */
         QString m_ip;
         /** Server Port */
-        QString m_port;
+        quint16 m_port;
         /** Alias name */
         QString m_aliasId;
         /** Password to alias */
@@ -39,6 +39,7 @@ public:
          * @brief Empty C-tor
          */
         Config()
+                : m_port(0)
         {
 
         }
@@ -51,8 +52,8 @@ public:
          * @param password
          * @param cataloguePath
          */
-        Config(const QString ip, const QString port, const QString aliasId, const QString password,
-                const QString cataloguePath)
+        Config(const QString ip, const quint16 port, const QString aliasId,
+                const QString password, const QString cataloguePath)
                 : m_ip(ip), m_port(port), m_aliasId(aliasId),
                         m_password(password), m_cataloguePath(cataloguePath)
         {
@@ -65,7 +66,7 @@ public:
          * @param cataloguePath
          */
         Config(const QString aliasId, const QString cataloguePath)
-                : m_aliasId(aliasId), m_cataloguePath(cataloguePath)
+                : m_aliasId(aliasId), m_cataloguePath(cataloguePath), m_port(0)
         {
 
         }
@@ -90,7 +91,7 @@ public:
 private:
 
     /**  List of daemon threads configuration */
-    QList<boost::shared_ptr<DaemonConfiguration::Config> > m_config;
+    QList<boost::shared_ptr<DaemonConfiguration::Config> > m_configs;
 
 public:
 
@@ -140,17 +141,17 @@ public:
      * @brief Get list of threads configuration
      * @return List of configs
      */
-    const QList<boost::shared_ptr<DaemonConfiguration::Config> >& getConfig();
+    const QList<boost::shared_ptr<DaemonConfiguration::Config> >& getConfigs();
 
     /**
-     * @brief Add new thread configuration
+     * @brief Add new thread configuration and save configuration if added
      * @param Thread configuration with address, pass, alias etc
      * @return true if added, false otherwise (if already exists)
      */
     bool addConfig(boost::shared_ptr<DaemonConfiguration::Config> config);
 
     /**
-     * @brief Remove thread config by given alias & path
+     * @brief Remove thread config by given alias & path and save configuration if removed
      * @param aliasId Id of alias
      * @param path Path to catalogue
      * @return true if removed, false otherwise (if no given config)

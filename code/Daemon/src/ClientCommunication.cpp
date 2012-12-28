@@ -15,7 +15,7 @@ namespace TIN_project {
 namespace Daemon {
 
 ClientCommunication::ClientCommunication(
-        const DaemonApplication *daemonApplication)
+        DaemonApplication &daemonApplication)
         : m_socket(-1), m_daemonApplication(daemonApplication)
 {
 
@@ -82,7 +82,7 @@ void ClientCommunication::waitForMessage()
             // Decode message, which has been sent in HEX format to avoid Qt-BSD problems
             Utilities::Message message(QByteArray::fromHex(array.data()));
 
-            m_daemonApplication->dispatchMessage(message);
+            m_daemonApplication.dispatchMessage(message);
         }
 
         close(msgsock);
