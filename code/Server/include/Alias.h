@@ -1,9 +1,19 @@
-///////////////////////////////////////////////////////////
-//  Alias.h
-//  Implementation of the Class Alias
-//  Created on:      07-gru-2012 00:33:32
-//  Original author: kopasiak
-///////////////////////////////////////////////////////////
+/**
+ * @file Alias.h
+ *
+ * @date 28-12-2012
+ *
+ * @author Opasiak Krzsztof <ups100@tlen.pl>
+ *
+ * @brief Implementation of the Class TIN_project::Server::Alias
+ *
+ * @par Project
+ * This is a part of project realized on Warsaw University of Technology
+ * on TIN lectures. Project was created to simplify synchronization between catalogs,
+ * that are stored on different hosts to let clients work on the same files anywhere they want.
+ * Allows user to do operations such as searching, copying and distributing files
+ * gathered under one alias.
+ */
 
 #if !defined(EA_F04FAC3F_04DD_40c0_89EC_6EFF6338002F__INCLUDED_)
 #define EA_F04FAC3F_04DD_40c0_89EC_6EFF6338002F__INCLUDED_
@@ -20,6 +30,7 @@
 #include "UnknownConnection.h"
 
 #include <boost/shared_ptr.hpp>
+#include <QThread>
 
 namespace TIN_project {
 namespace Server {
@@ -33,57 +44,138 @@ class Alias : public FileTransferListener,
 {
 
 public:
-    Alias();
-    virtual ~Alias();
-    FileTransferServer *m_FileTransferServer;
-    ClientConnection *m_ClientConnection;
-    DaemonConnection *m_DaemonConnection;
-
+    /**
+     * @brief Constructor
+     *
+     * @param[in] name of alias
+     *
+     * @param[in] password to this alias
+     *
+     * @note Remember to start alias after creation with start() function.
+     */
     Alias(const QString& name, Utilities::Password password);
 
-    //should not be executed in context of alias thread
+    /**
+     * @brief Destructor
+     */
+    virtual ~Alias();
+
+    /**
+     * @brief Adds client to this alias
+     *
+     * @param[in] client to be added to alias
+     *
+     * @note Remember to check password before using this method
+     *
+     * @warning Due to some thread issues, his function should not be executed
+     * in context of alias thread.
+     */
     void addClient(boost::shared_ptr<UnknownConnection> client);
 
-    //should not be executed in context of alias thread
-    void addDaemon(boost::shared_ptr<UnknownConnection> daemon);
-    bool checkPassword(const Utilities::Password& password);
-    virtual void onConnectionClose(ClientConnection* client);
-    virtual void onConnectionClose(DaemonConnection* daemon);
-    virtual void onFileFound(DaemonConnection* daemon,
-            boost::shared_ptr<Utilities::FileLocation> location);
-    virtual void onFileList(DaemonConnection* daemon,
-            boost::shared_ptr<Utilities::AliasFileList> list);
-    virtual void onFileTransferCompleted(FileTransferServer * transfer);
-    virtual void onFileTransferError(FileTransferServer* transfer);
-    virtual void onFindFile(ClientConnection* client,
-            boost::shared_ptr<QString> name);
-    virtual void onListAlias(ClientConnection* client);
-    virtual void onNoSuchFile(DaemonConnection* daemon);
-    virtual void onPullFileFrom(ClientConnection* client,
-            boost::shared_ptr<Utilities::FileLocation> location);
-    virtual void onPushFileToAlias(ClientConnection* client,
-            boost::shared_ptr<QString> path, quint64 size);
-    virtual void onRemoveFromAlias(ClientConnection* client,
-            boost::shared_ptr<QString> fileName);
-
-    const QString& getName();
-    bool getAccess(const Utilities::Password& password);
-    void start();
-    void stop();
-private:
     /**
-     * List of connected clients
+     * @brief Adds daemon to this alias
+     *
+     * @param[in] daemon to be added to alias
+     *
+     * @note Remember to check password before using this method
+     *
+     * @warning Due to some thread issues, his function should not be executed
+     * in context of alias thread.
+     */
+    void addDaemon(boost::shared_ptr<UnknownConnection> daemon);
+
+    /**
+     * @brief Check if passed password is that same password as set in constructor.
+     *
+     * @param[in] password to be checked
+     *
+     * @return
+     * - true if password is correct
+     * - false otherwise
+     */
+    bool checkPassword(const Utilities::Password& password);
+
+    /**
+     * @brief Gets the name set in constructor
+     *
+     * @return Name of alias
+     */
+    const QString& getName();
+
+    /**
+     * @brief Starts the alias
+     *
+     * @details Synchronous method.
+     */
+    void start();
+
+    /**
+     * @brief Stops the alias.
+     *
+     * @details Synchronous method. If alias is not started, returns immediately.
+     */
+    void stop();
+
+    virtual void onConnectionClosed(ClientConnection* client);
+
+    virtual void onConnectionClosed(DaemonConnection* daemon);
+
+    virtual void onFileFound(DaemonConnection* daemon,
+            const Utilities::FileLocation& location);
+
+    virtual void onFileList(DaemonConnection* daemon,
+            const Utilities::AliasFileList& list);
+
+    virtual void onFileTransferCompleted(FileTransferServer *transfer);
+
+    virtual void onFileTransferError(FileTransferServer *transfer);
+
+    virtual void onFindFile(ClientConnection *client, const QString& name);
+
+    virtual void onListAlias(ClientConnection *client);
+
+    virtual void onNoSuchFile(DaemonConnection *daemon);
+
+    virtual void onPullFileFrom(ClientConnection *client,
+            const Utilities::FileLocation& location);
+
+    virtual void onPushFileToAlias(ClientConnection *client,
+            const QString& path, quint64 size);
+
+    virtual void onRemoveFromAlias(ClientConnection *client,
+            const QString& fileName);
+
+private:
+
+    /**
+     * @brief Clients connected to this alias
      */
     QList<boost::shared_ptr<ClientConnection> > m_clients;
-    QList<boost::shared_ptr<DaemonConnection> > m_daemons;
+
     /**
-     * Name of alias
+     * @brief Daemons connected to this alias
+     */
+    QList<boost::shared_ptr<DaemonConnection> > m_daemons;
+
+    /**
+     * @brief File transfers in alias
+     */
+    QList<boost::shared_ptr<FileTransferServer> > m_transfers;
+
+    /**
+     * @brief Name of alias
      */
     QString m_name;
+
     /**
-     * Password for this alias
+     * @brief Password for this alias
      */
     Utilities::Password m_password;
+
+    /**
+     * @brief Additional thread
+     */
+    QThread m_thread;
 
 };
 

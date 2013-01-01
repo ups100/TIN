@@ -88,6 +88,11 @@ public slots:
      */
     void stopServer(int exitCode = 0);
 
+private slots:
+
+    void onConnectToAliasSlot(UnknownConnection* connection, QString aliasName,
+            TIN_project::Utilities::Password password);
+
 private:
 
     QtSingleCoreApplication m_application;

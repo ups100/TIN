@@ -71,6 +71,11 @@ public:
     void disconnectFromAliasSynch();
 
     /**
+     * @brief Sends information that access to alias has been granted.
+     */
+    void sendConnectedToAlias();
+
+    /**
      * @brief Sends information that file has been found.
      *
      * @param[in] location locations of file

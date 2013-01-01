@@ -1,20 +1,29 @@
-///////////////////////////////////////////////////////////
-//  Alias.cpp
-//  Implementation of the Class Alias
-//  Created on:      07-gru-2012 00:33:32
-//  Original author: kopasiak
-///////////////////////////////////////////////////////////
+/**
+ * @file Alias.cpp
+ *
+ * @date 28-12-2012
+ *
+ * @author Opasiak Krzsztof <ups100@tlen.pl>
+ *
+ * @brief Implementation of the Class TIN_project::Server::Alias
+ *
+ * @par Project
+ * This is a part of project realized on Warsaw University of Technology
+ * on TIN lectures. Project was created to simplify synchronization between catalogs,
+ * that are stored on different hosts to let clients work on the same files anywhere they want.
+ * Allows user to do operations such as searching, copying and distributing files
+ * gathered under one alias.
+ */
 
 #include "Alias.h"
 #include "Password.h"
 
+#include <QTimer>
+#include <QEventLoop>
+#include <QtGlobal>
+
 namespace TIN_project {
 namespace Server {
-
-Alias::Alias()
-{
-
-}
 
 Alias::~Alias()
 {
@@ -22,53 +31,119 @@ Alias::~Alias()
 }
 
 Alias::Alias(const QString& name, Utilities::Password password)
+        : m_name(name), m_password(password)
 {
 
 }
 
-/**
- * We assume that password has been checked
- */
 void Alias::addClient(boost::shared_ptr<UnknownConnection> client)
 {
+    if (!m_thread.isRunning()) {
+        qDebug() << "Alias is not running";
+        return;
+    }
 
+    ClientConnection *connection = new ClientConnection(
+            client->convertToOtherConnection(), &m_thread, this);
+
+    boost::shared_ptr<ClientConnection> shared(connection);
+    m_clients.append(shared);
+
+    shared->sendConnectedToAlias();
 }
 
-/**
- * We assume that password has been checked
- */
 void Alias::addDaemon(boost::shared_ptr<UnknownConnection> daemon)
 {
+    if (!m_thread.isRunning()) {
+        qDebug() << "Alias is not running";
+        return;
+    }
 
+    DaemonConnection *connection = new DaemonConnection(
+            daemon->convertToOtherConnection(), &m_thread, this);
+
+    boost::shared_ptr<DaemonConnection> shared(connection);
+    m_daemons.append(shared);
+
+    shared->sendConnectedToAlias();
 }
 
-/**
- * Check if password is correct
- */
 bool Alias::checkPassword(const Utilities::Password& password)
 {
 
-    return false;
+    return m_password.check(password);
 }
 
-void Alias::onConnectionClose(ClientConnection* client)
+const QString& Alias::getName()
+{
+    return m_name;
+}
+
+void Alias::start()
+{
+    if (m_thread.isRunning()) {
+        qDebug() << "Alias is already running";
+        return;
+    }
+    QEventLoop loop;
+
+    QObject::connect(&m_thread, SIGNAL(started()), &loop, SLOT(quit()));
+    QTimer::singleShot(0, &m_thread, SLOT(start()));
+
+    loop.exec();
+}
+
+void Alias::stop()
+{
+    if (!m_thread.isRunning()) {
+        qDebug() << "Alias is not running";
+        return;
+    }
+
+    //disconnect clients
+    foreach(boost::shared_ptr<ClientConnection> connection, m_clients) {
+        connection->disconnectFromAliasSynch();
+    }
+    m_clients.clear();
+
+    //disconnects daemons
+    foreach(boost::shared_ptr<DaemonConnection> connection, m_daemons) {
+        connection->disconnectFromAliasSynch();
+    }
+    m_daemons.clear();
+
+    //stop flie transfers
+    foreach(boost::shared_ptr<FileTransferServer> connection, m_transfers) {
+        connection->disconnectFromAliasSynch();
+    }
+    m_transfers.clear();
+
+    QEventLoop loop;
+
+    QObject::connect(&m_thread, SIGNAL(finished()), &loop, SLOT(quit()));
+    QTimer::singleShot(0, &m_thread, SLOT(quit()));
+
+    loop.exec();
+}
+
+void Alias::onConnectionClosed(ClientConnection* client)
 {
 
 }
 
-void Alias::onConnectionClose(DaemonConnection* daemon)
+void Alias::onConnectionClosed(DaemonConnection* daemon)
 {
 
 }
 
 void Alias::onFileFound(DaemonConnection* daemon,
-        boost::shared_ptr<Utilities::FileLocation> location)
+        const Utilities::FileLocation& location)
 {
 
 }
 
 void Alias::onFileList(DaemonConnection* daemon,
-        boost::shared_ptr<Utilities::AliasFileList> list)
+        const Utilities::AliasFileList& list)
 {
 
 }
@@ -82,15 +157,14 @@ void Alias::onFileTransferCompleted(FileTransferServer * transfer)
 }
 
 /**
- * Notify if an error occured
+ * Notify if an error occurred
  */
 void Alias::onFileTransferError(FileTransferServer* transfer)
 {
 
 }
 
-void Alias::onFindFile(ClientConnection* client,
-        boost::shared_ptr<QString> name)
+void Alias::onFindFile(ClientConnection* client, const QString& name)
 {
 
 }
@@ -106,39 +180,18 @@ void Alias::onNoSuchFile(DaemonConnection* daemon)
 }
 
 void Alias::onPullFileFrom(ClientConnection* client,
-        boost::shared_ptr<Utilities::FileLocation> location)
+        const Utilities::FileLocation& location)
 {
 
 }
 
-void Alias::onPushFileToAlias(ClientConnection* client,
-        boost::shared_ptr<QString> path, quint64 size)
+void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
+        quint64 size)
 {
 
 }
 
-void Alias::onRemoveFromAlias(ClientConnection* client,
-        boost::shared_ptr<QString> fileName)
-{
-
-}
-
-const QString& Alias::getName()
-{
-    return m_name;
-}
-
-bool Alias::getAccess(const Utilities::Password& password)
-{
-    return m_password.check(password);
-}
-
-void Alias::start()
-{
-
-}
-
-void Alias::stop()
+void Alias::onRemoveFromAlias(ClientConnection* client, const QString& fileName)
 {
 
 }

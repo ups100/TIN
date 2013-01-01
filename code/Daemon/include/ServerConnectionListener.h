@@ -19,7 +19,7 @@
 #define EA_0CA2CADB_F467_42f7_B3EB_F7C3C8870391__INCLUDED_
 
 #include <QString>
-#include <boost/shared_ptr.hpp>
+#include <QHostAddress>
 
 #include "File.h"
 
@@ -74,7 +74,7 @@ public:
      *
      * @param[in] fileName name of file to look for
      */
-    virtual void onFindFile(boost::shared_ptr<QString> fileName) = 0;
+    virtual void onFindFile(const QString& fileName) = 0;
 
     /**
      * @brief Informs that server asked to list content of catalog
@@ -84,21 +84,25 @@ public:
     /**
      * @brief Informs that server asked to receive some file
      *
-     * @param[in] file file to be received
+     * @param[in] fileName name of file (relative path)
+     *
+     * @param[in] address of server to receive file
+     *
+     * @param[in] port of server to receive file
      */
-    virtual void onReciveFile(boost::shared_ptr<File> file) = 0;
+    virtual void onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port) = 0;
 
     /**
      * @brief Informs that server asked to remove some file from catalog
      *
      * @param[in] fileName path to file to be removed
      */
-    virtual void onRemoveFile(boost::shared_ptr<QString> fileName) = 0;
+    virtual void onRemoveFile(const QString& fileName) = 0;
 
     /**
      * @todo not sure about semantic
      */
-    virtual void onSendFile(boost::shared_ptr<File> file) = 0;
+    virtual void onSendFile(const QString& fileName, const QHostAddress& address, quint16 port) = 0;
 
 };
 

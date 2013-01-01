@@ -72,7 +72,7 @@ public:
     void sendAliasRemoved();
 
     /**
-     * @brief Sends information that access to alias has been granted.
+     * @brief Sends information that access to alias has not been granted.
      */
     void sendNotConnectedToAlias();
 

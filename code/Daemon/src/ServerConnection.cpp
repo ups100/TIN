@@ -233,12 +233,14 @@ void ServerConnection::socketReadyReadSlot()
 
         switch (CommunicationProtocol::getType(m_currentMessageId)) {
             case CommunicationProtocol::CONNECTED_TO_ALIAS:
+                m_currentMessageId = CHAR_MAX;
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasConnected();
                 }
                 break;
 
             case CommunicationProtocol::NOT_CONNECTED_TO_ALIAS:
+                m_currentMessageId = CHAR_MAX;
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasConnectionError();
                 }
@@ -268,9 +270,8 @@ void ServerConnection::socketReadyReadSlot()
                         CommunicationProtocol::RECIVE_FILE> message(data);
 
                 if (m_serverListener != 0L) {
-                    m_serverListener->onReciveFile(
-                            boost::shared_ptr<File>(
-                                    new File(message.getName())));
+                    m_serverListener->onReciveFile(message.getName(),
+                            message.getAddress(), message.getPort());
                 }
             }
                 break;
@@ -299,14 +300,14 @@ void ServerConnection::socketReadyReadSlot()
                         CommunicationProtocol::SEND_FILE> message(data);
 
                 if (m_serverListener != 0L) {
-                    m_serverListener->onReciveFile(
-                            boost::shared_ptr<File>(
-                                    new File(message.getName())));
+                    m_serverListener->onSendFile(message.getName(),
+                            message.getAddress(), message.getPort());
                 }
             }
                 break;
 
             case CommunicationProtocol::LIST_YOUR_FILES:
+                m_currentMessageId = CHAR_MAX;
                 if (m_serverListener != 0L) {
                     m_serverListener->onListFiles();
                 }
@@ -336,9 +337,7 @@ void ServerConnection::socketReadyReadSlot()
                         CommunicationProtocol::DELETE_YOUR_FILE> message(data);
 
                 if (m_serverListener != 0L) {
-                    m_serverListener->onRemoveFile(
-                            boost::shared_ptr<QString>(
-                                    new QString(message.getName())));
+                    m_serverListener->onRemoveFile(message.getName());
                 }
             }
                 break;
@@ -367,9 +366,7 @@ void ServerConnection::socketReadyReadSlot()
                         CommunicationProtocol::FIND_YOUR_FILE> message(data);
 
                 if (m_serverListener != 0L) {
-                    m_serverListener->onRemoveFile(
-                            boost::shared_ptr<QString>(
-                                    new QString(message.getName())));
+                    m_serverListener->onFindFile(message.getName());
                 }
             }
                 break;

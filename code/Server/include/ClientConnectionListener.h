@@ -33,7 +33,7 @@ class ClientConnection;
  * @brief Class used as interface for communication by ClientConnection class
  *
  * @details This class is used for notifying about communicates
- * incoming directly from server.
+ * incoming directly from client.
  *
  * @warning Remember that all those methods are called in context of alias's thread.
  */

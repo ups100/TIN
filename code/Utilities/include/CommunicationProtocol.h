@@ -24,6 +24,7 @@
 #include <QString>
 #include <QtEndian>
 #include <QtGlobal>
+#include <QHostAddress>
 
 #include "Password.h"
 #include "AliasFileList.h"
@@ -241,6 +242,88 @@ public:
          * @brief Name to be converted
          */
         QString m_name;
+    };
+
+    /**
+     * @brief Base class for address and port converting
+     */
+    class CommunicateNameAddressAndPort
+    {
+    public:
+        /**
+         * @brief Gets the name of something.
+         *
+         * @return name of something
+         */
+        inline const QString& getName() const
+        {
+            return m_name;
+        }
+
+        /**
+         * @brief Gets the address.
+         *
+         * @return IP address
+         */
+        inline const QHostAddress& getAddress() const
+        {
+            return m_address;
+        }
+
+        /**
+         * @brief Gets the port
+         *
+         * @return port
+         */
+        inline quint16 getPort() const
+        {
+            return m_port;
+        }
+
+    protected:
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] name of something
+         *
+         * @param[in] address address to be converted
+         *
+         * @param[in] port
+         */
+        CommunicateNameAddressAndPort(const QString& name, const QHostAddress& address,
+                quint16 port);
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data to form an object
+         */
+        CommunicateNameAddressAndPort(const QByteArray& data);
+
+        /**
+         * @brief Converts an object to QByteArray
+         *
+         * @return Raw object data
+         */
+        QByteArray getQByteArray() const;
+
+    private:
+
+        /**
+         * @brief Name to be converted
+         */
+        QString m_name;
+
+        /**
+         * @brief Address to be converted
+         */
+        QHostAddress m_address;
+
+        /**
+         * @brief Port to be converted
+         */
+        quint16 m_port;
     };
 
     /**
@@ -816,16 +899,22 @@ public:
      * @brief Specialization of template class for #RECIVE_FILE message
      */
     template<typename T>
-    class Communicate<23, T> : public CommunicateBase, public CommunicateName
+    class Communicate<23, T> : public CommunicateBase,
+            public CommunicateNameAddressAndPort
     {
     public:
         /**
          * @brief Constructor
          *
          * @param[in] name of file (relative path)
+         *
+         * @param[in] address of server to receive file from
+         *
+         * @param[in] port of server to receive file from
          */
-        Communicate(const QString &name)
-                : CommunicateName(name)
+        Communicate(const QString &name, const QHostAddress& address,
+                quint16 port)
+            :CommunicateNameAddressAndPort(name, address, port)
         {
 
         }
@@ -836,14 +925,14 @@ public:
          * @param[in] data raw data to parse message.
          */
         Communicate(const QByteArray &data)
-                : CommunicateName(data)
+                : CommunicateNameAddressAndPort(data)
         {
 
         }
 
         virtual QByteArray toQByteArray()
         {
-            QByteArray buff = CommunicateName::getQByteArray();
+            QByteArray buff = CommunicateNameAddressAndPort::getQByteArray();
             return QByteArray() + CommunicationProtocol::getCode(RECIVE_FILE)
                     + CommunicationProtocol::getQByteArrayFromInt(buff.size())
                     + buff;
@@ -855,16 +944,21 @@ public:
      * @brief Specialization of template class for #SEND_FILE message
      */
     template<typename T>
-    class Communicate<24, T> : public CommunicateBase, public CommunicateName
+    class Communicate<24, T> : public CommunicateBase, public CommunicateNameAddressAndPort
     {
     public:
         /**
          * @brief Constructor
          *
          * @param[in] name of file (relative path)
+         *
+         * @param[in] address of server to upload file
+         *
+         * @param[in] port of server to upload file
          */
-        Communicate(const QString &name)
-                : CommunicateName(name)
+        Communicate(const QString &name, const QHostAddress& address,
+                quint16 port)
+                : CommunicateNameAddressAndPort(name, address, port)
         {
 
         }
@@ -875,14 +969,14 @@ public:
          * @param[in] data raw data to parse message.
          */
         Communicate(const QByteArray &data)
-                : CommunicateName(data)
+                : CommunicateNameAddressAndPort(data)
         {
 
         }
 
         virtual QByteArray toQByteArray()
         {
-            QByteArray buff = CommunicateName::getQByteArray();
+            QByteArray buff = CommunicateNameAddressAndPort::getQByteArray();
             return QByteArray() + CommunicationProtocol::getCode(SEND_FILE)
                     + CommunicationProtocol::getQByteArrayFromInt(buff.size())
                     + buff;

@@ -87,6 +87,16 @@ void ClientConnection::disconnectFromAliasSynch()
     loop.exec();
 }
 
+void ClientConnection::sendConnectedToAlias()
+{
+    if (m_isConnected) {
+        CommunicationProtocol::Communicate<CommunicationProtocol::CONNECTED_TO_ALIAS> message;
+        sendAllFunction(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
+}
+
 void ClientConnection::sendFileFound(const Utilities::FileLocation& location)
 {
     if (m_isConnected) {
@@ -133,8 +143,8 @@ void ClientConnection::sendFileNotRemoved()
 void ClientConnection::sendFileRemoved()
 {
     if (m_isConnected) {
-        CommunicationProtocol::Communicate
-                < CommunicationProtocol::DELETED_FROM_ALIAS> message;
+        CommunicationProtocol::Communicate<
+                CommunicationProtocol::DELETED_FROM_ALIAS> message;
         sendAllFunction(message.toQByteArray());
     } else {
         qDebug() << "Trying to send but connection is not opened";
@@ -218,13 +228,149 @@ void ClientConnection::socketReadyReadSlot()
         qint64 currentLeftSize = 0;
 
         switch (CommunicationProtocol::getType(m_currentMessageId)) {
-            case CommunicationProtocol::CONNECT_TO_ALIAS:
+            case CommunicationProtocol::LIST_ALIAS:
+                m_currentMessageId = CHAR_MAX;
+                if (m_connectionListener != 0L) {
+                    m_connectionListener->onListAlias(this);
+                }
+                break;
+            case CommunicationProtocol::FIND_FILE: {
+                if (!m_sizeOk) {
+                    if (m_socket->bytesAvailable() < 4) {
+                        return;
+                    }
+                    size = m_socket->read(4);
+                    m_sizeOk = true;
+                }
+                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                        size);
+
+                if (m_socket->bytesAvailable() < m_messageSize) {
+                    return;
+                }
+
+                data = m_socket->read(m_messageSize);
+                m_currentMessageId = CHAR_MAX;
+                m_sizeOk = false;
+                m_messageSize = -1;
+
+                CommunicationProtocol::Communicate<
+                        CommunicationProtocol::FIND_FILE> message(data);
+
+                if (m_connectionListener != 0L) {
+                    m_connectionListener->onFindFile(this, message.getName());
+                }
+            }
+                break;
+            case CommunicationProtocol::PULL_FILE: {
+                if (!m_sizeOk) {
+                    if (m_socket->bytesAvailable() < 4) {
+                        return;
+                    }
+                    size = m_socket->read(4);
+                    m_sizeOk = true;
+                }
+                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                        size);
+
+                if (m_socket->bytesAvailable() < m_messageSize) {
+                    return;
+                }
+
+                data = m_socket->read(m_messageSize);
+                m_currentMessageId = CHAR_MAX;
+                m_sizeOk = false;
+                m_messageSize = -1;
+
+                CommunicationProtocol::Communicate<
+                        CommunicationProtocol::PULL_FILE> message(data);
+
+                if (m_connectionListener != 0L) {
+                    m_connectionListener->onPullFileFrom(this,
+                            message.getLocation());
+                }
+            }
+                break;
+            case CommunicationProtocol::DELETE_FROM_ALIAS: {
+                if (!m_sizeOk) {
+                    if (m_socket->bytesAvailable() < 4) {
+                        return;
+                    }
+                    size = m_socket->read(4);
+                    m_sizeOk = true;
+                }
+                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                        size);
+
+                if (m_socket->bytesAvailable() < m_messageSize) {
+                    return;
+                }
+
+                data = m_socket->read(m_messageSize);
+                m_currentMessageId = CHAR_MAX;
+                m_sizeOk = false;
+                m_messageSize = -1;
+
+                CommunicationProtocol::Communicate<
+                        CommunicationProtocol::DELETE_FROM_ALIAS> message(data);
+
+                if (m_connectionListener != 0L) {
+                    m_connectionListener->onRemoveFromAlias(this,
+                            message.getName());
+                }
+            }
+                break;
+
+            case CommunicationProtocol::PUSH_FILE: {
+                if (!m_sizeOk) {
+                    if (m_socket->bytesAvailable() < 4) {
+                        return;
+                    }
+                    size = m_socket->read(4);
+                    m_sizeOk = true;
+                }
+                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                        size);
+
+                if (m_socket->bytesAvailable() < m_messageSize) {
+                    return;
+                }
+
+                data = m_socket->read(m_messageSize);
+                m_currentMessageId = CHAR_MAX;
+                m_sizeOk = false;
+                m_messageSize = -1;
+
+                CommunicationProtocol::Communicate<
+                        CommunicationProtocol::PUSH_FILE> message(data);
+
+                if (m_connectionListener != 0L) {
+                    m_connectionListener->onPushFileToAlias(this,
+                            message.getName(), message.getLength());
+                }
+            }
+                break;
 
             default:
                 qDebug() << "Unknown code received " << m_currentMessageId;
                 break;
         }
     } while (m_socket->bytesAvailable() != 0);
+}
+
+void ClientConnection::sendAllFunction(const QByteArray& array)
+{
+    if (m_isConnected && m_socket != 0L) {
+        quint64 size = array.size();
+        quint64 send = 0;
+
+        do {
+            QByteArray arrayTmp = array.right(size - send);
+            send += m_socket->write(arrayTmp);
+        } while (send < size);
+    } else {
+        qDebug() << "Writing to not opened connection";
+    }
 }
 
 } //namespace server

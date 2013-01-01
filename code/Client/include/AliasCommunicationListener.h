@@ -58,7 +58,7 @@ public:
      * @param list contention of alias
      */
     virtual void onAliasListed(
-            boost::shared_ptr<Utilities::AliasFileList> list) = 0;
+            const Utilities::AliasFileList& list) = 0;
 
     /**
      * @brief Informs that searched file has been found.
@@ -66,7 +66,7 @@ public:
      * @param location location of found file
      */
     virtual void onFileFound(
-            boost::shared_ptr<Utilities::FileLocation> location) = 0;
+            const Utilities::FileLocation& location) = 0;
 
     /**
      * @brief Informs that searched file has not been found.

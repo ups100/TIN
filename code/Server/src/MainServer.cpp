@@ -26,7 +26,8 @@ MainServer::MainServer(int argc, char **argv)
         : m_application(QString("TIN_project_server"), argc, argv),
                 m_server(this)
 {
-
+    qRegisterMetaType<Utilities::Password>();
+    qRegisterMetaType<UnknownConnection*>("UnknownConnection*");
 }
 
 MainServer::~MainServer()
@@ -56,7 +57,7 @@ MainServer::~MainServer()
 
 void MainServer::onConnectionClosed(UnknownConnection *connection)
 {
-    qDebug()<<"closed";
+    qDebug() << "closed";
     for (int i = 0; i < m_connections.size(); ++i) {
         if (m_connections[i].get() == connection) {
             m_connections.removeAt(i);
@@ -70,7 +71,7 @@ void MainServer::onAddDirecotry(UnknownConnection *connection,
 {
     for (int i = 0; i < m_aliases.size(); ++i) {
         if (m_aliases[i]->getName() == aliasName) {
-            if (m_aliases[i]->getAccess(password)) {
+            if (m_aliases[i]->checkPassword(password)) {
                 boost::shared_ptr<UnknownConnection> con;
 
                 for (int j = 0; j < m_connections.size(); ++j) {
@@ -95,28 +96,10 @@ void MainServer::onAddDirecotry(UnknownConnection *connection,
 void MainServer::onConnectToAlias(UnknownConnection *connection,
         const QString &aliasName, const Utilities::Password &password)
 {
-    for (int i = 0; i < m_aliases.size(); ++i) {
-        if (m_aliases[i]->getName() == aliasName) {
-            if (m_aliases[i]->getAccess(password)) {
-                boost::shared_ptr<UnknownConnection> con;
-
-                for (int j = 0; j < m_connections.size(); ++j) {
-                    if (m_connections[j].get() == connection) {
-                        con = m_connections[j];
-                        m_connections.removeAt(j);
-                        break;
-                    }
-                }
-
-                m_aliases[i]->addClient(con);
-            } else {
-                connection->sendNotConnectedToAlias();
-            }
-            return;
-        }
-    }
-
-    connection->sendNotConnectedToAlias();
+    QMetaObject::invokeMethod(this, "onConnectToAliasSlot",
+            Qt::QueuedConnection, Q_ARG(UnknownConnection*, connection),
+            Q_ARG(QString, aliasName),
+            Q_ARG(TIN_project::Utilities::Password, password));
 }
 
 void MainServer::onCreateAlias(UnknownConnection *connection,
@@ -142,7 +125,7 @@ void MainServer::onRemoveAlias(UnknownConnection *connection,
 {
     for (int i = 0; i < m_aliases.size(); ++i) {
         if (m_aliases[i]->getName() == aliasName) {
-            if (m_aliases[i]->getAccess(password)) {
+            if (m_aliases[i]->checkPassword(password)) {
                 m_aliases[i]->stop();
                 m_aliases.removeAt(i);
                 connection->sendAliasRemoved();
@@ -188,8 +171,7 @@ void MainServer::stopServer(int exitCode)
     }
 
     if (m_connections.size() > 0) {
-        qDebug()
-                << "Disconnecting clients...";
+        qDebug() << "Disconnecting clients...";
         for (int i = 0; i < m_connections.size(); ++i) {
             m_connections[i]->disconnectClientSynch();
         }
@@ -206,6 +188,33 @@ void MainServer::stopServer(int exitCode)
 
     qDebug() << "Exiting event loop...";
     m_application.exit(exitCode);
+}
+
+void MainServer::onConnectToAliasSlot(UnknownConnection *connection,
+        QString aliasName, TIN_project::Utilities::Password password)
+{
+    for (int i = 0; i < m_aliases.size(); ++i) {
+        if (m_aliases[i]->getName() == aliasName) {
+            if (m_aliases[i]->checkPassword(password)) {
+                boost::shared_ptr<UnknownConnection> con;
+
+                for (int j = 0; j < m_connections.size(); ++j) {
+                    if (m_connections[j].get() == connection) {
+                        con = m_connections[j];
+                        m_connections.removeAt(j);
+                        break;
+                    }
+                }
+
+                m_aliases[i]->addClient(con);
+            } else {
+                connection->sendNotConnectedToAlias();
+            }
+            return;
+        }
+    }
+
+    connection->sendNotConnectedToAlias();
 }
 
 } //namespace server

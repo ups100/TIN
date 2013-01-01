@@ -255,11 +255,12 @@ void UnknownConnection::socketReadyReadSlot()
 
                 CommunicationProtocol::Communicate<
                         CommunicationProtocol::CONNECT_TO_ALIAS> message(data);
-
+                qDebug()<<"przed on connect";
                 if (m_unknownConnectionListener != 0L) {
                     m_unknownConnectionListener->onConnectToAlias(this,
                             message.getName(), message.getPassword());
                 }
+                qDebug()<<"po connect";
             }
                 break;
 
@@ -357,7 +358,7 @@ void UnknownConnection::socketReadyReadSlot()
                 qDebug() << "Unknown code received " << m_currentMessageId;
                 break;
         }
-    } while (m_socket->bytesAvailable() != 0);
+    } while ((m_socket != 0L) && (m_socket->bytesAvailable() != 0));
 }
 
 } //namespace server

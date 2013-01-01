@@ -37,9 +37,8 @@ const char& CommunicationProtocol::getCode(CommunicateType type)
 
 CommunicationProtocol::CommunicateType CommunicationProtocol::getType(char code)
 {
-    if(code < END_OF_CODES)
-    {
-        return (CommunicateType)code;
+    if (code < END_OF_CODES) {
+        return (CommunicateType) code;
     }
 
     return END_OF_CODES;
@@ -73,7 +72,7 @@ CommunicationProtocol::CommunicateName::CommunicateName(const QString& name)
 }
 
 CommunicationProtocol::CommunicateName::CommunicateName(const QByteArray& data)
-: m_name(data)
+        : m_name(data)
 {
 
 }
@@ -81,6 +80,47 @@ CommunicationProtocol::CommunicateName::CommunicateName(const QByteArray& data)
 QByteArray CommunicationProtocol::CommunicateName::getQByteArray() const
 {
     return m_name.toAscii();
+}
+
+CommunicationProtocol::CommunicateNameAddressAndPort::CommunicateNameAddressAndPort(
+        const QString& name, const QHostAddress& address, quint16 port)
+        : m_name(name), m_address(address), m_port(port)
+{
+
+}
+
+CommunicationProtocol::CommunicateNameAddressAndPort::CommunicateNameAddressAndPort(
+        const QByteArray& data)
+{
+    int nameSize = CommunicationProtocol::getIntFromQByteArray(data.left(4));
+
+    m_name = QString(data.mid(4, nameSize));
+
+    m_address = QHostAddress(QString(data.mid(4 + nameSize, data.size() - (4 + nameSize + 2))));
+
+    uchar dataRaw[2];
+
+    for (int i = 0; i < 2; ++i) {
+        dataRaw[i] = data[data.size() - 2 + i];
+    }
+
+    m_port = (quint16) qFromBigEndian<qint16>(dataRaw);
+}
+
+QByteArray CommunicationProtocol::CommunicateNameAddressAndPort::getQByteArray() const
+{
+    QByteArray name = m_name.toAscii();
+
+    QByteArray address = m_address.toString().toAscii();
+
+    uchar data[2];
+    qToBigEndian((qint16) m_port, data);
+
+    QByteArray port;
+    port.append(reinterpret_cast<char*>(data), 2);
+
+    return CommunicationProtocol::getQByteArrayFromInt(name.size()) + name
+            + address + port;
 }
 
 CommunicationProtocol::CommunicateNameAndPassword::CommunicateNameAndPassword(

@@ -33,11 +33,11 @@ public:
     virtual void onAliasConnectionError();
     virtual void onConnected();
     virtual void onDisconnected();
-    virtual void onFindFile(boost::shared_ptr<QString> fileName);
+    virtual void onFindFile(const QString& fileName);
     virtual void onListFiles();
-    virtual void onReciveFile(boost::shared_ptr<File> file);
-    virtual void onRemoveFile(boost::shared_ptr<QString> fileName);
-    virtual void onSendFile(boost::shared_ptr<File> file);
+    virtual void onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port);
+    virtual void onRemoveFile(const QString& fileName);
+    virtual void onSendFile(const QString& fileName, const QHostAddress& address, quint16 port);
     virtual void onTransferEnd(FileSender * sender);
     virtual void onTransferEnd(FileReciver * reciver);
     void stopThread();

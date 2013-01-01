@@ -20,6 +20,11 @@ FileTransferServer::~FileTransferServer()
 
 }
 
+void FileTransferServer::disconnectFromAliasSynch()
+{
+
+}
+
 const QHostAddress& FileTransferServer::getAddress()
 {
 

@@ -42,11 +42,11 @@ public:
     virtual void onAliasDeleted();
     virtual void onAliasDeletionError();
     virtual void onAliasListed(
-            boost::shared_ptr<Utilities::AliasFileList> list);
+            const Utilities::AliasFileList& list);
     virtual void onConnected();
     virtual void onDisconnected();
     virtual void onFileFound(
-            boost::shared_ptr<Utilities::FileLocation> location);
+            const Utilities::FileLocation& location);
     virtual void onFileNotFound();
     virtual void onFileRemoved();
     virtual void onFileRemovingError();

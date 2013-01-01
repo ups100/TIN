@@ -223,7 +223,10 @@ void ServerConnection::socketConnectedSlot()
     if (m_serverListener != 0L) {
         m_serverListener->onConnected();
     }
-    this->disconnectFromServer();
+
+    //TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    Utilities::Password ps;
+    this->createAlias("Alias",ps);
 }
 
 void ServerConnection::socketDisconnectedSlot()
@@ -290,39 +293,52 @@ void ServerConnection::socketReadyReadSlot()
         QByteArray size;
         QByteArray data;
         qint64 currentLeftSize = 0;
-
+        //TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        Utilities::Password ps;
         switch (CommunicationProtocol::getType(m_currentMessageId)) {
             case CommunicationProtocol::CONNECTED_TO_ALIAS:
+                qDebug()<<"Connected to alias";
+                m_currentMessageId = CHAR_MAX;
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasConnected();
                 }
                 break;
 
             case CommunicationProtocol::NOT_CONNECTED_TO_ALIAS:
+                m_currentMessageId = CHAR_MAX;
+                qDebug()<<" Not Connected to alias";
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasConnectionError();
                 }
                 break;
 
             case CommunicationProtocol::ALIAS_CREATED:
+                m_currentMessageId = CHAR_MAX;
+                qDebug()<<"Alias created";
+                //TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                this->connectToAlias("Alias", ps);
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasCreated();
                 }
                 break;
 
             case CommunicationProtocol::ALIAS_NOT_CREATED:
+                m_currentMessageId = CHAR_MAX;
+                qDebug()<<"Alias created";
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasCreationError();
                 }
                 break;
 
             case CommunicationProtocol::ALIAS_REMOVED:
+                m_currentMessageId = CHAR_MAX;
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasDeleted();
                 }
                 break;
 
             case CommunicationProtocol::ALIAS_NOT_REMOVED:
+                m_currentMessageId = CHAR_MAX;
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasDeletionError();
                 }
@@ -352,10 +368,7 @@ void ServerConnection::socketReadyReadSlot()
                         CommunicationProtocol::ALIAS_LISTED> message(data);
 
                 if (m_aliasListener != 0L) {
-                    m_aliasListener->onAliasListed(
-                            boost::shared_ptr<Utilities::AliasFileList>(
-                                    new Utilities::AliasFileList(
-                                            message.getList())));
+                    m_aliasListener->onAliasListed(message.getList());
                 }
             }
                 break;
@@ -384,45 +397,48 @@ void ServerConnection::socketReadyReadSlot()
                         CommunicationProtocol::FILE_LOCATION> message(data);
 
                 if (m_aliasListener != 0L) {
-                    m_aliasListener->onFileFound(
-                            boost::shared_ptr<Utilities::FileLocation>(
-                                    new Utilities::FileLocation(
-                                            message.getLocation())));
+                    m_aliasListener->onFileFound(message.getLocation());
                 }
             }
                 break;
 
             case CommunicationProtocol::FILE_NOT_FOUND:
+                m_currentMessageId = CHAR_MAX;
                 if (m_aliasListener != 0L) {
                     m_aliasListener->onFileNotFound();
                 }
                 break;
 
             case CommunicationProtocol::DELETED_FROM_ALIAS:
+                m_currentMessageId = CHAR_MAX;
                 if (m_aliasListener != 0L) {
                     m_aliasListener->onFileRemoved();
                 }
                 break;
 
             case CommunicationProtocol::NOT_DELETED_FROM_ALIAS:
+                m_currentMessageId = CHAR_MAX;
                 if (m_aliasListener != 0L) {
                     m_aliasListener->onFileRemovingError();
                 }
                 break;
 
             case CommunicationProtocol::TRANSFER_ERROR:
+                m_currentMessageId = CHAR_MAX;
                 if (m_aliasListener != 0L) {
                     m_aliasListener->onFileTransferError();
                 }
                 break;
 
             case CommunicationProtocol::TRANSFER_FINISHED:
+                m_currentMessageId = CHAR_MAX;
                 if (m_aliasListener != 0L) {
                     m_aliasListener->onFileTransferFinished();
                 }
                 break;
 
             case CommunicationProtocol::TRANSFER_IN_PROGRESS:
+                m_currentMessageId = CHAR_MAX;
                 if (m_aliasListener != 0L) {
                     m_aliasListener->onFileTransferStarted();
                 }
