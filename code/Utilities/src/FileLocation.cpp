@@ -15,10 +15,17 @@ FileLocation::FileLocation()
 
 }
 
+FileLocation::FileLocation(const QByteArray& data)
+{
+
+}
 FileLocation::~FileLocation()
 {
 
 }
-
+QByteArray FileLocation::toQByteArray()
+{
+    return QByteArray();
+}
 } //namespace Utilities
 } //namespace TIN_project
