@@ -15,9 +15,19 @@ AliasFileList::AliasFileList()
 
 }
 
+AliasFileList::AliasFileList(const QByteArray &data)
+{
+
+}
+
 AliasFileList::~AliasFileList()
 {
 
+}
+
+QByteArray AliasFileList::toQByteArray()
+{
+    return QByteArray();
 }
 
 } //namespace Utilities
