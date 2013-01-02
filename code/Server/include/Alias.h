@@ -36,7 +36,7 @@ namespace TIN_project {
 namespace Server {
 
 /**
- * Remember copy constructor 
+ * Remember to disable copy constructor
  */
 class Alias : public FileTransferListener,
         public ClientConnectionListener,

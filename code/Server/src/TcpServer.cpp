@@ -13,7 +13,6 @@ TcpServer::TcpServer(MainServer *mainServer)
 
 void TcpServer::incomingConnection(int socketDescriptor)
 {
-    qDebug()<<"new Connection";
     UnknownConnection *connection = new UnknownConnection(socketDescriptor, m_mainServer);
     m_mainServer->addNewConnection(connection);
 }

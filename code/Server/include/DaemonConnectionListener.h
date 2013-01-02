@@ -18,8 +18,6 @@
 #if !defined(EA_AE18438A_08E8_4911_BEEF_91902EC822A3__INCLUDED_)
 #define EA_AE18438A_08E8_4911_BEEF_91902EC822A3__INCLUDED_
 
-#include <boost/shared_ptr.hpp>
-
 namespace TIN_project {
 
 namespace Utilities {

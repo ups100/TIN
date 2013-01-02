@@ -69,28 +69,10 @@ void MainServer::onConnectionClosed(UnknownConnection *connection)
 void MainServer::onAddDirecotry(UnknownConnection *connection,
         const QString &aliasName, const Utilities::Password &password)
 {
-    for (int i = 0; i < m_aliases.size(); ++i) {
-        if (m_aliases[i]->getName() == aliasName) {
-            if (m_aliases[i]->checkPassword(password)) {
-                boost::shared_ptr<UnknownConnection> con;
-
-                for (int j = 0; j < m_connections.size(); ++j) {
-                    if (m_connections[j].get() == connection) {
-                        con = m_connections[j];
-                        m_connections.removeAt(j);
-                        break;
-                    }
-                }
-
-                m_aliases[i]->addDaemon(con);
-            } else {
-                connection->sendNotConnectedToAlias();
-            }
-            return;
-        }
-    }
-
-    connection->sendNotConnectedToAlias();
+    QMetaObject::invokeMethod(this, "onAddDirecotrySlot",
+            Qt::QueuedConnection, Q_ARG(UnknownConnection*, connection),
+            Q_ARG(QString, aliasName),
+            Q_ARG(TIN_project::Utilities::Password, password));
 }
 
 void MainServer::onConnectToAlias(UnknownConnection *connection,
@@ -207,6 +189,33 @@ void MainServer::onConnectToAliasSlot(UnknownConnection *connection,
                 }
 
                 m_aliases[i]->addClient(con);
+            } else {
+                connection->sendNotConnectedToAlias();
+            }
+            return;
+        }
+    }
+
+    connection->sendNotConnectedToAlias();
+}
+
+void MainServer::onAddDirecotrySlot(UnknownConnection* connection,
+        QString aliasName, TIN_project::Utilities::Password password)
+{
+    for (int i = 0; i < m_aliases.size(); ++i) {
+        if (m_aliases[i]->getName() == aliasName) {
+            if (m_aliases[i]->checkPassword(password)) {
+                boost::shared_ptr<UnknownConnection> con;
+
+                for (int j = 0; j < m_connections.size(); ++j) {
+                    if (m_connections[j].get() == connection) {
+                        con = m_connections[j];
+                        m_connections.removeAt(j);
+                        break;
+                    }
+                }
+
+                m_aliases[i]->addDaemon(con);
             } else {
                 connection->sendNotConnectedToAlias();
             }

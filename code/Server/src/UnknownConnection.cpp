@@ -255,12 +255,11 @@ void UnknownConnection::socketReadyReadSlot()
 
                 CommunicationProtocol::Communicate<
                         CommunicationProtocol::CONNECT_TO_ALIAS> message(data);
-                qDebug()<<"przed on connect";
+
                 if (m_unknownConnectionListener != 0L) {
                     m_unknownConnectionListener->onConnectToAlias(this,
                             message.getName(), message.getPassword());
                 }
-                qDebug()<<"po connect";
             }
                 break;
 

@@ -41,12 +41,10 @@ public:
     virtual void onAliasCreationError();
     virtual void onAliasDeleted();
     virtual void onAliasDeletionError();
-    virtual void onAliasListed(
-            const Utilities::AliasFileList& list);
+    virtual void onAliasListed(const Utilities::AliasFileList& list);
     virtual void onConnected();
     virtual void onDisconnected();
-    virtual void onFileFound(
-            const Utilities::FileLocation& location);
+    virtual void onFileFound(const Utilities::FileLocation& location);
     virtual void onFileNotFound();
     virtual void onFileRemoved();
     virtual void onFileRemovingError();

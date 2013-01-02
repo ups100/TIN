@@ -22,7 +22,6 @@
 #include <QString>
 #include <QTcpServer>
 #include <QFile>
-#include <QSocketNotifier>
 
 #include "qtsinglecoreapplication.h"
 
@@ -41,6 +40,14 @@ namespace Server {
 
 class UnknownConnection;
 
+/**
+ * @brief Main server class.
+ *
+ * @details This class implements whole server logic.
+ * To use this class remember to execute MainServer::start() function to enter event loop.
+ *
+ * @note Multiple instances of this object are allowed but only one of them can be "in run".
+ */
 class MainServer : public QObject, public UnknownConnectionListener
 {
 Q_OBJECT
@@ -50,9 +57,9 @@ public:
     /**
      * @brief Constructor
      *
-     * @param argc number of arguments
+     * @param[in] argc number of arguments
      *
-     * @param argv command line arguments
+     * @param[in] argv command line arguments
      */
     MainServer(int argc, char **argv);
 
@@ -60,6 +67,26 @@ public:
      *@brief Destructor
      */
     virtual ~MainServer();
+
+    /**
+     * @brief Starts listening for new connections and enters the event loop
+     *
+     * @param[in] address to listen
+     *
+     * @param[in] port to listen
+     *
+     * @return value returned by event loop
+     */
+    int start(const QHostAddress& address, quint16 port);
+
+    /**
+     * @brief Add connection to set of handled connections
+     *
+     * @param connection new connection
+     *
+     * @note This function takes the ownership of passed object
+     */
+    void addNewConnection(UnknownConnection *connection);
 
     virtual void onConnectionClosed(UnknownConnection *connection);
 
@@ -75,11 +102,7 @@ public:
     virtual void onRemoveAlias(UnknownConnection *connection,
             const QString &aliasName, const Utilities::Password &password);
 
-    int start(const QHostAddress& address, quint16 port);
-
-    void addNewConnection(UnknownConnection *connection);
-
-public slots:
+private slots:
 
     /**
      * @brief Stops the server and exits from event loop with given code.
@@ -88,19 +111,46 @@ public slots:
      */
     void stopServer(int exitCode = 0);
 
-private slots:
-
+    /**
+     * @brief Helper slot to implements onConnectToAlias() function.
+     *
+     * @param[in] connection identifier
+     * @param[in] aliasName name of alias
+     * @param[in] password to alias
+     */
     void onConnectToAliasSlot(UnknownConnection* connection, QString aliasName,
+            TIN_project::Utilities::Password password);
+
+    /**
+     * @brief Helper slot to implements onAddDirectory() function.
+     *
+     * @param[in] connection identifier
+     * @param[in] aliasName name of alias
+     * @param[in] password to alias
+     */
+    void onAddDirecotrySlot(UnknownConnection* connection, QString aliasName,
             TIN_project::Utilities::Password password);
 
 private:
 
+    /**
+     * @brief Object for handling signals and check for other instances
+     */
     QtSingleCoreApplication m_application;
 
+    /**
+     * @brief Server to listening for incoming connections
+     */
     TcpServer m_server;
 
+    /**
+     * @brief Aliases on this server
+     */
     QList<boost::shared_ptr<Alias> > m_aliases;
 
+    /**
+     * @brief Connections handed by main server
+     */
     QList<boost::shared_ptr<UnknownConnection> > m_connections;
 
 };

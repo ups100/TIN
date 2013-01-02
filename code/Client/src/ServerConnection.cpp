@@ -224,9 +224,6 @@ void ServerConnection::socketConnectedSlot()
         m_serverListener->onConnected();
     }
 
-    //TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    Utilities::Password ps;
-    this->createAlias("Alias",ps);
 }
 
 void ServerConnection::socketDisconnectedSlot()
@@ -293,11 +290,9 @@ void ServerConnection::socketReadyReadSlot()
         QByteArray size;
         QByteArray data;
         qint64 currentLeftSize = 0;
-        //TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        Utilities::Password ps;
+
         switch (CommunicationProtocol::getType(m_currentMessageId)) {
             case CommunicationProtocol::CONNECTED_TO_ALIAS:
-                qDebug()<<"Connected to alias";
                 m_currentMessageId = CHAR_MAX;
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasConnected();
@@ -306,7 +301,6 @@ void ServerConnection::socketReadyReadSlot()
 
             case CommunicationProtocol::NOT_CONNECTED_TO_ALIAS:
                 m_currentMessageId = CHAR_MAX;
-                qDebug()<<" Not Connected to alias";
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasConnectionError();
                 }
@@ -314,9 +308,6 @@ void ServerConnection::socketReadyReadSlot()
 
             case CommunicationProtocol::ALIAS_CREATED:
                 m_currentMessageId = CHAR_MAX;
-                qDebug()<<"Alias created";
-                //TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                this->connectToAlias("Alias", ps);
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasCreated();
                 }
@@ -324,7 +315,6 @@ void ServerConnection::socketReadyReadSlot()
 
             case CommunicationProtocol::ALIAS_NOT_CREATED:
                 m_currentMessageId = CHAR_MAX;
-                qDebug()<<"Alias created";
                 if (m_serverListener != 0L) {
                     m_serverListener->onAliasCreationError();
                 }
