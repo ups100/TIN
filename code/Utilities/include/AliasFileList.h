@@ -8,6 +8,8 @@
 #if !defined(EA_A26F37CC_44D6_4f5b_915E_18BA44DC4E9A__INCLUDED_)
 #define EA_A26F37CC_44D6_4f5b_915E_18BA44DC4E9A__INCLUDED_
 
+#include <QByteArray>
+
 namespace TIN_project {
 namespace Utilities {
 
@@ -16,8 +18,9 @@ class AliasFileList
 
 public:
     AliasFileList();
+    AliasFileList(const QByteArray &data);
     virtual ~AliasFileList();
-
+    QByteArray toQByteArray();
 };
 
 } //namespace Utilities

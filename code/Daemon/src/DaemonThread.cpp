@@ -46,7 +46,7 @@ void DaemonThread::onDisconnected()
 
 }
 
-void DaemonThread::onFindFile(boost::shared_ptr<QString> fileName)
+void DaemonThread::onFindFile(const QString& fileName)
 {
 
 }
@@ -56,17 +56,17 @@ void DaemonThread::onListFiles()
 
 }
 
-void DaemonThread::onReciveFile(boost::shared_ptr<File> file)
+void DaemonThread::onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port)
 {
 
 }
 
-void DaemonThread::onRemoveFile(boost::shared_ptr<QString> fileName)
+void DaemonThread::onRemoveFile(const QString& fileName)
 {
 
 }
 
-void DaemonThread::onSendFile(boost::shared_ptr<File> file)
+void DaemonThread::onSendFile(const QString& fileName, const QHostAddress& address, quint16 port)
 {
 
 }

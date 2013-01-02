@@ -24,6 +24,9 @@ class FileTransferServer
 public:
     FileTransferServer();
     virtual ~FileTransferServer();
+
+    void disconnectFromAliasSynch();
+
     FileTransferListener *m_FileTransferListener;
 
     const QHostAddress& getAddress();
