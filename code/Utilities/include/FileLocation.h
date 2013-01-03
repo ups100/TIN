@@ -9,22 +9,67 @@
 #define EA_F8C56EF9_6597_4618_8783_B8F31AB3B1AC__INCLUDED_
 
 #include <QByteArray>
+#include <QString>
 
 namespace TIN_project {
 namespace Utilities {
 
 /**
  * Location of the file in Alias
+ *
+ * @author Kajo0
  */
 class FileLocation
 {
+    /** Relative to alias path to file */
+    QString m_path;
+
+    /** ID of machine where the file is */
+    QString m_ownerId;
 
 public:
-    FileLocation();
-    FileLocation(const QByteArray &bytes);
+
+    /**
+     * @brief C-tor
+     *
+     * @param path Path to file relative to alias
+     * @param ownerId ID of the files owner machine
+     */
+    FileLocation(const QString &path, const QString &ownerId);
+
+    /**
+     * @brief C-tor
+     *
+     * @param data Data to create object
+     */
+    FileLocation(const QByteArray &data);
+
+    /**
+     * @brief D-tor
+     */
     virtual ~FileLocation();
 
+    /**
+     * @brief Get path to file
+     *
+     * @return Path to file
+     */
+    QString getPath();
+
+    /**
+     * @brief Get file owner ID
+     *
+     * @return ID of the owner
+     */
+    QString getOwnerId();
+
+    /**
+     * @brief Convert object to QByteArray
+     *
+     * @return Object as QByteArray
+     */
     QByteArray toQByteArray();
+
 };
 
 } //namespace Utilities

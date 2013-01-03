@@ -13,6 +13,7 @@ namespace TIN_project {
 namespace Client {
 
 ClientApplication::ClientApplication()
+: m_serverConnection(this, this)
 {
 
 }
@@ -53,7 +54,7 @@ void ClientApplication::onAliasDeletionError()
 }
 
 void ClientApplication::onAliasListed(
-        boost::shared_ptr<Utilities::AliasFileList> list)
+        const Utilities::AliasFileList& list)
 {
 
 }
@@ -69,7 +70,7 @@ void ClientApplication::onDisconnected()
 }
 
 void ClientApplication::onFileFound(
-        boost::shared_ptr<Utilities::FileLocation> location)
+        const Utilities::FileLocation& location)
 {
 
 }

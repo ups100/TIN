@@ -39,12 +39,12 @@ Message::~Message()
 
 }
 
-QString Message::message()
+QString Message::getMessage()
 {
     return m_message;
 }
 
-QString Message::message() const
+QString Message::getMessage() const
 {
     return m_message;
 }

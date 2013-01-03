@@ -41,6 +41,7 @@
  #include <QtCore/QUrl>
  #include <QtCore/QVariant>
  #include <QtXmlPatterns/QXmlNamePool>
+ #include <QDateTime>
  #include "FileTree.h"
 
 namespace TIN_project {
@@ -81,6 +82,7 @@ namespace Utilities {
      m_names[AttributeFileName]  = QXmlName(np, QLatin1String("fileName"));
      m_names[AttributeFilePath]  = QXmlName(np, QLatin1String("filePath"));
      m_names[AttributeSize]      = QXmlName(np, QLatin1String("size"));
+     m_names[ModificationDate]   = QXmlName(np, QLatin1String("lastModified"));
      m_names[AttributeMIMEType]  = QXmlName(np, QLatin1String("mimeType"));
      m_names[AttributeSuffix]    = QXmlName(np, QLatin1String("suffix"));
  }
@@ -318,6 +320,8 @@ namespace Utilities {
              return fi.filePath();
          case AttributeSize:
              return fi.size();
+         case ModificationDate:
+             return fi.lastModified().toMSecsSinceEpoch();
          case AttributeMIMEType:
              {
                  /* We don't have any MIME detection code currently, so return
@@ -349,6 +353,7 @@ namespace Utilities {
      if (Type(element.additionalData() == File)) {
          result.append(toNodeIndex(forElement, AttributeSize));
          result.append(toNodeIndex(forElement, AttributeSuffix));
+         result.append(toNodeIndex(forElement, ModificationDate));
          //result.append(toNodeIndex(forElement, AttributeMIMEType));
      }
      else {

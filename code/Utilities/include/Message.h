@@ -46,13 +46,13 @@ public:
      * @brief Get value of message
      * @return message
      */
-    QString message();
+    QString getMessage();
 
     /**
      * @see Message::message()
      * @return message
      */
-    QString message() const;
+    QString getMessage() const;
 
     /**
      * @brief Set new message

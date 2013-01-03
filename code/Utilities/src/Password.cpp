@@ -6,8 +6,6 @@
 ///////////////////////////////////////////////////////////
 
 #include "Password.h"
-#include <QDataStream>
-#include <QIODevice>
 
 namespace TIN_project {
 namespace Utilities {
@@ -17,28 +15,19 @@ Password::Password()
 
 }
 
-Password::Password(const QByteArray &bytes)
-{
-    QDataStream in(bytes);
-
-    // Flush size
-    quint16 size;
-    in >> size;
-
-    // TODO implement that
-//    in >> ?!;
-}
-
 Password::~Password()
 {
 
 }
 
+Password::Password(const Password& password)
+{
+
+}
 /**
  * Creates an object and set it's password
  */
 Password::Password(const QString& password)
-        : m_password(password)
 {
 
 }
@@ -49,40 +38,28 @@ Password::Password(const QString& password)
 bool Password::check(const QString& password) const
 {
 
-    return false;
+    return true;
 }
 
 bool Password::check(const Password& password) const
 {
 
-    return false;
+    return true;
 }
 
-QString Password::password() const
+Password& Password::operator=(const Password& other)
 {
-    return m_password;
+    return *this;
 }
 
-/**
- * @brief Convert (serialize) Message object into QByteArray
- * @return Serialized object as QByteArray with size at the beginning
- */
-QByteArray Password::toQByteArray()
+QByteArray Password::toQByteArray() const
 {
-    QByteArray bytes;
-    QDataStream out(&bytes, QIODevice::WriteOnly);
+    return QByteArray();
+}
 
-    // Size
-    out << (quint16) 0;
-
-    // TODO implement that
-//    out << ?!;
-
-// Set size
-    out.device()->seek(0);
-    out << (quint16) (bytes.size() - sizeof(quint16));
-
-    return bytes;
+QString Password::getPassword() const
+{
+    return QString();
 }
 
 } //namespace Utilities

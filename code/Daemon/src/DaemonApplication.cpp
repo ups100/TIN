@@ -6,7 +6,6 @@
 ///////////////////////////////////////////////////////////
 
 #include "DaemonApplication.h"
-#include <QNetworkInterface>
 #include <QDebug>
 #include <QRegExp>
 
@@ -55,30 +54,32 @@ int DaemonApplication::start()
 // TODO dispatch message to do what is needed
 void DaemonApplication::dispatchMessage(const Utilities::Message &message)
 {
-    qDebug() << message.message();
+    qDebug() << message.getMessage();
     qDebug() << "Waiting 4 a message";
 
-    switch (qrand() % 4) {
-        case 0:
-            m_daemonThreads.at(qrand() % m_daemonThreads.size())->onListFiles();
-            break;
-        case 1:
-//            addCatalogueToAlias(
-//                    QString("/random/") + QString::number(qrand() % 20),
-//                    QString("Testowy"), Utilities::Password(QString("pass")),
-//                    QHostAddress("192.168.1.1"), 23);
-            break;
-        case 2:
-//            removeCatalogueFromAlias(
-//                    QString("/random/") + QString::number(qrand() % 20),
-//                    QString("Testowy"));
-            break;
-        case 3:
-            m_daemonThreads.at(qrand() % m_daemonThreads.size())->onFindFile(
-                    message.message());
-            break;
-    }
+    m_daemonThreads.at(qrand() % m_daemonThreads.size())->onListFiles();
 
+//    if (m_daemonThreads.size())
+//    switch (qrand() % 4) {
+//        case 0:
+//            m_daemonThreads.at(qrand() % m_daemonThreads.size())->onListFiles();
+//            break;
+//        case 1:
+////            addCatalogueToAlias(
+////                    QString("/random/") + QString::number(qrand() % 20),
+////                    QString("Testowy"), Utilities::Password(QString("pass")),
+////                    QHostAddress("192.168.1.1"), 23);
+//            break;
+//        case 2:
+////            removeCatalogueFromAlias(
+////                    QString("/random/") + QString::number(qrand() % 20),
+////                    QString("Testowy"));
+//            break;
+//        case 3:
+//            m_daemonThreads.at(qrand() % m_daemonThreads.size())->onFindFile(
+//                    message.getMessage());
+//            break;
+//    }
 }
 
 void DaemonApplication::addCatalogueToAlias(const QString &path,
@@ -87,7 +88,7 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
 {
     boost::shared_ptr<DaemonConfiguration::Config> config(
             new DaemonConfiguration::Config(ip.toString(), port, aliasId,
-                    password.password(), path));
+                    password.getPassword(), path));
 
 //    /*
 //     * Check overlap duplicate
@@ -115,17 +116,6 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         }
     }
 }
-}
-
-QString DaemonApplication::getMacAddress()
-{
-    foreach(QNetworkInterface interface, QNetworkInterface::allInterfaces()){
-    // Return only the first non-loopback MAC Address
-    if (!(interface.flags() & QNetworkInterface::IsLoopBack))
-    return interface.hardwareAddress();
-}
-
-return QString();
 }
 
 } //namespace Daemon

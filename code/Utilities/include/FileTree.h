@@ -70,6 +70,7 @@ namespace Utilities {
          AttributeFileName,
          AttributeFilePath,
          AttributeSize,
+         ModificationDate,
          AttributeMIMEType,
          AttributeSuffix
      };

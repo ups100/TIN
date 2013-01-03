@@ -8,6 +8,7 @@
 #include "DaemonThread.h"
 #include "FileTree.h"
 #include "DaemonApplication.h"
+#include "AliasFileList.h"
 #include <QDir>
 #include <QFile>
 #include <QBuffer>
@@ -61,7 +62,7 @@ void DaemonThread::onFileNotRemoved()
 
 }
 
-void DaemonThread::onFindFile(QString fileName)
+void DaemonThread::onFindFile(const QString &fileName)
 {
     QDirIterator it(m_config->m_cataloguePath, QDirIterator::Subdirectories);
     QList<QString> foundPaths;
@@ -117,16 +118,30 @@ void DaemonThread::onListFiles()
     QString str(output.data());
     str.replace(QRegExp(QString() + m_config->m_cataloguePath + "/?"), "/");
 
-    qDebug() << str;
+//    qDebug() << str;
+
+    qDebug()<<"ZACZYNAMY";
+
+    Utilities::AliasFileList a;
+    a.addFile("/kajo/to/ja.g", "12.12.12r", 123);
+    a.addFile("/kajo/to/ty.g", "12.12.12r", 123);
+    a.addFile("/kajo/to/jak.g", "12.12.12r", 123);
+    a.addFile("/kajo/main.cpp", "12.12.12r", 123);
+    a.addFile("/level.1", "12.12.12r", 123);
+    a.addFile("/singleton.h", "12.12.12r", 123);
+    a.m_fileTree.str(0);
+
+    qDebug()<<"KONCZYMY";
+
     // TODO send QString with 'xmlified' data
 }
 
-void DaemonThread::onReciveFile(boost::shared_ptr<File> file)
+void DaemonThread::onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port)
 {
 
 }
 
-void DaemonThread::onRemoveFile(boost::shared_ptr<Utilities::FileLocation> fileLocation)
+void DaemonThread::onRemoveFile(const QString& fileName)
 {
 //    QFile file(QString(m_config->m_cataloguePath) + QString(fileLocation->path));
 //    if (file.exists())
@@ -138,7 +153,7 @@ void DaemonThread::onRemoveFile(boost::shared_ptr<Utilities::FileLocation> fileL
 //    onFileNotRemoved();
 }
 
-void DaemonThread::onSendFile(boost::shared_ptr<File> file)
+void DaemonThread::onSendFile(const QString& fileName, const QHostAddress& address, quint16 port)
 {
 
 }
@@ -162,8 +177,8 @@ void DaemonThread::run()
 {
     // TODO connect to server and start listening
     while (1) {
-        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
-                << m_config->m_aliasId;
+//        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
+//                << m_config->m_aliasId;
         sleep(5);
     }
 }
