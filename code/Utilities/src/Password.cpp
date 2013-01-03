@@ -53,6 +53,10 @@ bool Password::check(const Password& password) const
     return (myHash == (*this).m_hashed_password);
 }
 
+bool Password::check(const QByteArray& password) const
+{
+    return ((*this).m_hashed_password == password);
+}
 Password& Password::operator=(const Password& other)
 {
     (*this).m_hashed_password = other.toQByteArray();

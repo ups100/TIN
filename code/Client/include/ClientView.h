@@ -7,19 +7,39 @@
 
 #if !defined(EA_C4F89D0B_F9DC_47b5_A3D2_38D850C1788F__INCLUDED_)
 #define EA_C4F89D0B_F9DC_47b5_A3D2_38D850C1788F__INCLUDED_
+#include <boost/shared_ptr.hpp>
 #include <QObject>
-#include <QThread>
 #include <QDebug>
+#include <QThread>
+#include <QTimer>
+#include <QMutex>
+#include <QSocketNotifier>
+#include <QEventLoop>
 namespace TIN_project {
 namespace Client {
-
-class ClientView : public QThread
+class ClientApplication;
+class ClientView : public QObject
 {
-    Q_OBJECT
+Q_OBJECT
 public:
-    ClientView();
+    ClientView(ClientApplication &);
     virtual ~ClientView();
-    void run();
+    void start();
+    void stop();
+    void prompt();
+    void showMessage(QString);
+
+signals:
+    void sendMessage(QString);
+
+private slots:
+    void waitForCommands();
+
+private:
+    QThread m_thread;
+    ClientApplication & m_app;
+    QSocketNotifier * m_notifier;
+    QMutex m_mutex;
 
 };
 

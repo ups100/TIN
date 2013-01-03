@@ -112,7 +112,7 @@ void Alias::stop()
     }
     m_daemons.clear();
 
-    //stop flie transfers
+    //stop file transfers
     foreach(boost::shared_ptr<FileTransferServer> connection, m_transfers) {
         connection->disconnectFromAliasSynch();
     }

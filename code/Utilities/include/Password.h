@@ -28,6 +28,7 @@ public:
     Password(const QString& password);
     Password(const QByteArray& password);
     bool check(const QString& password) const;
+    bool check(const QByteArray& password) const;
     bool check(const Password& password) const;
     QByteArray toQByteArray() const;
     Password& operator=(const Password& other);

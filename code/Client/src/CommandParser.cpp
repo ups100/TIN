@@ -213,7 +213,7 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
      * Otherwise, NULL pointer is returned
      */
     else {
-        qDebug()<<"Command "<<command<<" was not created, the return value is NULL"<<endl;
+        qDebug()<<"Command  was not created, the return value is NULL"<<endl;
         return shared_ptr<Commands>((Commands *) NULL);
     }
 

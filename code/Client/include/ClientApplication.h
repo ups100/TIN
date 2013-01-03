@@ -10,7 +10,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <QString>
-
+#include <QObject>
 #include "ServerConnection.h"
 #include "ClientView.h"
 #include "CommandParser.h"
@@ -29,11 +29,19 @@ class FileLocation;
 
 namespace Client {
 
-class ClientApplication : public ServerConnectionListener,
+class ClientApplication : public QObject, public ServerConnectionListener,
         public AliasCommunicationListener
 {
-
+Q_OBJECT;
 public:
+enum State
+   {
+       NOT_CONNECTED = 0,
+       CONNECTED = 1,
+       WAITING = 2,
+       FILELIST = 3,
+   };
+    Q_DECLARE_FLAGS(States, State)
     ClientApplication(int, char**);
     virtual ~ClientApplication();
 
@@ -54,9 +62,13 @@ public:
     virtual void onFileTransferFinished();
     virtual void onFileTransferStarted();
     void setView(boost::shared_ptr<ClientView> view);
-    int start();
+    int start(const QHostAddress&, quint16);
+
+private slots:
+    void getString(QString);
 
 private:
+    ClientApplication::States m_state;
     QtSingleCoreApplication m_application;
     CommandParser m_commandParser;
     ServerConnection m_serverConnection;
@@ -67,5 +79,5 @@ private:
 
 } //namespace Client
 } //namespace TIN_project
-
+Q_DECLARE_OPERATORS_FOR_FLAGS(TIN_project::Client::ClientApplication::States)
 #endif // !defined(EA_0598AE82_7F01_435a_8E47_7FCAFCEE17A4__INCLUDED_)
