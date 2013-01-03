@@ -9,6 +9,8 @@
 #include "AliasFileList.h"
 #include "FileLocation.h"
 
+#include "AliasFileList.h"
+
 namespace TIN_project {
 namespace Client {
 
@@ -112,18 +114,33 @@ void ClientApplication::setView(boost::shared_ptr<ClientView> view)
 
 void ClientApplication::start()
 {
-    // TODO parser inject, send message test
-    do {
-        char buf[1024];
-        std::cout << " $> ";
-        std::cin >> buf;
+//    // TODO parser inject, send message test
+//    do {
+//        char buf[1024];
+//        std::cout << " $> ";
+//        std::cin >> buf;
+//
+//        if (strcmp(buf, "quit") == 0)
+//            break;
+//
+//        m_DaemonCommunication.talkToDaemon(Utilities::Message(buf));
+//
+//    } while (1);
 
-        if (strcmp(buf, "quit") == 0)
-            break;
 
-        m_DaemonCommunication.talkToDaemon(Utilities::Message(buf));
+    qDebug()<<"ZACZYNAMY";
 
-    } while (1);
+    Utilities::AliasFileList a;
+    a.addFile("/kajo/ot/tak.g", "12.12.12r", 123);
+    a.addFile("/kajo/ot/ty.g", "12.12.12r", 123);
+    a.addFile("/kajo/ot/ty.g", "12.12.13r", 312);
+    a.addFile("/kajo/ot/jak.g", "12.12.12r", 123);
+    a.addFile("/kajo/main.cpp", "12.12.12r", 123);
+    a.addFile("/level.1", "12.12.12r", 123);
+    a.addFile("/singleton.h", "12.12.12r", 123);
+    a.m_fileTree.str(0);
+
+    qDebug()<<"KONCZYMY";
 }
 
 } //namespace Client

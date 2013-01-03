@@ -123,9 +123,10 @@ void DaemonThread::onListFiles()
     qDebug()<<"ZACZYNAMY";
 
     Utilities::AliasFileList a;
-    a.addFile("/kajo/to/ja.g", "12.12.12r", 123);
-    a.addFile("/kajo/to/ty.g", "12.12.12r", 123);
-    a.addFile("/kajo/to/jak.g", "12.12.12r", 123);
+    a.addFile("/kajo/ot/tak.g", "12.12.12r", 123);
+    a.addFile("/kajo/ot/ty.g", "12.12.12r", 123);
+    a.addFile("/kajo/ot/ty.g", "12.12.13r", 312);
+    a.addFile("/kajo/ot/jak.g", "12.12.12r", 123);
     a.addFile("/kajo/main.cpp", "12.12.12r", 123);
     a.addFile("/level.1", "12.12.12r", 123);
     a.addFile("/singleton.h", "12.12.12r", 123);
