@@ -12,8 +12,10 @@
 namespace TIN_project {
 namespace Client {
 
-ClientApplication::ClientApplication()
-: m_serverConnection(this, this)
+ClientApplication::ClientApplication(int argc, char **argv)
+        : m_application((QString) "TIN_project_Client", argc, argv),
+                m_commandParser(), m_serverConnection(this, this),
+                m_DaemonCommunication()
 {
 
 }
@@ -53,8 +55,7 @@ void ClientApplication::onAliasDeletionError()
 
 }
 
-void ClientApplication::onAliasListed(
-        const Utilities::AliasFileList& list)
+void ClientApplication::onAliasListed(const Utilities::AliasFileList& list)
 {
 
 }
@@ -69,8 +70,7 @@ void ClientApplication::onDisconnected()
 
 }
 
-void ClientApplication::onFileFound(
-        const Utilities::FileLocation& location)
+void ClientApplication::onFileFound(const Utilities::FileLocation& location)
 {
 
 }
@@ -110,9 +110,15 @@ void ClientApplication::setView(boost::shared_ptr<ClientView> view)
 
 }
 
-void ClientApplication::start()
+int ClientApplication::start()
 {
+    if (m_application.isRunning()) {
+         qDebug()<<"Another client application is running"<<endl;
+          return -1;
+    }
 
+    return m_application.exec();
+  //  return 0;
 }
 
 } //namespace Client

@@ -6,7 +6,6 @@
 ///////////////////////////////////////////////////////////
 
 #include "ClientView.h"
-
 namespace TIN_project {
 namespace Client {
 
@@ -17,8 +16,11 @@ ClientView::ClientView()
 
 ClientView::~ClientView()
 {
+    qDebug()<<"DESTRUKTOR"<<endl;
+}
+void run()
+{
 
 }
-
 } //namespace Client
 } //namespace TIN_project

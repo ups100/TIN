@@ -7,16 +7,19 @@
 
 #if !defined(EA_C4F89D0B_F9DC_47b5_A3D2_38D850C1788F__INCLUDED_)
 #define EA_C4F89D0B_F9DC_47b5_A3D2_38D850C1788F__INCLUDED_
-
+#include <QObject>
+#include <QThread>
+#include <QDebug>
 namespace TIN_project {
 namespace Client {
 
-class ClientView
+class ClientView : public QThread
 {
-
+    Q_OBJECT
 public:
     ClientView();
     virtual ~ClientView();
+    void run();
 
 };
 

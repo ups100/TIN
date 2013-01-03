@@ -20,7 +20,7 @@ namespace Client {
 
 CommandParser::CommandParser()
 {
-   commandList.push_back("log");
+    commandList.push_back("log");
    commandList.push_back("create");
    commandList.push_back("add");
    commandList.push_back("rm");

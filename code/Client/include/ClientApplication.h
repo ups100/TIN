@@ -18,6 +18,8 @@
 #include "ServerConnectionListener.h"
 #include "AliasCommunicationListener.h"
 
+#include "qtsinglecoreapplication.h"
+
 namespace TIN_project {
 
 namespace Utilities {
@@ -32,7 +34,7 @@ class ClientApplication : public ServerConnectionListener,
 {
 
 public:
-    ClientApplication();
+    ClientApplication(int, char**);
     virtual ~ClientApplication();
 
     virtual void onAliasConnected();
@@ -52,9 +54,10 @@ public:
     virtual void onFileTransferFinished();
     virtual void onFileTransferStarted();
     void setView(boost::shared_ptr<ClientView> view);
-    void start();
+    int start();
 
 private:
+    QtSingleCoreApplication m_application;
     CommandParser m_commandParser;
     ServerConnection m_serverConnection;
     DaemonCommunication m_DaemonCommunication;

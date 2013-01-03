@@ -6,7 +6,8 @@
 ///////////////////////////////////////////////////////////
 
 #include "Password.h"
-
+#include <QCryptographicHash>
+#include <QDebug>
 namespace TIN_project {
 namespace Utilities {
 
@@ -29,26 +30,27 @@ Password::Password(const Password& password)
  */
 Password::Password(const QString& password)
 {
-
+    (*this).m_hashed_password = (password.toUtf8());
 }
 
 Password::Password(const QByteArray& password)
 {
-
+    QByteArray myHash = QCryptographicHash::hash(password, QCryptographicHash::Sha1);
+    (*this).m_hashed_password = myHash;
 }
 /**
  * Check if password is correct
  */
 bool Password::check(const QString& password) const
 {
-
-    return true;
+    QByteArray myHash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha1);
+    return ((*this).m_hashed_password == myHash);
 }
 
 bool Password::check(const Password& password) const
 {
-
-    return true;
+    QByteArray myHash = password.toQByteArray();
+    return (myHash == (*this).m_hashed_password);
 }
 
 Password& Password::operator=(const Password& other)
@@ -59,7 +61,7 @@ Password& Password::operator=(const Password& other)
 
 QByteArray Password::toQByteArray() const
 {
-    return QByteArray();
+    return (*this).m_hashed_password;
 }
 
 } //namespace Utilities

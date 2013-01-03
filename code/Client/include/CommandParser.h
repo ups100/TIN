@@ -26,7 +26,20 @@ public:
     boost::shared_ptr<Commands> parseCommand(QString const&);
 
 private:
-    enum commandListEnum {LOG,CREATE_ALIAS,ADD_TO_ALIAS,REMOVE,FIND,READ,SYNCH,LS,PUSH,PULL,ADD};
+    enum commandListEnum
+    {
+        LOG,
+        CREATE_ALIAS,
+        ADD_TO_ALIAS,
+        REMOVE,
+        FIND,
+        READ,
+        SYNCH,
+        LS,
+        PUSH,
+        PULL,
+        ADD
+    };
     QStringList commandList;
 
 };

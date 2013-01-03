@@ -4,7 +4,8 @@ MESSAGE( "Building client target." )
 INCLUDE_DIRECTORIES( 	${QT_INCLUDES}
 						${Boost_INCLUDE_DIRS}
 						${TIN_SOURCE_DIR}/Client/include
-						${TIN_SOURCE_DIR}/Utilities/include 
+						${TIN_SOURCE_DIR}/Utilities/include
+						${TIN_SOURCE_DIR}/qtsingleapplication/include  
 )
 
 #if some class inherits QObject (has Q_OBJECT macro) add it's header file here

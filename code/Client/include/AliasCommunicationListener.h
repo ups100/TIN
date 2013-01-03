@@ -98,7 +98,7 @@ public:
     /**
      * @brief Informs that file transfer has been started.
      */
-    virtual void onFileTransferStarted() =0;
+    virtual void onFileTransferStarted() = 0;
 
 };
 
