@@ -130,7 +130,6 @@ QVariant Commands::getArg(Argument::Types f) const
             l_var.setValue(getAlias(f));
             break;
         case Argument::FILELOCATION:
-            l_var.setValue(getFileLocation(f));
             break;
         case Argument::FILENAME:
             l_var.setValue(getFileName(f));
@@ -168,18 +167,7 @@ QString Commands::getFileName(Argument::Types f) const
     return m_argument.getFileName();
 }
 
-/**
- *  @brief getter for the file location
- *  @return file location
- */
-FileLocation Commands::getFileLocation(Argument::Types f) const
-{
-    if (f != Argument::FILELOCATION) {
-        qDebug()<<"Don't do that"<<endl;
-        return (FileLocation)NULL;
-    }
-    return m_argument.getFileLocation();
-}
+
 
 /**
  * @brief getter for the flague

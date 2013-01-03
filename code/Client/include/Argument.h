@@ -32,13 +32,11 @@ public:
     Argument(QString, Argument::Types);
     Argument::Types getFlague() const;
     QString getAlias() const;
-    FileLocation getFileLocation() const;
     QString getFileName() const;
     virtual ~Argument();
 
 private:
     Argument::Types flague;
-    FileLocation m_path;
     QString m_filename;
     QString m_alias;
 

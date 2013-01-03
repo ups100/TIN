@@ -26,10 +26,7 @@ Argument::Argument(QString s, Argument::Types f)
             m_alias = s;
             break;
         case Argument::FILELOCATION:
-            if(FileLocation::checkLocation(s)) {
-                m_path = FileLocation(s);
-            }
-            else qDebug()<<"There is no such file"<<endl;
+
             break;
         case Argument::FILENAME:
             m_filename = s;
@@ -60,18 +57,7 @@ QString Argument::getAlias() const
     return m_alias;
 }
 
-/**
- * @brief getter for the file location
- * @return file location
- */
-FileLocation Argument::getFileLocation() const
-{
-  if (flague != Argument::FILELOCATION) {
-      qDebug()<<"Something went wrong: Argument::getFileLocation()"<<endl;
-      return (FileLocation)NULL;
-  }
-  return m_path;
-}
+
 
 /**
  * @brief getter for the file name

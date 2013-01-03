@@ -12,23 +12,7 @@ namespace Utilities {
 
 Password::Password()
 {
-
-}
-
-Password::Password(QString& password)
-{
-    m_password = password;
-}
-
-
-/* I guess something has to be done with this */
-/**
- * @brief getter for the password
- * @return password
- */
-QString Password::getPassword()
-{
-    return m_password;
+    //Nothing to do here
 }
 
 Password::~Password()
@@ -36,21 +20,47 @@ Password::~Password()
 
 }
 
+Password::Password(const Password& password)
+{
+    (*this) = password;
+}
 /**
- * @brief check if password is correct
+ * Creates an object and set it's password
+ */
+Password::Password(const QString& password)
+{
+
+}
+
+Password::Password(const QByteArray& password)
+{
+
+}
+/**
+ * Check if password is correct
  */
 bool Password::check(const QString& password) const
 {
-    return (this->m_password == password);
+
+    return true;
 }
 
-/**
- * @brief check if password is correct
- */
 bool Password::check(const Password& password) const
 {
-    return (this->m_password == password.m_password);
 
+    return true;
 }
+
+Password& Password::operator=(const Password& other)
+{
+    (*this).m_hashed_password = other.toQByteArray();
+    return *this;
+}
+
+QByteArray Password::toQByteArray() const
+{
+    return QByteArray();
+}
+
 } //namespace Utilities
 } //namespace TIN_project

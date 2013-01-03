@@ -13,14 +13,13 @@ int main(int argc, char **argv)
 {
 
     QCoreApplication app(argc, argv);
-    CommandParser tmpCom;
+    //CommandParser tmpCom;
 
     //tmpCom.parseCommand(QString("add code/Client"));
 
-    boost::shared_ptr<Commands> tmp = tmpCom.parseCommand(QString("add code/Client"));
-    tmp->getArg(Argument::FILELOCATION);
-
-
+    //boost::shared_ptr<Commands> tmp = tmpCom.parseCommand(QString("add code/Client"));
+    //tmp->getArg(Argument::FILELOCATION);
+    Password password ((QString)"HELLO");
 
     return app.exec();
 }

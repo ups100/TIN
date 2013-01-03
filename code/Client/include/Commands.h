@@ -34,7 +34,6 @@ public:
 private:
     QString getAlias(Argument::Types) const;
     QString getFileName(Argument::Types) const;
-    FileLocation getFileLocation(Argument::Types) const;
 
     QString m_command;
     QString m_parameter;
