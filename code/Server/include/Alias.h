@@ -126,6 +126,8 @@ public:
     virtual void onFileList(DaemonConnection* daemon,
             const Utilities::AliasFileList& list);
 
+    virtual void onFileTransferStarted(FileTransferServer *transfer);
+
     virtual void onFileTransferCompleted(FileTransferServer *transfer);
 
     virtual void onFileTransferError(FileTransferServer *transfer);
