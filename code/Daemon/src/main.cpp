@@ -1,12 +1,14 @@
 #include "DaemonApplication.h"
 #include <signal.h>
-#include <QCoreApplication>
+
+#include "qtsinglecoreapplication.h"
 
 TIN_project::Daemon::DaemonApplication *app;
 
 // TODO for a while while non QApp
 void signal_handler(int sig)
 {
+    qDebug()<<"Signla_handler";
     app->~DaemonApplication();
     exit(0);
 }
@@ -14,13 +16,19 @@ void signal_handler(int sig)
 
 int main(int argc, char **argv)
 {
-    QCoreApplication a(argc, argv);
+    QtSingleCoreApplication a(argc, argv);
+
+    // Check if it is first instance of application
+    if (a.isRunning()) {
+        qDebug() << "Another instance of daemon is now running";
+        return -1;
+    }
 
     signal(SIGINT, signal_handler);
 
-    TIN_project::Daemon::DaemonApplication daemon;
+    TIN_project::Daemon::DaemonApplication daemon(&a);
     app = &daemon;
-    daemon.start();
+    return daemon.start();
 
-    return a.exec();
+    //return a.exec();
 }

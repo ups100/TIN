@@ -17,6 +17,8 @@
 #include <QHostAddress>
 #include <QString>
 
+#include "qtsinglecoreapplication.h"
+
 namespace TIN_project {
 namespace Daemon {
 
@@ -24,7 +26,7 @@ class DaemonApplication
 {
 public:
 
-    DaemonApplication();
+    DaemonApplication(QtSingleCoreApplication *app);
     virtual ~DaemonApplication();
 
     int start();
@@ -59,6 +61,12 @@ private:
 
     /** Daemon threads configuration */
     DaemonConfiguration m_config;
+
+    /**
+     * @brief Object for handling signals and check for other instances
+     */
+    QtSingleCoreApplication *m_application;
+
 };
 
 } //namespace Daemon

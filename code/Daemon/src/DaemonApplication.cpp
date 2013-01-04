@@ -12,8 +12,9 @@
 namespace TIN_project {
 namespace Daemon {
 
-DaemonApplication::DaemonApplication()
-        : m_clientCommunication(*this)
+DaemonApplication::DaemonApplication(QtSingleCoreApplication *app)
+        : m_clientCommunication(*this),
+          m_application(app)
 {
 
 }
@@ -32,6 +33,12 @@ DaemonApplication::~DaemonApplication()
 
 int DaemonApplication::start()
 {
+    // Check if it is first instance
+    if (m_application->isRunning()) {
+        qDebug() << "Another instance of daemon is now running";
+        return -1;
+    }
+
     // Run listener for local client
     m_clientCommunication.start();
 
@@ -48,7 +55,7 @@ int DaemonApplication::start()
         sleep(1);
     }
 
-    return 0;
+    return m_application->exec();
 }
 
 // TODO dispatch message to do what is needed
