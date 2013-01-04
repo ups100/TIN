@@ -52,18 +52,30 @@ int DaemonApplication::start()
     // Run listener for local client
     m_clientCommunication.start();
 
+    if (true) {
+        qDebug() << "Pierwszy testowy watek DaemonThread.";
+        boost::shared_ptr<DaemonConfiguration::Config> cnf(new DaemonConfiguration::Config());
+        QHostAddress addr(QHostAddress::LocalHost);
+        cnf->m_ip = addr.toString();
+        cnf->m_port = 8080;
+        DaemonThread *dt = new DaemonThread(cnf);
+            dt->start();
+            m_daemonThreads.append(dt);
+    }
+
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
+        qDebug() << "Tworze watek DaemonThread";
     DaemonThread *dt = new DaemonThread(cnf);
     dt->start();
     m_daemonThreads.append(dt);
 }
 
 // TODO remove demo loop
-    qDebug() << "Waiting 4 a message";
-    while (1) {
-        qDebug() << ".";
-        sleep(1);
-    }
+    qDebug() << "Waiting 4 a message from start() method";
+//    while (1) {
+//        qDebug() << ".";
+//        sleep(1);
+//    }
 
     // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
     m_isClean = false;

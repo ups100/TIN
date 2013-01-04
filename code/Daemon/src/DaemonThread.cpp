@@ -25,7 +25,9 @@ namespace Daemon {
 
 DaemonThread::DaemonThread()
 {
-
+    //create an object to connect to the server
+    m_ServerConnection = new ServerConnection(this);
+    m_connectionOk = false; //connection not established
 }
 
 DaemonThread::~DaemonThread()
@@ -37,7 +39,9 @@ DaemonThread::DaemonThread(
         boost::shared_ptr<DaemonConfiguration::Config> config)
         : m_config(config)
 {
-
+    m_ServerConnection = new ServerConnection(this);
+    m_connectionOk = false;
+    m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip), m_config->m_port);
 }
 
 void DaemonThread::onAliasConnected()
@@ -52,11 +56,18 @@ void DaemonThread::onAliasConnectionError()
 
 void DaemonThread::onConnected()
 {
-
+    qDebug() << "Connection to server successful.";
+    if (m_connectionOk) {
+        qDebug() << "Incoming connection from server after previous connection was established. Double onConnected().";
+        m_connectionOk = false;
+    } else
+        m_connectionOk = true;  // if everything OK
 }
 
 void DaemonThread::onDisconnected()
 {
+    qDebug() << "Unsuccessful connection to the server.";
+    m_connectionOk = false;
 
 }
 
@@ -185,17 +196,25 @@ void DaemonThread::onTransferEnd(FileReciver * reciver)
 
 void DaemonThread::stopThread()
 {
-    terminate();
+    // instead of Kajo propose:
+    //terminate();
+    // I recommend quit() function
+    m_ServerConnection->disconnectFromServer();
+    m_connectionOk = false;
+    quit(); // ending DeamonThread event loop
 }
 
 void DaemonThread::run()
 {
     // TODO connect to server and start listening
-    while (1) {
-//        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
-//                << m_config->m_aliasId;
-        sleep(5);
-    }
+//    while (1) {
+////        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
+////                << m_config->m_aliasId;
+//        sleep(5);
+//    }
+
+    // start event loop
+    exec();
 }
 
 boost::shared_ptr<DaemonConfiguration::Config> DaemonThread::getConfig()

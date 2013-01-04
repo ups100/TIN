@@ -58,6 +58,12 @@ private:
      */
     QString& cutAbsolutePath(QString &str);
 
+    /**
+     * @brief Show connection status.
+     * @details If connection is established value true.
+     */
+    bool m_connectionOk;
+
 };
 
 } //namespace Daemon
