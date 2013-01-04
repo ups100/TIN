@@ -15,6 +15,9 @@
 #include <QXmlFormatter>
 #include <QRegExp>
 #include <QDirIterator>
+#include <QXmlStreamReader>
+#include <QFileInfo>
+#include <QDateTime>
 #include <stdexcept>
 
 namespace TIN_project {
@@ -71,31 +74,35 @@ void DaemonThread::onFindFile(const QString &fileName)
     while (it.hasNext()) {
         QFileInfo info = it.fileInfo();
 
-        if (info.isFile()) {
-            if (regex.indexIn(info.fileName()) != -1) {
-//                qDebug()<<"\t\t\tFOUND!!: "<<info.filePath();
+        if (info.isFile())
+            if (regex.indexIn(info.fileName()) != -1)
                 foundPaths.append(info.filePath());
-            }
-        }
 
         it.next();
     }
 
-    //TODO remove
-    foreach (QString str, foundPaths) {
-        qDebug()<<"\t"<<str;
-    }
-    // TODO create fileLocations and send them
-//    if (foundPaths.size())
-//        onFoundFile(); // ?
+    // Create list of alias files
+    Utilities::AliasFileList files;
+
+    // Add found files to list with their data
+    foreach (QString str, foundPaths){
+    QString date = QString::number(QFileInfo(str).lastModified().toMSecsSinceEpoch());
+    quint32 size = QFileInfo(str).size();
+
+    files.addFile(cutAbsolutePath(str), date, size);
+}
+
+// TODO kopasiak check / change communicates / method / param
+//    if (files.getSize())
+//        m_ServerConnection->sendFileFound(files);
 //    else
-//        onFileNotFound(); // ?
+//        m_ServerConnection->sendNoSuchFile();
 }
 
 void DaemonThread::onListFiles()
 {
     QDir dir(m_config->m_cataloguePath);
-    if (!dir.exists()) // TODO what then ?!
+    if (!dir.exists())
         throw std::runtime_error("Path doesn't exit.");
 
     // Recursive read alias catalogue
@@ -116,34 +123,40 @@ void DaemonThread::onListFiles()
 
     // Remove absolute path, make it relative
     QString str(output.data());
-    str.replace(QRegExp(QString() + m_config->m_cataloguePath + "/?"), "/");
+    str = cutAbsolutePath(str);
 
-//    qDebug() << str;
+    // Create AliasFileList object to send it after
+    Utilities::AliasFileList atree;
 
-    qDebug()<<"ZACZYNAMY";
+    QXmlStreamReader reader(str);
+    reader.readNext();
 
-    Utilities::AliasFileList a;
-    a.addFile("/kajo/ot/tak.g", "12.12.12r", 123);
-    a.addFile("/kajo/ot/ty.g", "12.12.12r", 123);
-    a.addFile("/kajo/ot/ty.g", "12.12.13r", 312);
-    a.addFile("/kajo/ot/jak.g", "12.12.12r", 123);
-    a.addFile("/kajo/main.cpp", "12.12.12r", 123);
-    a.addFile("/level.1", "12.12.12r", 123);
-    a.addFile("/singleton.h", "12.12.12r", 123);
-    a.m_fileTree.str(0);
+    while (!reader.atEnd()) {
+        if (reader.isStartElement()) {
+            if (reader.name() == "directory") {
+            } else if (reader.name() == "file") {
+                QXmlStreamAttributes attribs = reader.attributes();
+                atree.addFile(attribs.value("filePath").toString(),
+                        attribs.value("lastModified").toString(),
+                        attribs.value("size").toString().toUInt());
+            }
+        }
 
-    qDebug()<<"KONCZYMY";
+        reader.readNext();
+    }
 
-    // TODO send QString with 'xmlified' data
+    m_ServerConnection->sendFileList(atree);
 }
 
-void DaemonThread::onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port)
+void DaemonThread::onReciveFile(const QString& fileName,
+        const QHostAddress& address, quint16 port)
 {
 
 }
 
 void DaemonThread::onRemoveFile(const QString& fileName)
 {
+    // TODO uncomment that when communication method 'll be exist
 //    QFile file(QString(m_config->m_cataloguePath) + QString(fileLocation->path));
 //    if (file.exists())
 //        if (file.remove()) {
@@ -154,7 +167,8 @@ void DaemonThread::onRemoveFile(const QString& fileName)
 //    onFileNotRemoved();
 }
 
-void DaemonThread::onSendFile(const QString& fileName, const QHostAddress& address, quint16 port)
+void DaemonThread::onSendFile(const QString& fileName,
+        const QHostAddress& address, quint16 port)
 {
 
 }
@@ -184,9 +198,15 @@ void DaemonThread::run()
     }
 }
 
-boost::shared_ptr<DaemonConfiguration::Config> DaemonThread::config()
+boost::shared_ptr<DaemonConfiguration::Config> DaemonThread::getConfig()
 {
     return m_config;
+}
+
+QString& DaemonThread::cutAbsolutePath(QString &str)
+{
+    return str.replace(QRegExp(QString() + m_config->m_cataloguePath + "/?"),
+            "/");
 }
 
 } //namespace Daemon

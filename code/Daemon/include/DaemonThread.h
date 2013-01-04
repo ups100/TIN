@@ -45,11 +45,18 @@ public:
     void stopThread();
     void run();
 
-    boost::shared_ptr<DaemonConfiguration::Config> config();
+    boost::shared_ptr<DaemonConfiguration::Config> getConfig();
 
 private:
     boost::shared_ptr<DaemonConfiguration::Config> m_config;
     ServerConnection *m_ServerConnection;
+
+    /**
+     * @brief Cut absolute file path to relative to supported catalogue
+     *
+     * @return String with cutted path
+     */
+    QString& cutAbsolutePath(QString &str);
 
 };
 

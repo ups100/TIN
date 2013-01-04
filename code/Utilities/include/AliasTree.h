@@ -1,6 +1,7 @@
 #if !defined(ALIAS_TREE__INCLUDED_)
 #define ALIAS_TREE__INCLUDED_
 
+#include <QDataStream>
 #include <QByteArray>
 #include <QString>
 #include <QList>
@@ -9,6 +10,8 @@
 namespace TIN_project {
 namespace Utilities {
 
+class AliasFileList;
+
 /**
  * Structure to gather simple file-system list of directories and files inside
  *
@@ -16,6 +19,8 @@ namespace Utilities {
  */
 class AliasTree
 {
+    friend class AliasFileList;
+
 public:
 
     /**
@@ -30,7 +35,16 @@ public:
         /** Last modification date as timestamp */
         QString m_date;
         /** File size */
-        unsigned int m_size;
+        quint32 m_size;
+
+        /**
+         * @brief C-tor
+         */
+        Location()
+                : m_size(0)
+        {
+
+        }
 
         /**
          * @brief C-tor
@@ -39,22 +53,38 @@ public:
          * @param date
          * @param size
          */
-        Location(const QString id, const QString date, const unsigned int size)
+        Location(const QString id, const QString date, const quint32 size)
                 : m_id(id), m_date(date), m_size(size)
         {
 
+        }
+
+        friend QDataStream& operator<<(QDataStream &out,
+                const Location &location)
+        {
+            out << location.m_id;
+            out << location.m_date;
+            out << location.m_size;
+
+            return out;
+        }
+
+        friend QDataStream& operator>>(QDataStream &in, Location &location)
+        {
+            in >> location.m_id;
+            in >> location.m_date;
+            in >> location.m_size;
+
+            return in;
         }
 
     };
 
     typedef struct Location Location;
 
-    static int i;
-    int id;
 private:
 
     /** List of file locations refers to one or more machines, empty if dir */
-//    QList<boost::shared_ptr<Location> > m_fileLocations;
     QList<Location> m_fileLocations;
 
     /** List of files or dirs inside of current directory, empty if file */
@@ -62,7 +92,6 @@ private:
 
     /** File path */
     QString m_path;
-    int a;
 
 public:
 
@@ -97,7 +126,8 @@ public:
      * @param date Last modification date
      * @param size Size of file
      */
-    void addLocation(const QString &id, const QString &date, const unsigned int &size);
+    void addLocation(const QString &id, const QString &date,
+            const quint32 &size);
 
     /**
      * @brief Split path into parts, if non last part -> create tree node,
@@ -106,8 +136,10 @@ public:
      * @param path Path to file
      * @param date Last modification date
      * @param size Size of file
+     * @param id Machine ID, if empty get local Identify
      */
-    boost::shared_ptr<AliasTree> addFile(const QString &path, const QString &date, const unsigned int &size);
+    boost::shared_ptr<AliasTree> addFile(const QString &path,
+            const QString &date, const quint32 &size, QString id = "");
 
     /**
      * @brief Get filename, or name of directory if dir
@@ -131,11 +163,26 @@ public:
     bool isFile();
 
     /**
+     * @brief Get file locations
+     *
+     * @return List of file locations
+     */
+    const QList<Location>& getLocations();
+
+    /**
      * @brief Convert object to QByteArray
      *
      * @return Object as QByteArray
      */
     QByteArray toQByteArray();
+
+    friend QDataStream& operator<<(QDataStream &out, const AliasTree &atree);
+    friend QDataStream& operator>>(QDataStream &in, AliasTree &atree);
+
+    friend QDataStream& operator<<(QDataStream &out,
+            const boost::shared_ptr<AliasTree> &atree);
+    friend QDataStream& operator>>(QDataStream &in,
+            boost::shared_ptr<AliasTree> &atree);
 
     //TODO remove debug
     void str(int indent);

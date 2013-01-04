@@ -57,7 +57,8 @@ void DaemonApplication::dispatchMessage(const Utilities::Message &message)
     qDebug() << message.getMessage();
     qDebug() << "Waiting 4 a message";
 
-    m_daemonThreads.at(qrand() % m_daemonThreads.size())->onListFiles();
+    if (m_daemonThreads.size())
+        m_daemonThreads.at(qrand() % m_daemonThreads.size())->onFindFile(message.getMessage());
 
 //    if (m_daemonThreads.size())
 //    switch (qrand() % 4) {
@@ -110,7 +111,7 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
 {
     if (m_config.removeConfig(aliasId, path)) {
         foreach (DaemonThread* thread, m_daemonThreads){
-        if (thread->config()->m_aliasId == aliasId && thread->config()->m_cataloguePath == path) {
+        if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path) {
             thread->stopThread();
             break;
         }

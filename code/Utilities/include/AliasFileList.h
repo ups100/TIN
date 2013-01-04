@@ -9,6 +9,7 @@
 #define EA_A26F37CC_44D6_4f5b_915E_18BA44DC4E9A__INCLUDED_
 
 #include "AliasTree.h"
+#include <QDataStream>
 #include <QByteArray>
 #include <QString>
 
@@ -21,9 +22,9 @@ namespace Utilities {
  * @author Kajo0
  */
 class AliasFileList
-{public:
-    /** Amount of files? on list */
-    unsigned int m_size;
+{
+    /** Amount of files on list, different locations of same file count once */
+    quint32 m_size;
 
     /** Tree of files in container */
     AliasTree m_fileTree;
@@ -56,7 +57,7 @@ public:
      * @param size Size of file
      */
     void addFile(const QString &filePath, const QString &date,
-            const unsigned int &size);
+            const quint32 &size);
 
     /**
      * @brief Merge two instances of AliasFileList into one
@@ -66,11 +67,34 @@ public:
     void merge(const AliasFileList &other);
 
     /**
+     * @brief Get files amount on the list
+     *
+     * @return Amount of files inside
+     */
+    quint32 getSize();
+
+    //TODO remove debug
+    void str();
+
+    /**
      * @brief Convert object to QByteArray
      *
      * @return Object as QByteArray
      */
     QByteArray toQByteArray();
+
+    friend QDataStream& operator<<(QDataStream &out, const AliasFileList &fileList);
+    friend QDataStream& operator>>(QDataStream &in, AliasFileList &fileList);
+
+private:
+
+    /**
+     * @brief 'Recursive' Merges given list of AliasTree with own tree
+     *
+     * @param atree List of AliasTree to merge with
+     */
+    void mergeIt(const QList<boost::shared_ptr<AliasTree> > &atree);
+
 };
 
 } //namespace Utilities

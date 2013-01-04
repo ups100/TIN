@@ -30,7 +30,6 @@
 #include <QTimer>
 #include <climits>
 
-
 namespace TIN_project {
 
 namespace Utilities {
@@ -49,12 +48,13 @@ class ServerConnectionListener;
  * @details This class runs in separate thread.
  *
  */
-class ServerConnection: public QObject
+class ServerConnection : public QObject
 {
 
-public:
+Q_OBJECT
+    ;
 
-    Q_OBJECT;
+public:
 
     /**
      * @brief Constructor
@@ -106,7 +106,7 @@ public:
      * @param[in] password password to alias
      */
     void connectToAlias(const QString& aliasName,
-                const Utilities::Password& password);
+            const Utilities::Password& password);
 
     /**
      * @brief Sends location of file
