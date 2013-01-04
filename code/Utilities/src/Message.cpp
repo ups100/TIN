@@ -27,10 +27,6 @@ Message::Message(const QByteArray &bytes)
 {
     QDataStream in(bytes);
 
-    // Flush size
-    quint16 size;
-    in >> size;
-
     in >> m_message;
 }
 
@@ -59,14 +55,7 @@ QByteArray Message::toQByteArray()
     QByteArray bytes;
     QDataStream out(&bytes, QIODevice::WriteOnly);
 
-    // Size
-    out << (quint16) 0;
-
     out << m_message;
-
-    // Set size
-    out.device()->seek(0);
-    out << (quint16) (bytes.size() - sizeof(quint16));
 
     return bytes;
 }

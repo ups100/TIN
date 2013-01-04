@@ -58,7 +58,8 @@ void DaemonApplication::dispatchMessage(const Utilities::Message &message)
     qDebug() << "Waiting 4 a message";
 
     if (m_daemonThreads.size())
-        m_daemonThreads.at(qrand() % m_daemonThreads.size())->onFindFile(message.getMessage());
+        m_daemonThreads.at(qrand() % m_daemonThreads.size())->onFindFile(
+                message.getMessage());
 
 //    if (m_daemonThreads.size())
 //    switch (qrand() % 4) {
