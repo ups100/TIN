@@ -26,10 +26,13 @@ class DaemonApplication
 {
 public:
 
-    DaemonApplication(QtSingleCoreApplication *app);
     virtual ~DaemonApplication();
 
     int start();
+    /**
+     * @brief Call this method instead of ~DaemonApplication
+     */
+    void stopApplication();
     void dispatchMessage(const Utilities::Message &message);
 
     /**
@@ -52,6 +55,21 @@ public:
      */
     void removeCatalogueFromAlias(const QString &path, const QString &aliasId);
 
+    /**
+     * @brief Provide the instance of DaemonApplication object
+     * @details There could by only one such object - this method keep an eye on it.
+     * @return DaemonApplication class current instance.
+     */
+    static DaemonApplication& getInstance();
+
+private:
+    /**
+     * @brief Private class constructors
+     * @details Use DaemonApplication::getInstance() method
+     */
+    DaemonApplication();
+    DaemonApplication(const DaemonApplication &);
+
 private:
 
     QList<DaemonThread*> m_daemonThreads;
@@ -63,10 +81,9 @@ private:
     DaemonConfiguration m_config;
 
     /**
-     * @brief Object for handling signals and check for other instances
+     * @brief This variable is used in start and stop method to show destructor to clean behind this object
      */
-    QtSingleCoreApplication *m_application;
-
+    bool m_isClean;
 };
 
 } //namespace Daemon

@@ -12,14 +12,21 @@
 namespace TIN_project {
 namespace Daemon {
 
-DaemonApplication::DaemonApplication(QtSingleCoreApplication *app)
+DaemonApplication& DaemonApplication::getInstance()
+{
+    static DaemonApplication instance;
+
+    return instance;
+}
+
+DaemonApplication::DaemonApplication()
         : m_clientCommunication(*this),
-          m_application(app)
+          m_isClean(true)
 {
 
 }
 
-DaemonApplication::~DaemonApplication()
+void DaemonApplication::stopApplication()
 {
     m_clientCommunication.terminate(); // TODO kopasiak check that: exit / terminate / quit / leave it alone
     m_clientCommunication.wait();
@@ -29,16 +36,19 @@ DaemonApplication::~DaemonApplication()
     dt->wait();
     delete dt;
 }
+    // Above we clean all things so object is clean:
+    m_isClean = true;
+}
+
+DaemonApplication::~DaemonApplication()
+{
+    // if nobody call stop method this object will be usually dirty
+    if (!m_isClean)
+        stopApplication();
 }
 
 int DaemonApplication::start()
 {
-    // Check if it is first instance
-    if (m_application->isRunning()) {
-        qDebug() << "Another instance of daemon is now running";
-        return -1;
-    }
-
     // Run listener for local client
     m_clientCommunication.start();
 
@@ -55,7 +65,10 @@ int DaemonApplication::start()
         sleep(1);
     }
 
-    return m_application->exec();
+    // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
+    m_isClean = false;
+
+    return 0;
 }
 
 // TODO dispatch message to do what is needed
