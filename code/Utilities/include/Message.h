@@ -1,9 +1,19 @@
-///////////////////////////////////////////////////////////
-//  Message.h
-//  Implementation of the Class Message
-//  Created on:      07-gru-2012 00:33:37
-//  Original author: kopasiak
-///////////////////////////////////////////////////////////
+/**
+ * @file Message.h
+ *
+ * @date 04-01-2013
+ *
+ * @author Mikolaj Markiewicz <kajo100@gmail.com>
+ *
+ * @brief Implementation of the Class TIN_project::Utilities::Message
+ *
+ * @par Project
+ * This is a part of project realized on Warsaw University of Technology
+ * on TIN lectures. Project was created to simplify synchronization between catalogs,
+ * that are stored on different hosts to let clients work on the same files anywhere they want.
+ * Allows user to do operations such as searching, copying and distributing files
+ * gathered under one alias.
+ */
 
 #if !defined(EA_0E30CFF6_DCAD_423d_B631_22AE074FA14F__INCLUDED_)
 #define EA_0E30CFF6_DCAD_423d_B631_22AE074FA14F__INCLUDED_
