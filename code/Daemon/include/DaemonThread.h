@@ -12,28 +12,30 @@
 #include <QtGlobal>
 #include <QString>
 #include <boost/shared_ptr.hpp>
-
+#include <QThread>
 #include "FileTransferListener.h"
 #include "ServerConnectionListener.h"
 #include "ServerConnection.h"
+#include "DaemonConfiguration.h"
 
 namespace TIN_project {
 namespace Daemon {
 
 class DaemonThread : public FileTransferListener,
-        public ServerConnectionListener
+        public ServerConnectionListener, public QThread
 {
 
 public:
     DaemonThread();
     virtual ~DaemonThread();
 
-    DaemonThread(const QHostAddress& ip, quint16 port, const QString& path);
+    DaemonThread(boost::shared_ptr<DaemonConfiguration::Config> config);
     virtual void onAliasConnected();
     virtual void onAliasConnectionError();
     virtual void onConnected();
     virtual void onDisconnected();
     virtual void onFindFile(const QString& fileName);
+    virtual void onFileNotRemoved();
     virtual void onListFiles();
     virtual void onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port);
     virtual void onRemoveFile(const QString& fileName);
@@ -41,10 +43,20 @@ public:
     virtual void onTransferEnd(FileSender * sender);
     virtual void onTransferEnd(FileReciver * reciver);
     void stopThread();
+    void run();
+
+    boost::shared_ptr<DaemonConfiguration::Config> getConfig();
 
 private:
-    QString m_path;
+    boost::shared_ptr<DaemonConfiguration::Config> m_config;
     ServerConnection *m_ServerConnection;
+
+    /**
+     * @brief Cut absolute file path to relative to supported catalogue
+     *
+     * @return String with cutted path
+     */
+    QString& cutAbsolutePath(QString &str);
 
 };
 

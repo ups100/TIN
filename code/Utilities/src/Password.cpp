@@ -68,5 +68,11 @@ QByteArray Password::toQByteArray() const
     return (*this).m_hashed_password;
 }
 
+QByteArray Password::getHash() const
+{
+    return (*this).m_hashed_password;
+}
+
+
 } //namespace Utilities
 } //namespace TIN_project

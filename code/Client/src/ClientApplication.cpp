@@ -9,6 +9,8 @@
 #include "AliasFileList.h"
 #include "FileLocation.h"
 
+#include "AliasFileList.h"
+
 namespace TIN_project {
 namespace Client {
 

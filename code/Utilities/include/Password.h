@@ -31,6 +31,7 @@ public:
     bool check(const QByteArray& password) const;
     bool check(const Password& password) const;
     QByteArray toQByteArray() const;
+    QByteArray getHash() const;
     Password& operator=(const Password& other);
 private:
     QByteArray m_hashed_password;

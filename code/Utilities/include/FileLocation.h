@@ -16,20 +16,72 @@
 #include <QDebug>
 
 #include <QByteArray>
+#include <QString>
 
 namespace TIN_project {
 namespace Utilities {
 
 /**
  * Location of the file in Alias
+ *
+ * @author Kajo0
  */
 class FileLocation
 {
+    /** Relative to alias path to file */
+    QString m_path;
+
+    /** ID of machine where the file is */
+    QString m_ownerId;
 
 public:
+
+    /**
+     * @brief Constructor
+     *
+     * @details Creates invalid object
+     */
     FileLocation();
-    FileLocation(const QByteArray& data);
+
+    /**
+     * @brief C-tor
+     *
+     * @param path Path to file relative to alias
+     * @param ownerId ID of the files owner machine
+     */
+    FileLocation(const QString &path, const QString &ownerId);
+
+    /**
+     * @brief C-tor
+     *
+     * @param data Data to create object
+     */
+    FileLocation(const QByteArray &data);
+
+    /**
+     * @brief D-tor
+     */
     virtual ~FileLocation();
+
+    /**
+     * @brief Get path to file
+     *
+     * @return Path to file
+     */
+    QString getPath();
+
+    /**
+     * @brief Get file owner ID
+     *
+     * @return ID of the owner
+     */
+    QString getOwnerId();
+
+    /**
+     * @brief Convert object to QByteArray
+     *
+     * @return Object as QByteArray
+     */
     QByteArray toQByteArray();
 
 };

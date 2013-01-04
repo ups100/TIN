@@ -17,6 +17,7 @@
 #include "DaemonCommunication.h"
 #include "ServerConnectionListener.h"
 #include "AliasCommunicationListener.h"
+#include "Message.h"
 
 #include "qtsinglecoreapplication.h"
 
@@ -63,7 +64,7 @@ enum State
     virtual void onFileTransferStarted();
     void setView(boost::shared_ptr<ClientView> view);
     int start(const QHostAddress&, quint16);
-
+    void talkToDaemon(Utilities::Message message);
 private slots:
     void getString(QString);
 

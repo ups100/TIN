@@ -13,8 +13,9 @@ namespace Client {
 ClientView::ClientView(ClientApplication & app)
         : m_app(app)
 {
-    m_notifier = new QSocketNotifier(STDIN_FILENO, QSocketNotifier::Read);
-    connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
+    moveToThread(&m_thread);
+    //m_notifier = new QSocketNotifier(STDIN_FILENO, QSocketNotifier::Read);
+    //connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
 }
 
 void ClientView::start()
@@ -31,6 +32,7 @@ void ClientView::start()
 
     this->prompt();
     loop.exec();
+    QTimer::singleShot(0, this, SLOT(waitForCommands()));
 }
 
 void ClientView::stop()
@@ -57,12 +59,21 @@ void ClientView::showMessage(QString s)
 
 void ClientView::waitForCommands()
 {
-    QTextStream qtin(stdin);
-    QString m_string;
-    qtin >> m_string;
+    while(1)
+    {
+        QTextStream qtin(stdin);
+            QString m_string;
+            qtin >> m_string;
 
-    QMetaObject::invokeMethod((QObject*) &m_app, "getString",
-                    Qt::AutoConnection, Q_ARG(QString,m_string));
+            qDebug()<<m_string;
+
+            if(m_string == "stop") break;
+
+    }
+
+    QTimer::singleShot(3000, this, SLOT(waitForCommands()));
+    //QMetaObject::invokeMethod((QObject*) &m_app, "getString",
+            //        Qt::AutoConnection, Q_ARG(QString,m_string));
 
 
 }
