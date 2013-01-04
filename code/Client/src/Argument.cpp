@@ -18,59 +18,31 @@ Argument::Argument()
 
 Argument::Argument(QString s, Argument::Types f)
 {
-    flague = f;
-    switch(f) {
-        case Argument::NONE:
-            break;
-        case Argument::ALIAS:
-            m_alias = s;
-            break;
-        case Argument::FILELOCATION:
-
-            break;
-        case Argument::FILENAME:
-            m_filename = s;
-            break;
-        default:
-            return;
-    }
+    m_flague = f;
+    m_data = s;
 }
 
 /**
- * @brief getter for the flague
- * @return flague
+ * @brief getter for the flag
+ * @return flag
  */
 Argument::Types Argument::getFlague() const
 {
-    return flague;
+    return m_flague;
 }
 
 /**
- * @brief getter for the alias
- * @return alias
+ * @brief getter for the data
+ * @return data
  */
-QString Argument::getAlias() const
+QString Argument::getData() const
 {
-    if (flague != Argument::ALIAS) {
-        qDebug()<<"Something went wrong: Argument::getAlias()"<<endl;
-    }
-    return m_alias;
+    return m_data;
 }
 
 
 
-/**
- * @brief getter for the file name
- * @return file name
- */
-QString Argument::getFileName() const
-{
-    if(flague != Argument::FILENAME) {
-        qDebug()<<"Something went wrong: Argument::getFileName()"<<endl;
-        return NULL;
-    }
-    return m_filename;
-}
+
 Argument::~Argument()
 {
     // TODO Auto-generated destructor stub

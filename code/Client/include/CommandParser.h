@@ -29,16 +29,16 @@ private:
     enum commandListEnum
     {
         LOG,
-        CREATE_ALIAS,
-        ADD_TO_ALIAS,
+        CREATE,
+        ADD,
         REMOVE,
         FIND,
         READ,
-        SYNCH,
-        LS,
         PUSH,
-        PULL,
-        ADD
+        LS,
+        SYNCH,
+        CHOOSE,
+        DISCONNECT
     };
     QStringList commandList;
 

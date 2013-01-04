@@ -20,16 +20,17 @@ namespace Client {
 
 CommandParser::CommandParser()
 {
-    commandList.push_back("log");
+   commandList.push_back("log");
    commandList.push_back("create");
    commandList.push_back("add");
    commandList.push_back("rm");
    commandList.push_back("find");
    commandList.push_back("read");
-   commandList.push_back("synch");
-   commandList.push_back("ls");
    commandList.push_back("push");
-   commandList.push_back("pull");
+   commandList.push_back("ls");
+   commandList.push_back("synch");
+   commandList.push_back("choose");
+   commandList.push_back("disconnect");
 }
 
 
@@ -43,7 +44,7 @@ CommandParser::~CommandParser()
  *  @details split string into 3 segments: command, parameter, arguments
  *  @param command string received from client
  *  @return pointer to object of class Commands
- *  @note returns Null if the command is not correct
+ *  @note returns "Wrong" command if the command is not correct
  *  @note see "syntax.txt" for available commands
  */
 shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
@@ -54,9 +55,6 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
     if(wordList.size() == 0)
         return shared_ptr<Commands>((Commands *) NULL);
 
-    if ((wordList.size() == 1) && ((wordList[0] != commandList[LS]) &&
-            (wordList[0] != commandList[PUSH]) && (wordList[0] != commandList[PULL])))
-               return shared_ptr<Commands>((Commands*) NULL);
 
     QString tmpCommand;
     QStringList tmpParameters;
@@ -64,7 +62,7 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
     Argument::Types flag;
 
 
-
+    qDebug()<<"WORD LIST SIZE"<<wordList.size();
     tmpCommand = wordList[0];
     for (int i = 1; i<wordList.size(); ++i) {
         if (wordList[i].startsWith("-"))
@@ -72,151 +70,99 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
         else
             tmpArguments.push_back(wordList[i]);
     }
-
+    qDebug()<<"ILOSC PARAMETROW TO "<<tmpParameters.size();
+    qDebug()<<"ILOSC ARGUMENTOW TO "<<tmpArguments.size();
     tmpCommand = tmpCommand.toLower();
     for (int i = 0; i<tmpParameters.size(); ++i) {
         tmpParameters[i] = tmpParameters[i].toLower();
     }
 
 
-    /**
-     * Here starts checking whether the command is correct
-     * The result is in the "decision" variable
-     */
-    bool decision = true;
 
-    if ((tmpCommand == commandList[LOG]) || (tmpCommand == commandList[CREATE_ALIAS])) {
-        if(tmpParameters.size() != 0 || tmpArguments.size() != 2) {
-            decision = false;
-        }
-        flag = Argument::ALIAS;
+
+    if ((tmpCommand == commandList[LOG] ))
+    {
+        if((tmpParameters.size() == 0) && (tmpArguments.size() == 2))
+            return shared_ptr<Commands>(new Commands(tmpCommand, tmpArguments[0], tmpArguments[1], Argument::ALIAS));
+        else return shared_ptr<Commands>(new Commands());
     }
 
-    else if (tmpCommand == commandList[ADD_TO_ALIAS]) {
-        if(tmpParameters.size() != 0) {
-            tmpParameters.clear();
-        }
-        if(tmpArguments.size() != 1) {
-            decision = false;
-        }
-        flag = Argument::FILELOCATION;
+    else if ((tmpCommand == commandList[CREATE]))
+    {
+        if((tmpParameters.size() == 0) && (tmpArguments.size() == 2))
+            return shared_ptr<Commands>(new Commands(tmpCommand, tmpArguments[0], tmpArguments[1], Argument::ALIAS));
+        else return shared_ptr<Commands>(new Commands());
     }
 
-    else if (tmpCommand == commandList[REMOVE]) {
-        if((tmpParameters.size() > 1) || (tmpArguments.size() < 1)) {
-            decision = false;
-        }
-
-        /**
-         * Deleting the alias
-         */
-        if((tmpParameters.size() == 0)) {
-            if(tmpArguments.size() != 2)
-                decision = false;
-            flag = Argument::ALIAS;
-        }
-
-        /**
-         * Deleting from alias
-         */
-        else if (tmpParameters[0] == "r") {
-            if (tmpArguments.size() != 1) {
-                decision = false;
-            }
-
-            /**
-             * Dunno, which one: will the argument of the read/find command be
-             * location or just a file name?
-             */
-            flag = Argument::FILELOCATION;
-            //flag = Argument::FILENAME;
-        }
-
-        /**
-         * Deleting from local catalog
-         */
-        else if (tmpParameters[0] == "l") {
-            if (tmpArguments.size() != 1) {
-                decision = false;
-            }
-            flag = Argument::FILELOCATION;
-        }
-
-        else
-            decision = false;
+    else if ((tmpCommand == commandList[ADD]))
+    {
+        if((tmpParameters.size() == 0) && (tmpArguments.size() == 1))
+            return shared_ptr<Commands>(new Commands(tmpCommand, tmpArguments[0],Argument::REL_PATH));
+            else return shared_ptr<Commands>(new Commands());
     }
 
-    else if((tmpCommand == commandList[FIND]) || (tmpCommand == commandList[READ])) {
-        if((tmpParameters.size() != 0) || (tmpArguments.size() != 1)) {
-            decision = false;
-        }
-        /**
-         * Dunno, which one: will the argument of the read/find command be
-         * location or just a file name?
-         */
-        flag = Argument::FILELOCATION;
-        //flag = Argument::FILENAME;
+    else if ((tmpCommand == commandList[REMOVE]))
+    {
+        if((tmpParameters.size() == 1) && (tmpParameters[0] == "d") && (tmpArguments.size() == 1))
+            return shared_ptr<Commands>(new Commands(tmpCommand, tmpParameters[0], tmpArguments[0], Argument::REL_PATH));
+        else if ((tmpParameters.size() == 1) && (tmpParameters[0] == "a")&& (tmpArguments.size() == 2))
+            return shared_ptr<Commands>(new Commands(tmpCommand,tmpParameters[0], tmpArguments[0], tmpArguments[1], Argument::ALIAS));
+        else if ((tmpParameters.size() == 0) && (tmpArguments.size() == 1))
+            return shared_ptr<Commands>(new Commands(tmpCommand, tmpArguments[0], Argument::REL_PATH));
+        else return shared_ptr<Commands>(new Commands());
     }
 
-    else if (tmpCommand == commandList[LS]) {
-        if ((tmpParameters.size() != 0) || (tmpArguments.size() != 0)) {
-            decision = false;
-        }
-        flag = Argument::NONE;
+    else if ((tmpCommand == commandList[FIND]))
+    {
+        if ((tmpParameters.size() == 0) && (tmpArguments.size() == 1))
+           return shared_ptr<Commands>(new Commands(tmpCommand, tmpArguments[0], Argument::NAME));
+        else return shared_ptr<Commands>(new Commands());
     }
 
-    else if (tmpCommand == commandList[SYNCH]) {
-        if ((tmpParameters.size() != 1) || (tmpArguments.size() != 0) ) {
-            decision = false;
-        }
-        else if (!((tmpParameters[0] == "o") || (tmpParameters[0] == "d"))) {
-            decision = false;
-        }
-
-        flag = Argument::NONE;
+    else if ((tmpCommand == commandList[READ]))
+    {
+        if ((tmpParameters.size() == 0) && (tmpArguments.size() == 1))
+            return shared_ptr<Commands>(new Commands(tmpCommand, tmpArguments[0], Argument::NUMBER));
+        else return shared_ptr<Commands>(new Commands());
     }
 
-    else if((tmpCommand == commandList[PUSH]) || (tmpCommand == commandList[PULL])) {
-        if ((tmpParameters.size() != 0) || (tmpArguments.size() != 0)) {
-            decision = false;
-        }
-        flag = Argument::NONE;
+    else if ((tmpCommand == commandList[PUSH]))
+    {
+        if((tmpParameters.size() == 0) && (tmpArguments.size() == 1))
+            return shared_ptr<Commands>(new Commands(tmpCommand, tmpArguments[0], Argument::REL_PATH));
+
+        else return shared_ptr<Commands>(new Commands());
     }
 
-    else
-        decision = false;
-
-
-    /**
-     * If the command is correct, one of the Commands
-     * constructor is invoked
-     */
-    if (decision == true) {
-        qDebug()<<"Command is right"<<endl;
-        if ((tmpParameters.size() == 0) && (tmpArguments.size() == 0)) {
-            return shared_ptr<Commands>(new Commands(tmpCommand,flag));
-        }
-        else if ((tmpParameters.size() == 0) && (tmpArguments.size() == 1)) {
-            return shared_ptr<Commands>(new Commands(tmpCommand, tmpArguments[0], flag));
-        }
-        else if ((tmpParameters.size() == 0) && (tmpArguments.size() == 2)) {
-            return shared_ptr<Commands>(new Commands(tmpCommand, tmpArguments[0], tmpArguments[1], flag));
-        }
-        else if (tmpArguments.size() == 0) {
-            return shared_ptr<Commands>(new Commands(tmpCommand, tmpParameters[0], flag));
-        }
-        else return shared_ptr<Commands>(new Commands(tmpCommand,tmpParameters[0], tmpArguments[0], flag));
+    else if ((tmpCommand == commandList[LS]))
+    {
+        if((tmpParameters.size() == 0) && (tmpArguments.size() == 0))
+            return shared_ptr<Commands>(new Commands(tmpCommand, Argument::NONE));
+        else return shared_ptr<Commands>(new Commands());
     }
 
 
-    /**
-     * Otherwise, NULL pointer is returned
-     */
-    else {
-        qDebug()<<"Command  was not created, the return value is NULL"<<endl;
-        return shared_ptr<Commands>((Commands *) NULL);
+    else if ((tmpCommand == commandList[SYNCH]))
+    {
+        if((tmpParameters.size() == 1) && ((tmpParameters[0] == "o") || (tmpParameters[0] == "d")) && (tmpArguments.size() == 0))
+            return shared_ptr<Commands>(new Commands(tmpCommand, tmpParameters[0], Argument::SYNCH));
+        else return shared_ptr<Commands>(new Commands());
     }
 
+    else if (tmpCommand == commandList[CHOOSE])
+    {
+        if((tmpParameters.size() == 0) && (tmpArguments.size() == 1))
+            return shared_ptr<Commands>(new Commands(tmpCommand, tmpArguments[0], Argument::NUMBER));
+        else return shared_ptr<Commands>(new Commands());
+    }
+
+    else if (tmpCommand == commandList[DISCONNECT])
+    {
+        if((tmpParameters.size() == 0) && (tmpArguments.size() == 0))
+            return shared_ptr<Commands>(new Commands(tmpCommand, Argument::NONE));
+        else return shared_ptr<Commands>(new Commands());
+    }
+    else return shared_ptr<Commands>(new Commands());
 }
 
 } //namespace Client

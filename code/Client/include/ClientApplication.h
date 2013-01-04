@@ -65,8 +65,26 @@ enum State
     void setView(boost::shared_ptr<ClientView> view);
     int start(const QHostAddress&, quint16);
     void talkToDaemon(Utilities::Message message);
+    bool checkIfPossible(Commands&);
 private slots:
     void getString(QString);
+
+    void onAliasConnectedSlot();
+    void onAliasConnectionErrorSlot();
+    void onAliasCreatedSlot();
+    void onAliasCreationErrorSlot();
+    void onAliasDeletedSlot();
+    void onAliasDeletionErrorSlot();
+    void onAliasListedSlot(const Utilities::AliasFileList& list);
+    void onConnectedSlot();
+    void onDisconnectedSlot();
+    void onFileFoundSlot(const Utilities::FileLocation& location);
+    void onFileNotFoundSlot();
+    void onFileRemovedSlot();
+    void onFileRemovingErrorSlot();
+    void onFileTransferErrorSlot();
+    void onFileTransferFinishedSlot();
+    void onFileTransferStartedSlot();
 
 private:
     ClientApplication::States m_state;

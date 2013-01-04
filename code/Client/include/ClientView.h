@@ -24,8 +24,6 @@ Q_OBJECT
 public:
     ClientView(ClientApplication &);
     virtual ~ClientView();
-    void start();
-    void stop();
     void prompt();
     void showMessage(QString);
 
@@ -36,10 +34,8 @@ private slots:
     void waitForCommands();
 
 private:
-    QThread m_thread;
     ClientApplication & m_app;
     QSocketNotifier * m_notifier;
-    QMutex m_mutex;
 
 };
 

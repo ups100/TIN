@@ -23,17 +23,19 @@ public:
     Commands(QString, Argument::Types);
     Commands(QString, QString, Argument::Types);
     Commands(QString, QString, QString, Argument::Types);
+    Commands(QString, QString, QString, QString, Argument::Types);
     QString getCommand();
     QString getParameter();
-    QVariant getArg(Argument::Types) const;
+    QString getArg(Argument::Types) const;
     Password getPassword() const;
     Argument::Types getFlague() const;
     bool isCorrect() const;
+    void shout() const;
     virtual ~Commands();
     bool invoke(); /* To do */
 private:
-    QString getAlias(Argument::Types) const;
-    QString getFileName(Argument::Types) const;
+    QString getData(Argument::Types) const;
+
 
     QString m_command;
     QString m_parameter;

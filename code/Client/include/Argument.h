@@ -24,21 +24,22 @@ public:
     {
         NONE = 0,
         ALIAS = 1,
-        FILELOCATION = 2,
-        FILENAME = 3,
+        NUMBER = 2,
+        NAME = 3,
+        ABS_PATH = 4,
+        REL_PATH = 5,
+        SYNCH = 6
     };
     Q_DECLARE_FLAGS(Types, Type)
     Argument();
     Argument(QString, Argument::Types);
     Argument::Types getFlague() const;
-    QString getAlias() const;
-    QString getFileName() const;
+    QString getData() const;
     virtual ~Argument();
 
 private:
-    Argument::Types flague;
-    QString m_filename;
-    QString m_alias;
+    Argument::Types m_flague;
+    QString m_data;
 
 };
 

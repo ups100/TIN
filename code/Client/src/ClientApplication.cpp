@@ -19,42 +19,42 @@ ClientApplication::ClientApplication(int argc, char **argv)
                 m_commandParser(), m_serverConnection(this, this),
                 m_DaemonCommunication(), m_view(new ClientView(*this))
 {
-    m_view->start();
+
 }
 
 ClientApplication::~ClientApplication()
 {
 
 }
-
+//QTimer::singleShot(3000, this, SLOT(waitForCommands()));
 void ClientApplication::onAliasConnected()
 {
-    m_view->showMessage("Connected to alias");
+    QTimer::singleShot(0,this,SLOT(onAliasConnectedSlot()));
 }
 
 void ClientApplication::onAliasConnectionError()
 {
-    m_view->showMessage("Not connected to alias, error appears");
+    QTimer::singleShot(0,this,SLOT(onAliasConnectionErrorSlot()));
 }
 
 void ClientApplication::onAliasCreated()
 {
-    m_view->showMessage("Alias created");
+    QTimer::singleShot(0,this,SLOT(onAliasConnectedSlot()));
 }
 
 void ClientApplication::onAliasCreationError()
 {
-    m_view->showMessage("Alias not created, error appears");
+    QTimer::singleShot(0,this,SLOT(onAliasCreationErrorSlot()));
 }
 
 void ClientApplication::onAliasDeleted()
 {
-    m_view->showMessage("Alias deleted successfully");
+    QTimer::singleShot(0,this,SLOT(onAliasDeletedSlot()));
 }
 
 void ClientApplication::onAliasDeletionError()
 {
-    m_view->showMessage("Alias not deleted successfully");
+    QTimer::singleShot(0,this,SLOT(onAliasDeletionErrorSlot()));
 }
 
 void ClientApplication::onAliasListed(const Utilities::AliasFileList& list)
@@ -64,45 +64,126 @@ void ClientApplication::onAliasListed(const Utilities::AliasFileList& list)
 
 void ClientApplication::onConnected()
 {
-    m_view->showMessage("Connected");
+    QTimer::singleShot(0,this,SLOT(onConnectedSlot()));
 }
 
 void ClientApplication::onDisconnected()
 {
-    m_view->showMessage("Disconnected");
+    QTimer::singleShot(0,this,SLOT(onDisconnectedSlot()));
 }
 
 void ClientApplication::onFileFound(const Utilities::FileLocation& location)
 {
-
+    //TODO
 }
 
 void ClientApplication::onFileNotFound()
 {
-    m_view->showMessage("File not found");
+    QTimer::singleShot(0,this,SLOT(onFileNotFoundSlot()));
 }
 
 void ClientApplication::onFileRemoved()
 {
-    m_view->showMessage("File removed");
+    QTimer::singleShot(0,this,SLOT(onFileRemovedSlot()));
 }
 
 void ClientApplication::onFileRemovingError()
 {
-    m_view->showMessage("Error while removing file");
+    QTimer::singleShot(0,this,SLOT(onFileRemovingErrorSlot()));
 }
 
 void ClientApplication::onFileTransferError()
 {
-    m_view->showMessage("File transfer error");
+    QTimer::singleShot(0,this,SLOT(onFileTransferErrorSlot()));
 }
 
 void ClientApplication::onFileTransferFinished()
 {
-    m_view->showMessage("File transfer finished");
+    QTimer::singleShot(0,this,SLOT(onFileTransferFinishedSlot()));
 }
 
 void ClientApplication::onFileTransferStarted()
+{
+    QTimer::singleShot(0,this,SLOT(onFileTransferStartedSlot()));
+}
+
+
+void ClientApplication::onAliasConnectedSlot()
+{
+    m_view->showMessage("Connected to alias");
+}
+
+void ClientApplication::onAliasConnectionErrorSlot()
+{
+    m_view->showMessage("Not connected to alias, error appears");
+}
+
+void ClientApplication::onAliasCreatedSlot()
+{
+    m_view->showMessage("Alias created");
+}
+
+void ClientApplication::onAliasCreationErrorSlot()
+{
+    m_view->showMessage("Alias not created, error appears");
+}
+
+void ClientApplication::onAliasDeletedSlot()
+{
+    m_view->showMessage("Alias deleted successfully");
+}
+
+void ClientApplication::onAliasDeletionErrorSlot()
+{
+    m_view->showMessage("Alias not deleted successfully");
+}
+
+void ClientApplication::onAliasListedSlot(const Utilities::AliasFileList& list)
+{
+    //TODO
+}
+
+void ClientApplication::onConnectedSlot()
+{
+    m_view->showMessage("Connected");
+}
+
+void ClientApplication::onDisconnectedSlot()
+{
+    m_view->showMessage("Disconnected");
+}
+
+void ClientApplication::onFileFoundSlot(const Utilities::FileLocation& location)
+{
+
+}
+
+void ClientApplication::onFileNotFoundSlot()
+{
+    m_view->showMessage("File not found");
+}
+
+void ClientApplication::onFileRemovedSlot()
+{
+    m_view->showMessage("File removed");
+}
+
+void ClientApplication::onFileRemovingErrorSlot()
+{
+    m_view->showMessage("Error while removing file");
+}
+
+void ClientApplication::onFileTransferErrorSlot()
+{
+    m_view->showMessage("File transfer error");
+}
+
+void ClientApplication::onFileTransferFinishedSlot()
+{
+    m_view->showMessage("File transfer finished");
+}
+
+void ClientApplication::onFileTransferStartedSlot()
 {
     m_view->showMessage("File transfer started");
 }
@@ -115,6 +196,7 @@ void ClientApplication::setView(boost::shared_ptr<ClientView> view)
 void ClientApplication::getString(QString s)
 {
   boost::shared_ptr<Commands> cmd =  m_commandParser.parseCommand(s);
+
 }
 
 int ClientApplication::start(const QHostAddress& address, quint16 port)
@@ -127,5 +209,9 @@ int ClientApplication::start(const QHostAddress& address, quint16 port)
     return m_application.exec();
 }
 
+bool ClientApplication::checkIfPossible(Commands& cmd)
+{
+    return true;
+}
 } //namespace Client
 } //namespace TIN_project

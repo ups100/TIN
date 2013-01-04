@@ -13,35 +13,12 @@ namespace Client {
 ClientView::ClientView(ClientApplication & app)
         : m_app(app)
 {
-    moveToThread(&m_thread);
-    //m_notifier = new QSocketNotifier(STDIN_FILENO, QSocketNotifier::Read);
-    //connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
+
+    m_notifier = new QSocketNotifier(STDIN_FILENO, QSocketNotifier::Read);
+    connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
 }
 
-void ClientView::start()
-{
-    if (m_thread.isRunning()) {
-        qDebug() << "Alias is already running";
-        return;
-    }
 
-    QEventLoop loop;
-
-    QObject::connect(&m_thread, SIGNAL(started()), &loop, SLOT(quit()));
-    QTimer::singleShot(0, &m_thread, SLOT(start()));
-
-    this->prompt();
-    loop.exec();
-    QTimer::singleShot(0, this, SLOT(waitForCommands()));
-}
-
-void ClientView::stop()
-{
-    QEventLoop loop;
-    QObject::connect(&m_thread, SIGNAL(finished()), &loop, SLOT(quit()));
-    QTimer::singleShot(0, &m_thread, SLOT(quit()));
-    loop.exec();
-}
 
 void ClientView::prompt()
 {
@@ -51,29 +28,21 @@ void ClientView::prompt()
 
 void ClientView::showMessage(QString s)
 {
-    m_mutex.lock();
     qDebug() << s << endl;
-    m_mutex.unlock();
-
 }
 
 void ClientView::waitForCommands()
 {
-    while(1)
-    {
-        QTextStream qtin(stdin);
-            QString m_string;
-            qtin >> m_string;
+   QTextStream qtin(stdin);
+   QString m_string;
+   m_string = qtin.readLine();
 
-            qDebug()<<m_string;
+   qDebug()<<m_string;
 
-            if(m_string == "stop") break;
 
-    }
-
-    QTimer::singleShot(3000, this, SLOT(waitForCommands()));
-    //QMetaObject::invokeMethod((QObject*) &m_app, "getString",
-            //        Qt::AutoConnection, Q_ARG(QString,m_string));
+    //QTimer::singleShot(3000, this, SLOT(waitForCommands()));
+    QMetaObject::invokeMethod((QObject*) &m_app, "getString",
+                    Qt::AutoConnection, Q_ARG(QString,m_string));
 
 
 }
