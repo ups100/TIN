@@ -22,7 +22,7 @@ namespace TIN_project {
 namespace Daemon {
 
 class DaemonThread : public FileTransferListener,
-        public ServerConnectionListener, public QThread
+        public ServerConnectionListener
 {
 
 public:
@@ -42,8 +42,9 @@ public:
     virtual void onSendFile(const QString& fileName, const QHostAddress& address, quint16 port);
     virtual void onTransferEnd(FileSender * sender);
     virtual void onTransferEnd(FileReciver * reciver);
+    /** @brief Stop DeamonThread communication */
     void stopThread();
-    void run();
+    //void start(); // it could return status of starting DeamonThread only
 
     boost::shared_ptr<DaemonConfiguration::Config> getConfig();
 
@@ -63,6 +64,11 @@ private:
      * @details If connection is established value true.
      */
     bool m_connectionOk;
+
+    /**
+     * @brief True if alias connected successful.
+     */
+    bool m_aliasConnected;
 
 };
 

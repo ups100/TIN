@@ -12,11 +12,24 @@
 namespace TIN_project {
 namespace Daemon {
 
+// static members of DaemonApplication class definition
+QMutex DaemonApplication::m_mutex;
+DaemonApplication *DaemonApplication::instance = NULL;
+
 DaemonApplication& DaemonApplication::getInstance()
 {
-    static DaemonApplication instance;
+    if(!instance) {
+        QMutexLocker locker(&m_mutex);
+        if (!instance)
+            instance = makeInstance(); //it will by call only once
+    }
 
-    return instance;
+    return *instance;
+}
+DaemonApplication* DaemonApplication::makeInstance()
+{
+    static DaemonApplication s;
+    return &s;
 }
 
 DaemonApplication::DaemonApplication()
@@ -33,7 +46,6 @@ void DaemonApplication::stopApplication()
 
     foreach (DaemonThread *dt, m_daemonThreads){
     dt->stopThread();
-    dt->wait();
     delete dt;
 }
     // Above we clean all things so object is clean:
@@ -42,13 +54,21 @@ void DaemonApplication::stopApplication()
 
 DaemonApplication::~DaemonApplication()
 {
-    // if nobody call stop method this object will be usually dirty
+    // if nobody call stopApplication() method this object will be usually dirty
     if (!m_isClean)
         stopApplication();
 }
 
-int DaemonApplication::start()
+int DaemonApplication::start(int argc, char **argv)
 {
+    QtSingleCoreApplication application(argc, argv);
+
+    // Check if it is first instance of application
+    if (application.isRunning()) {
+        qDebug() << "Another instance of daemon is now running";
+        return -1;
+    }
+
     // Run listener for local client
     m_clientCommunication.start();
 
@@ -58,29 +78,25 @@ int DaemonApplication::start()
         QHostAddress addr(QHostAddress::LocalHost);
         cnf->m_ip = addr.toString();
         cnf->m_port = 8080;
+        cnf->m_aliasId = "a";
         DaemonThread *dt = new DaemonThread(cnf);
-            dt->start();
+            //dt->start();  // TODO delete this line (look below)
             m_daemonThreads.append(dt);
     }
 
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
         qDebug() << "Tworze watek DaemonThread";
     DaemonThread *dt = new DaemonThread(cnf);
-    dt->start();
+    //dt->start();  //unnecessary because constructor above do everything
+    // TODO ewentualnie funkcję start można wykorzystać do tego żeby zwracała status DeamonThread
+    // i np jesli połączenie się nie powiodło to tutaj moglibyśmy coś zrobić
     m_daemonThreads.append(dt);
 }
-
-// TODO remove demo loop
-    qDebug() << "Waiting 4 a message from start() method";
-//    while (1) {
-//        qDebug() << ".";
-//        sleep(1);
-//    }
 
     // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
     m_isClean = false;
 
-    return 0;
+    return application.exec();
 }
 
 // TODO dispatch message to do what is needed
@@ -135,7 +151,7 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
     if (m_config.addConfig(config)) {
         DaemonThread *dt = new DaemonThread(config);
         m_daemonThreads.append(dt);
-        dt->start();
+        //dt->start();  // TODO delete this line
     }
 }
 

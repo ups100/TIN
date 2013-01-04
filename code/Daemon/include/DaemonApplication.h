@@ -16,6 +16,7 @@
 #include <QList>
 #include <QHostAddress>
 #include <QString>
+#include <QMutexLocker>
 
 #include "qtsinglecoreapplication.h"
 
@@ -28,7 +29,7 @@ public:
 
     virtual ~DaemonApplication();
 
-    int start();
+    int start(int argc, char **argv);
     /**
      * @brief Call this method instead of ~DaemonApplication
      */
@@ -61,6 +62,7 @@ public:
      * @return DaemonApplication class current instance.
      */
     static DaemonApplication& getInstance();
+    static DaemonApplication* makeInstance();
 
 private:
     /**
@@ -79,6 +81,16 @@ private:
 
     /** Daemon threads configuration */
     DaemonConfiguration m_config;
+
+    /**
+     * @brief Singleton implementation.
+     */
+    static DaemonApplication *instance;
+
+    /**
+     * @brief Mutex which lock singletron's function
+     */
+    static QMutex m_mutex;
 
     /**
      * @brief This variable is used in start and stop method to show destructor to clean behind this object

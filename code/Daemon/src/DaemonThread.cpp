@@ -28,11 +28,18 @@ DaemonThread::DaemonThread()
     //create an object to connect to the server
     m_ServerConnection = new ServerConnection(this);
     m_connectionOk = false; //connection not established
+    m_aliasConnected = false; //alias not connected
 }
 
 DaemonThread::~DaemonThread()
 {
-
+    if (m_connectionOk) qDebug() << "Usuwam polaczenie w destruktorze";
+    if (m_connectionOk)
+        stopThread();
+    // TODO choose:
+    m_ServerConnection->deleteLater();
+    // or if in m_ServerConnection is no event loop choose this:
+    // delete m_ServerConnection;
 }
 
 DaemonThread::DaemonThread(
@@ -41,27 +48,39 @@ DaemonThread::DaemonThread(
 {
     m_ServerConnection = new ServerConnection(this);
     m_connectionOk = false;
+    m_aliasConnected = false;
     m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip), m_config->m_port);
 }
 
 void DaemonThread::onAliasConnected()
 {
-
+    qDebug() << "Alias connected successful";
+    if (m_aliasConnected) {
+        qDebug() << "Error. Double AliasConnected information from server to DeamonThread";
+    }else
+        m_aliasConnected = true;
 }
 
 void DaemonThread::onAliasConnectionError()
 {
+    qDebug() << "Unsuccessful connection to the Alias: ";
+    qDebug() << m_config->m_aliasId;
 
+    m_aliasConnected = false;
 }
 
 void DaemonThread::onConnected()
 {
-    qDebug() << "Connection to server successful.";
     if (m_connectionOk) {
         qDebug() << "Incoming connection from server after previous connection was established. Double onConnected().";
         m_connectionOk = false;
     } else
+    {
+        qDebug() << "Connection to server successful. Starting connection to alias... ";
         m_connectionOk = true;  // if everything OK
+        m_ServerConnection->connectToAlias(m_config->m_aliasId, Utilities::Password(m_config->m_password));
+    }
+
 }
 
 void DaemonThread::onDisconnected()
@@ -196,26 +215,26 @@ void DaemonThread::onTransferEnd(FileReciver * reciver)
 
 void DaemonThread::stopThread()
 {
-    // instead of Kajo propose:
-    //terminate();
-    // I recommend quit() function
-    m_ServerConnection->disconnectFromServer();
-    m_connectionOk = false;
-    quit(); // ending DeamonThread event loop
+    if (m_connectionOk) {
+        // nevertheless disconnectFromServer() succeed or not, I select connection false
+        m_connectionOk = false;
+        m_aliasConnected = false;
+        m_ServerConnection->disconnectFromServer();
+    }
 }
 
-void DaemonThread::run()
-{
-    // TODO connect to server and start listening
-//    while (1) {
-////        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
-////                << m_config->m_aliasId;
-//        sleep(5);
-//    }
-
-    // start event loop
-    exec();
-}
+//void DaemonThread::start()
+//{
+//    // TODO connect to server and start listening <-- // it has been done by constructor (comment by js)
+////    while (1) {
+//////        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
+//////                << m_config->m_aliasId;
+////        sleep(5);
+////    }
+//
+//    // start event loop
+//    // exec();
+//}
 
 boost::shared_ptr<DaemonConfiguration::Config> DaemonThread::getConfig()
 {

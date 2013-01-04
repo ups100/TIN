@@ -17,19 +17,7 @@ void signal_handler(int sig)
 
 int main(int argc, char **argv)
 {
-    QtSingleCoreApplication a(argc, argv);
-
-    // Check if it is first instance of application
-    if (a.isRunning()) {
-        qDebug() << "Another instance of daemon is now running";
-        return -1;
-    }
-
     signal(SIGINT, signal_handler);
 
-    TIN_project::Daemon::DaemonApplication &daemon = TIN_project::Daemon::DaemonApplication::getInstance();
-    //app = &daemon; // już niepotrzebne bo jest Singleton
-    daemon.start();
-
-    return a.exec();
+    return TIN_project::Daemon::DaemonApplication::getInstance().start(argc, argv);
 }
