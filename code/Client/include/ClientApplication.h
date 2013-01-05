@@ -69,8 +69,9 @@ enum State
     bool checkIfPossible(boost::shared_ptr<Commands>);
     void setState(ClientApplication::States);
     ClientApplication::States getState() const;
-private slots:
     void getString(QString);
+private slots:
+
 
     void onAliasConnectedSlot();
     void onAliasConnectionErrorSlot();

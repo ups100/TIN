@@ -25,17 +25,21 @@ public:
     ClientView(ClientApplication &);
     virtual ~ClientView();
     void prompt();
+<<<<<<< HEAD
+=======
+
+>>>>>>> f33700756bdf059ae9a6f50dd42070eef5404d2c
+    void disconnectNotifier();
     void showMessage(QString);
 signals:
     void sendMessage(QString);
 
-public slots:
-    void reconnectNotifier();
+    public slots:
+    void showMessage();
 
 private slots:
     void waitForCommands();
     void emptyRead();
-
 
 private:
     ClientApplication & m_app;

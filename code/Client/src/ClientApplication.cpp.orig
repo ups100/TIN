@@ -197,8 +197,19 @@ void ClientApplication::setView(boost::shared_ptr<ClientView> view)
 
 void ClientApplication::getString(QString s)
 {
+
+
   boost::shared_ptr<Commands> cmd =  m_commandParser.parseCommand(s);
-  QTimer::singleShot(10000, &(*m_view), SLOT(reconnectNotifier()));
+
+<<<<<<< HEAD
+  qDebug()<<"Koniec petli";
+  //QTimer::singleShot(10000,&(*m_view),SLOT(showMessage("HELLO")));
+  m_view->showMessage("TR");
+=======
+  qDebug()<<"Koniec getString czekamy na odp z serwera";
+
+  QTimer::singleShot(3000, &(*m_view), SLOT(showMessage()));
+>>>>>>> f33700756bdf059ae9a6f50dd42070eef5404d2c
   (*this).setState(ClientApplication::CONNECTED);
 
 }
