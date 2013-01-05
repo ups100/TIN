@@ -6,6 +6,7 @@
 ///////////////////////////////////////////////////////////
 
 #include "ClientView.h"
+#include "ClientApplication.h"
 #include <QThread>
 namespace TIN_project {
 namespace Client {
@@ -25,10 +26,12 @@ void ClientView::prompt()
     qDebug() << "Welcome to our program. Type some command" << endl;
 }
 
-
-void ClientView::showMessage(QString s)
+void ClientView::showMessage(QString s) {
+    qDebug()<<s;
+}
+void ClientView::showMessage()
 {
-    qDebug() << s;
+    qDebug()<<"teraz znowu mozna pisac";
         disconnect(m_notifier,SIGNAL(activated(int)), this, SLOT(emptyRead()));
         connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
 
@@ -49,11 +52,10 @@ void ClientView::waitForCommands()
    QString m_string;
    m_string = qtin.readLine();
 
-    QMetaObject::invokeMethod((QObject*) &m_app, "getString",
-                    Qt::AutoConnection, Q_ARG(QString,m_string));
     disconnect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
       connect(m_notifier,SIGNAL(activated(int)), this, SLOT(emptyRead()));
 
+      m_app.getString("HELLO");
 
     //m_notifier->setEnabled(false);
    //disconnect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
@@ -62,6 +64,7 @@ void ClientView::waitForCommands()
 
 void ClientView::emptyRead()
 {
+    qDebug()<<"empty read";
         QTextStream qtin(stdin);
         QString m_string;
         m_string = qtin.readLine();

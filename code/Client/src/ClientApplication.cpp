@@ -17,7 +17,7 @@ namespace Client {
 ClientApplication::ClientApplication(int argc, char **argv)
         : m_state(ClientApplication::NOT_CONNECTED),m_application((QString) "TIN_project_Client", argc, argv),
                 m_commandParser(), m_serverConnection(this, this),
-                m_DaemonCommunication(), m_view(new ClientView(*this))
+                m_DaemonCommunication(), m_view(new ClientView(*this)), works(false)
 {
 
 }
@@ -201,9 +201,9 @@ void ClientApplication::getString(QString s)
 
   boost::shared_ptr<Commands> cmd =  m_commandParser.parseCommand(s);
 
-  qDebug()<<"Koniec petli";
+  qDebug()<<"Koniec getString czekamy na odp z serwera";
 
-  QTimer::singleShot(10000, m_view, SLOT(showMessage("HELLO")));
+  QTimer::singleShot(3000, &(*m_view), SLOT(showMessage()));
   (*this).setState(ClientApplication::CONNECTED);
 
 }

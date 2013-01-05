@@ -69,8 +69,9 @@ enum State
     bool checkIfPossible(boost::shared_ptr<Commands>);
     void setState(ClientApplication::States);
     ClientApplication::States getState() const;
-private slots:
     void getString(QString);
+private slots:
+
 
     void onAliasConnectedSlot();
     void onAliasConnectionErrorSlot();
@@ -90,7 +91,7 @@ private slots:
     void onFileTransferStartedSlot();
 
 private:
-    bool works = false;
+    bool works;
     ClientApplication::States m_state;
     QtSingleCoreApplication m_application;
     CommandParser m_commandParser;
