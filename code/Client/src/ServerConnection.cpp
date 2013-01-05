@@ -235,7 +235,7 @@ void ServerConnection::socketDisconnectedSlot()
     m_isReadyState = false;
     m_isClosing = true;
     m_mutex.unlock();
-
+    qDebug()<<"socket disconnected";
     this->moveToThread(m_creatorThread);
     m_additionalThread.moveToThread(m_creatorThread);
 
@@ -260,7 +260,7 @@ void ServerConnection::threadFinishedSlot()
 
     delete m_socket;
     m_socket = 0L;
-
+    qDebug()<<"thread finished";
     if (m_serverListener != 0L) {
         m_serverListener->onDisconnected();
     }
