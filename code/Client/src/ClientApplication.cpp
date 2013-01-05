@@ -9,7 +9,7 @@
 #include "AliasFileList.h"
 #include "FileLocation.h"
 
-#include "AliasFileList.h"
+#include "CommunicationProtocol.h"
 const static QString NAME_OF_FILE = "/lua_tutorial.txt";
 namespace TIN_project {
 namespace Client {
@@ -261,11 +261,19 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         m_serverConnection.createAlias(cmd->getArg(), cmd->getPassword());
     } else if (cmd->getCommand() == "add") {
         //(*this).setState(ClientApplication::WAITING);
-        Utilities::CommunicationProtocol::Communicate<Utilities::CommunicationProtocol::ADD_DIRECTORY> message(Utilities::Message(m_alias,m_password),
-                cmd->getArg(),m_address,m_port));
-        //TODO TO DAEMON
+        Utilities::CommunicationProtocol::Communicate<
+             Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+             Utilities::Message(m_alias,
+             m_password,
+             cmd->getArg(),
+             m_address, m_port));
+        m_DaemonCommunication.talkToDaemon(message.toQByteArray());
+        //TODO needs check
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d")) {
         //(*this).setState(ClientApplication::WAITING);
+        Utilities::CommunicationProtocol::Communicate<
+        Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
+        Utilities::Message(m_alias,cmd->getArg()));
         //TODO TO DAEMON
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a")) {
         //(*this).setState(ClientApplication::WAITING);
