@@ -92,12 +92,6 @@ void DaemonApplication::dispatchMessage(const QByteArray &communicate)
     } else {
         return;
     }
-
-    // TODO to remove debug
-    if (m_daemonThreads.size())
-        m_daemonThreads.at(qrand() % m_daemonThreads.size())->onListFiles();
-
-    qDebug() << "Waiting 4 a next message"; // TODO remove
 }
 
 void DaemonApplication::addCatalogueToAlias(const QString &path,
