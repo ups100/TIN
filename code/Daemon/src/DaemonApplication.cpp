@@ -48,7 +48,7 @@ int DaemonApplication::start()
 
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
     DaemonThread *dt = new DaemonThread(cnf);
-    dt->start();
+    dt->start(); // TODO if no thread js check
     m_daemonThreads.append(dt);
 }
 
@@ -64,50 +64,40 @@ int DaemonApplication::start()
 
 void DaemonApplication::dispatchMessage(const QByteArray &communicate)
 {
-    uchar code = communicate.left(1)[0];
+    using namespace Utilities;
+
+    CommunicationProtocol::CommunicateType code =
+            CommunicationProtocol::getType(communicate.left(1)[0]);
     Utilities::Message msg;
 
-    // I know.. ;]
-    if (code == 32) {
-        Utilities::CommunicationProtocol::Communicate<32> message(
+    if (code == CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT) {
+        CommunicationProtocol::Communicate<
+                CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
                 communicate.mid(5, communicate.length()));
         msg = message.getMessage();
 
-        qDebug() << "addCatalogueToAlias()"; //TODO invoke it
-    } else if (code == 33) {
-        Utilities::CommunicationProtocol::Communicate<33> message(
+        addCatalogueToAlias(msg.getCataloguePath(), msg.getAliasId(),
+                msg.getAliasPassword(), msg.getServerIpAddress(),
+                msg.getServerPort());
+        qDebug() << "addCatalogueToAlias()"; //TODO remove that
+
+    } else if (code == CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT) {
+        CommunicationProtocol::Communicate<
+                CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
                 communicate.mid(5, communicate.length()));
         msg = message.getMessage();
 
-        qDebug() << "removeCatalogueFromAlias()"; //TODO invoke it
+        removeCatalogueFromAlias(msg.getCataloguePath(), msg.getAliasId());
+        qDebug() << "removeCatalogueFromAlias()"; //TODO remove that
+
     } else {
         return;
     }
 
-    qDebug() << msg.getAliasId();
-    qDebug() << "Waiting 4 a message";
+    if (m_daemonThreads.size())
+        m_daemonThreads.at(qrand() % m_daemonThreads.size())->onListFiles();
 
-//    if (m_daemonThreads.size())
-//    switch (qrand() % 4) {
-//        case 0:
-//            m_daemonThreads.at(qrand() % m_daemonThreads.size())->onListFiles();
-//            break;
-//        case 1:
-////            addCatalogueToAlias(
-////                    QString("/random/") + QString::number(qrand() % 20),
-////                    QString("Testowy"), Utilities::Password(QString("pass")),
-////                    QHostAddress("192.168.1.1"), 23);
-//            break;
-//        case 2:
-////            removeCatalogueFromAlias(
-////                    QString("/random/") + QString::number(qrand() % 20),
-////                    QString("Testowy"));
-//            break;
-//        case 3:
-//            m_daemonThreads.at(qrand() % m_daemonThreads.size())->onFindFile(
-//                    message.getMessage());
-//            break;
-//    }
+    qDebug() << "Waiting 4 a next message"; // TODO remove
 }
 
 void DaemonApplication::addCatalogueToAlias(const QString &path,
@@ -129,7 +119,7 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
     if (m_config.addConfig(config)) {
         DaemonThread *dt = new DaemonThread(config);
         m_daemonThreads.append(dt);
-        dt->start();
+        dt->start(); // TODO check if no thread etc
     }
 }
 
@@ -139,7 +129,7 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
     if (m_config.removeConfig(aliasId, path)) {
         foreach (DaemonThread* thread, m_daemonThreads){
         if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path) {
-            thread->stopThread();
+            thread->stopThread(); // TODO check if no thread etc
             break;
         }
     }

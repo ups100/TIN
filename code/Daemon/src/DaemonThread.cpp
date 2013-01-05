@@ -19,6 +19,7 @@
 #include "FileTree.h"
 #include "DaemonApplication.h"
 #include "AliasFileList.h"
+#include "Password.h"
 #include <QDir>
 #include <QFile>
 #include <QBuffer>
@@ -28,6 +29,7 @@
 #include <QXmlStreamReader>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QHostAddress>
 #include <stdexcept>
 
 namespace TIN_project {
@@ -40,12 +42,12 @@ DaemonThread::DaemonThread()
 
 DaemonThread::~DaemonThread()
 {
-
+    delete m_ServerConnection;
 }
 
 DaemonThread::DaemonThread(
         boost::shared_ptr<DaemonConfiguration::Config> config)
-        : m_config(config)
+        : m_config(config), m_ServerConnection(new ServerConnection(this))
 {
 
 }
@@ -62,12 +64,13 @@ void DaemonThread::onAliasConnectionError()
 
 void DaemonThread::onConnected()
 {
-
+    qDebug() << "CONNECTING";
+//    m_ServerConnection->connectToAlias(m_config->m_aliasId, Utilities::Password(m_config->m_password));
 }
 
 void DaemonThread::onDisconnected()
 {
-
+    qDebug() << "DISCONNECTED";
 }
 
 void DaemonThread::onFileNotRemoved()
@@ -200,6 +203,9 @@ void DaemonThread::stopThread()
 
 void DaemonThread::run()
 {
+    m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip),
+            m_config->m_port);
+
     // TODO connect to server and start listening
     while (1) {
 //        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "

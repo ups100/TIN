@@ -120,16 +120,21 @@ void ClientApplication::start()
         if (strcmp(buf, "quit") == 0)
             break;
 
-//        m_DaemonCommunication.talkToDaemon(Utilities::Message("id aliasu", Utilities::Password(QString("passwd")), "/home/kajo/workspace/tin", "127.0.0.1", 8080));
+//        // ADD DIRECTORY TO ALIAS
+//        Utilities::CommunicationProtocol::Communicate<
+//                Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+//                Utilities::Message(QString(buf),
+//                        Utilities::Password(QString("passwd")),
+//                        "/home/kajo/workspace/tin/testDir1",
+//                        QHostAddress("127.0.0.1"), 8080));
 
-        // TODO remove
-        Utilities::CommunicationProtocol::Communicate<
-                Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
-                Utilities::Message(QString(buf),
-                        Utilities::Password(QString("passwd")),
-                        "/home/abc/tin", QHostAddress("127.0.0.1"), 8080));
+//        // REMOVE DIRECTORY FROM ALIAS
+//        Utilities::CommunicationProtocol::Communicate<
+//                Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
+//                Utilities::Message(QString(buf),
+//                        "/home/kajo/workspace/tin/testDir2"));
 
-        m_DaemonCommunication.talkToDaemon(message.toQByteArray());
+//        m_DaemonCommunication.talkToDaemon(message.toQByteArray());
 
     } while (1);
 }
