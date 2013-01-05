@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     QString tmp3 = "/home/marta/cos";
     QString tmp4 = "/home/marta/cos/cos2";
     QString tmp5 = "/home/marcin/nowy";
-
+    QString tmp6 = "/users/home/marcin/nowy2";
 
     afl.addFile(tmp,"2",3);
     afl.addFile(tmp2,"3", 4);
@@ -33,6 +33,7 @@ int main(int argc, char **argv)
     afl.addFile(tmp4,"3",5);
     afl.addFile(tmp5,"4",6);
     afl.addFile(tmp5,"5",7);
+    //afl.addFile(tmp6,"5",6);
 
     afl.str();
     ClientApplication app(argc,argv);

@@ -18,7 +18,7 @@ Commands::Commands()
 
 Commands::Commands(QString command, Argument::Types f)
 {
-    //LS or DISCONNECT
+    //LS, DISCONNECT, EXIT
     m_correct = true;
     m_flague = f;
     m_command = command;
@@ -102,15 +102,7 @@ Commands::Commands(QString command, QString arg1, QString arg2, QString arg3, Ar
     shout();
 }
 
-bool Commands::invoke()
-{
-    if (!m_correct) {
-        qDebug()<<"You can't invoke this command, because is incorrect"<<endl;
-        return false;
-    }
-    //TODO don't know what to do here exactly
-    return true;
-}
+
 
 /**
  * @brief getter for the command

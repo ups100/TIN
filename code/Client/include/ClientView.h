@@ -15,6 +15,7 @@
 #include <QMutex>
 #include <QSocketNotifier>
 #include <QEventLoop>
+#include "AliasFileList.h"
 namespace TIN_project {
 namespace Client {
 class ClientApplication;
@@ -26,6 +27,7 @@ public:
     virtual ~ClientView();
     void prompt();
     void showMessage(QString);
+    void showList(Utilities::AliasFileList&);
 signals:
     void sendMessage(QString);
 

@@ -41,6 +41,7 @@ private:
                 SYNCH,
                 CHOOSE,
                 DISCONNECT,
+                EXIT,
             };
     QStringList commandList;
 

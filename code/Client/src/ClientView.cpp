@@ -38,7 +38,7 @@ void ClientView::waitForCommands()
    QString m_string;
    m_string = qtin.readLine();
    /**
-    * If statement just for test, first command is not read, next are read
+    * "If" statement just for test, first command is not read, next are read
     */
    if(m_app.getState() != ClientApplication::NOT_CONNECTED)
    {
@@ -47,7 +47,7 @@ void ClientView::waitForCommands()
        m_app.getCommand(m_string);
    }
    else
-       m_app.setState(ClientApplication::CONNECTED);
+       m_app.setState(ClientApplication::LOGGED);
    return;
 }
 
@@ -64,6 +64,10 @@ void ClientView::reconnectNotifier()
     connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
 }
 
+void ClientView::showList(AliasFileList& afl)
+{
+    afl.str();
+}
 ClientView::~ClientView()
 {
     qDebug() << "DESTRUKTOR" << endl;

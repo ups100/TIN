@@ -71,9 +71,8 @@ enum State
     void setState(ClientApplication::States);
     ClientApplication::States getState() const;
     void getCommand(QString);
+
 private slots:
-
-
     void onAliasConnectedSlot();
     void onAliasConnectionErrorSlot();
     void onAliasCreatedSlot();
@@ -97,12 +96,17 @@ private:
     bool checkRelativePath(QString) const;
     bool checkAbsolutePath(QString) const;
     bool checkIfConfigFileExists() const;
+    bool invokeCommand(boost::shared_ptr<Commands>);
     ClientApplication::States m_state;
     QtSingleCoreApplication m_application;
     CommandParser m_commandParser;
     ServerConnection m_serverConnection;
     DaemonCommunication m_DaemonCommunication;
     boost::shared_ptr<ClientView> m_view;
+    QString m_alias;
+    Password m_password;
+    QHostAddress m_address;
+    quint16 m_port;
 
 };
 

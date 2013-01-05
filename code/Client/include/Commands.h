@@ -32,7 +32,6 @@ public:
     bool isCorrect() const;
     void shout() const;
     virtual ~Commands();
-    bool invoke(); /* To do */
 private:
     QString getData(Argument::Types) const;
 

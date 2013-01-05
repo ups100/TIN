@@ -20,7 +20,7 @@ namespace Client {
 
 CommandParser::CommandParser()
 {
-   commandList.push_back("connect");
+   commandList.push_back("log");
    commandList.push_back("create");
    commandList.push_back("add");
    commandList.push_back("rm");
@@ -32,6 +32,7 @@ CommandParser::CommandParser()
    commandList.push_back("synch");
    commandList.push_back("choose");
    commandList.push_back("disconnect");
+   commandList.push_back("exit");
 }
 
 
@@ -101,7 +102,7 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
     {
         if((tmpParameters.size() == 1) && (tmpParameters[0] == "d") && (tmpArguments.size() == 1))
             return shared_ptr<Commands>(new Commands(tmpCommand, tmpParameters[0], tmpArguments[0], Argument::REL_PATH));
-        else if ((tmpParameters.size() == 1) && (tmpParameters[0] == "a")&& (tmpArguments.size() == 2))
+        else if ((tmpParameters.size() == 1) && (tmpParameters[0] == "a") && (tmpArguments.size() == 2))
             return shared_ptr<Commands>(new Commands(tmpCommand,tmpParameters[0], tmpArguments[0], tmpArguments[1], Argument::ALIAS));
         else if ((tmpParameters.size() == 0) && (tmpArguments.size() == 1))
             return shared_ptr<Commands>(new Commands(tmpCommand, tmpArguments[0], Argument::REL_PATH));
@@ -161,6 +162,12 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
     {
         if((tmpParameters.size() == 0) && (tmpArguments.size() == 0))
             return shared_ptr<Commands>(new Commands(tmpCommand, Argument::NONE));
+        else return shared_ptr<Commands>(new Commands());
+    }
+    else if (tmpCommand == commandList[EXIT])
+    {
+        if((tmpParameters.size() == 0) && (tmpArguments.size() == 0))
+            return shared_ptr<Commands>(new Commands(tmpCommand,Argument::NONE));
         else return shared_ptr<Commands>(new Commands());
     }
     else return shared_ptr<Commands>(new Commands());
