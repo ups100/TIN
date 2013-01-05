@@ -40,7 +40,8 @@ enum State
        NOT_CONNECTED = 0,
        CONNECTED = 1,
        WAITING = 2,
-       FILELIST = 3,
+       WAITING_FOR_DISCONNECT = 3,
+       FILELIST = 4,
    };
     Q_DECLARE_FLAGS(States, State)
     ClientApplication(int, char**);
@@ -65,7 +66,9 @@ enum State
     void setView(boost::shared_ptr<ClientView> view);
     int start(const QHostAddress&, quint16);
     void talkToDaemon(Utilities::Message message);
-    bool checkIfPossible(Commands&);
+    bool checkIfPossible(boost::shared_ptr<Commands>);
+    void setState(ClientApplication::States);
+    ClientApplication::States getState() const;
 private slots:
     void getString(QString);
 
@@ -87,6 +90,7 @@ private slots:
     void onFileTransferStartedSlot();
 
 private:
+    bool works = false;
     ClientApplication::States m_state;
     QtSingleCoreApplication m_application;
     CommandParser m_commandParser;

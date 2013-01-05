@@ -26,12 +26,13 @@ public:
     virtual ~ClientView();
     void prompt();
     void showMessage(QString);
-
+    void disconnectNotifier();
 signals:
     void sendMessage(QString);
 
 private slots:
     void waitForCommands();
+    void emptyRead();
 
 private:
     ClientApplication & m_app;

@@ -26,7 +26,7 @@ ClientApplication::~ClientApplication()
 {
 
 }
-//QTimer::singleShot(3000, this, SLOT(waitForCommands()));
+
 void ClientApplication::onAliasConnected()
 {
     QTimer::singleShot(0,this,SLOT(onAliasConnectedSlot()));
@@ -110,7 +110,9 @@ void ClientApplication::onFileTransferStarted()
 
 void ClientApplication::onAliasConnectedSlot()
 {
+
     m_view->showMessage("Connected to alias");
+
 }
 
 void ClientApplication::onAliasConnectionErrorSlot()
@@ -195,7 +197,14 @@ void ClientApplication::setView(boost::shared_ptr<ClientView> view)
 
 void ClientApplication::getString(QString s)
 {
+
+
   boost::shared_ptr<Commands> cmd =  m_commandParser.parseCommand(s);
+
+  qDebug()<<"Koniec petli";
+
+  QTimer::singleShot(10000, m_view, SLOT(showMessage("HELLO")));
+  (*this).setState(ClientApplication::CONNECTED);
 
 }
 
@@ -209,9 +218,19 @@ int ClientApplication::start(const QHostAddress& address, quint16 port)
     return m_application.exec();
 }
 
-bool ClientApplication::checkIfPossible(Commands& cmd)
+bool ClientApplication::checkIfPossible(boost::shared_ptr<Commands> cmd)
 {
     return true;
+}
+
+void ClientApplication::setState(ClientApplication::States s)
+{
+    m_state = s;
+}
+
+ClientApplication::States ClientApplication::getState() const
+{
+    return m_state;
 }
 } //namespace Client
 } //namespace TIN_project

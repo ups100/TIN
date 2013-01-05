@@ -28,4 +28,6 @@ int main(int argc, char **argv)
     QNetworkInterface *inter=new QNetworkInterface();
     QList<QHostAddress> list = inter->allAddresses();
     return app.start(list.first(), 8080);
+
+
 }

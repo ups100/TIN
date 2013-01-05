@@ -28,7 +28,19 @@ void ClientView::prompt()
 
 void ClientView::showMessage(QString s)
 {
-    qDebug() << s << endl;
+    qDebug() << s;
+        disconnect(m_notifier,SIGNAL(activated(int)), this, SLOT(emptyRead()));
+        connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
+
+    //fflush(stdin);
+    //QTextStream qtin(stdin);
+    //qtin.readAll();
+
+    //delete m_notifier;
+    //m_notifier = new QSocketNotifier(STDIN_FILENO, QSocketNotifier::Read);
+    //connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
+    //m_notifier->setEnabled(true);
+    return;
 }
 
 void ClientView::waitForCommands()
@@ -37,14 +49,26 @@ void ClientView::waitForCommands()
    QString m_string;
    m_string = qtin.readLine();
 
-   qDebug()<<m_string;
-
-
-    //QTimer::singleShot(3000, this, SLOT(waitForCommands()));
     QMetaObject::invokeMethod((QObject*) &m_app, "getString",
                     Qt::AutoConnection, Q_ARG(QString,m_string));
+    disconnect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
+      connect(m_notifier,SIGNAL(activated(int)), this, SLOT(emptyRead()));
 
 
+    //m_notifier->setEnabled(false);
+   //disconnect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
+    return;
+}
+
+void ClientView::emptyRead()
+{
+        QTextStream qtin(stdin);
+        QString m_string;
+        m_string = qtin.readLine();
+}
+void ClientView::disconnectNotifier()
+{
+    disconnect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
 }
 
 ClientView::~ClientView()

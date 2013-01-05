@@ -62,16 +62,14 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
     Argument::Types flag;
 
 
-    qDebug()<<"WORD LIST SIZE"<<wordList.size();
     tmpCommand = wordList[0];
+
     for (int i = 1; i<wordList.size(); ++i) {
         if (wordList[i].startsWith("-"))
             tmpParameters.push_back((wordList[i].remove(0,1)));
         else
             tmpArguments.push_back(wordList[i]);
     }
-    qDebug()<<"ILOSC PARAMETROW TO "<<tmpParameters.size();
-    qDebug()<<"ILOSC ARGUMENTOW TO "<<tmpArguments.size();
     tmpCommand = tmpCommand.toLower();
     for (int i = 0; i<tmpParameters.size(); ++i) {
         tmpParameters[i] = tmpParameters[i].toLower();
