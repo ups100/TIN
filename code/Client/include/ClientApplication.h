@@ -18,7 +18,7 @@
 #include "ServerConnectionListener.h"
 #include "AliasCommunicationListener.h"
 #include "Message.h"
-
+#include "ConfigFileName.h"
 #include "qtsinglecoreapplication.h"
 
 namespace TIN_project {
@@ -37,11 +37,13 @@ Q_OBJECT;
 public:
 enum State
    {
+       IDLE = 0,
        NOT_CONNECTED = 0,
        CONNECTED = 1,
        WAITING = 2,
        WAITING_FOR_DISCONNECT = 3,
        FILELIST = 4,
+       LOGGED = 5
    };
     Q_DECLARE_FLAGS(States, State)
     ClientApplication(int, char**);
@@ -66,10 +68,9 @@ enum State
     void setView(boost::shared_ptr<ClientView> view);
     int start(const QHostAddress&, quint16);
     void talkToDaemon(Utilities::Message message);
-    bool checkIfPossible(boost::shared_ptr<Commands>);
     void setState(ClientApplication::States);
     ClientApplication::States getState() const;
-    void getString(QString);
+    void getCommand(QString);
 private slots:
 
 
@@ -91,7 +92,11 @@ private slots:
     void onFileTransferStartedSlot();
 
 private:
-    bool works;
+    bool checkIntegrity(boost::shared_ptr<Commands>) const;
+    bool checkStateCondition(boost::shared_ptr<Commands>) const;
+    bool checkRelativePath(QString) const;
+    bool checkAbsolutePath(QString) const;
+    bool checkIfConfigFileExists() const;
     ClientApplication::States m_state;
     QtSingleCoreApplication m_application;
     CommandParser m_commandParser;

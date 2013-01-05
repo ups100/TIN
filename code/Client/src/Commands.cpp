@@ -137,7 +137,7 @@ QString Commands::getParameter()
  * @brief getter for the argument
  * @return QString
  */
-QString Commands::getArg(Argument::Types f) const
+QString Commands::getArg() const
 {
     return m_argument.getData();
 }
@@ -193,6 +193,7 @@ void Commands::shout() const
 {
     qDebug()<<"UDALO SIE"<<endl;
 }
+
 Commands::~Commands()
 {
 

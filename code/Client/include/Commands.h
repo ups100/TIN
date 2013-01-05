@@ -11,7 +11,7 @@
 #include <QDebug>
 #include <QStringList>
 #include <QVariant>
-#include <../include/Argument.h>
+#include "Argument.h"
 namespace TIN_project {
 namespace Client {
 using namespace TIN_project::Utilities;
@@ -26,7 +26,7 @@ public:
     Commands(QString, QString, QString, QString, Argument::Types);
     QString getCommand();
     QString getParameter();
-    QString getArg(Argument::Types) const;
+    QString getArg() const;
     Password getPassword() const;
     Argument::Types getFlague() const;
     bool isCorrect() const;

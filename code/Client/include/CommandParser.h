@@ -11,11 +11,11 @@
 #include <QString>
 #include <QStringList>
 #include <boost/shared_ptr.hpp>
-
+#include "Commands.h"
 namespace TIN_project {
 namespace Client {
 
-class Commands;
+
 class CommandParser
 {
 
@@ -29,13 +29,14 @@ public:
 private:
     enum commandListEnum
             {
-                LOG,
+                CONNECT_TO_ALIAS,
                 CREATE,
                 ADD,
                 REMOVE,
                 FIND,
                 READ,
                 PUSH,
+                PULL,
                 LS,
                 SYNCH,
                 CHOOSE,

@@ -87,11 +87,17 @@ void AliasTree::str(int indent)
 {
     foreach (boost::shared_ptr<AliasTree> atree, m_dirContent){
     if (atree->isFile()) {
-        std::cout.width(indent * 4); std::cout<<" ";
-        std::cout<<atree->getFilename().toStdString()<<"\t(x"<<atree->m_fileLocations.size()<<")"<<"\t"<<atree->m_fileLocations.first().m_date.toStdString()<<"\t"<<atree->m_fileLocations.first().m_size<<"\t"<<atree->m_fileLocations.first().m_id.toStdString()<<"\n";
+        //std::cout.width(indent * 4); std::cout<<" ";
+        //std::cout<<atree->getFilename().toStdString()<<"\t(x"<<atree->m_fileLocations.size()<<")"<<"\t"<<atree->m_fileLocations.first().m_date.toStdString()<<"\t"<<atree->m_fileLocations.first().m_size<<"\t"<<atree->m_fileLocations.first().m_id.toStdString()<<"\n";
+        for(int i = 0; i<atree->m_fileLocations.size();++i)
+        {
+            std::cout.width(indent * 4); std::cout<<" ";
+                  std::cout<<atree->getFilename().toStdString()<<"\t"<<atree->m_fileLocations[i].m_date.toStdString()<<"\t"<<atree->m_fileLocations[i].m_size<<"\t"<<atree->m_fileLocations[i].m_id.toStdString()<<"\n";
+        }
     } else {
         std::cout.width(indent * 4); std::cout<<" ";
-        std::cout<<atree->m_path.toStdString()<<"\n";
+       // std::cout<<atree->m_path.toStdString()<<"\n";
+        std::cout<<atree->getFilename().toStdString()<<"\n";
         atree->str(indent + 1);
     }
 }

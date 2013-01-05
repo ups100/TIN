@@ -8,26 +8,36 @@
 #include <QNetworkInterface>
 #include <QList>
 #include <QHostAddress>
-#include <../include/CommandParser.h>
-#include <../include/Commands.h>
-#include <../include/Argument.h>
-#include <../include/ClientApplication.h>
+#include "CommandParser.h"
+#include "Commands.h"
+#include "Argument.h"
+#include "ClientApplication.h"
+#include "AliasTree.h"
+#include "AliasFileList.h"
+#include <iostream>
 using namespace TIN_project::Client;
 int main(int argc, char **argv)
 {
 
-    //QCoreApplication app(argc, argv);
-    //CommandParser tmpCom;
+    AliasFileList afl;
+    QString tmp = "/home/marcin";
+    QString tmp2 = "/home/marta";
+    QString tmp3 = "/home/marta/cos";
+    QString tmp4 = "/home/marta/cos/cos2";
+    QString tmp5 = "/home/marcin/nowy";
 
-    //tmpCom.parseCommand(QString("add code/Client"));
 
-    //boost::shared_ptr<Commands> tmp = tmpCom.parseCommand(QString("add code/Client"));
-    //tmp->getArg(Argument::FILELOCATION);
+    afl.addFile(tmp,"2",3);
+    afl.addFile(tmp2,"3", 4);
+    afl.addFile(tmp3,"2",3);
+    afl.addFile(tmp4,"3",5);
+    afl.addFile(tmp5,"4",6);
+    afl.addFile(tmp5,"5",7);
 
+    afl.str();
     ClientApplication app(argc,argv);
     QNetworkInterface *inter=new QNetworkInterface();
     QList<QHostAddress> list = inter->allAddresses();
     return app.start(list.first(), 8080);
-
-
+    return 0;
 }
