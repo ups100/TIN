@@ -113,6 +113,12 @@ public:
             quint16 port);
 
 private slots:
+
+    /**
+     * @brief Helper slot used to implement sending messages from other thread.
+     */
+    void sendConnectedToAliasSlot();
+
     /**
      * @brief Helper slot used for disconnecting
      */

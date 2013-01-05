@@ -89,12 +89,7 @@ void ClientConnection::disconnectFromAliasSynch()
 
 void ClientConnection::sendConnectedToAlias()
 {
-    if (m_isConnected) {
-        CommunicationProtocol::Communicate<CommunicationProtocol::CONNECTED_TO_ALIAS> message;
-        sendAllFunction(message.toQByteArray());
-    } else {
-        qDebug() << "Trying to send but connection is not opened";
-    }
+    QTimer::singleShot(0, this, SLOT(sendConnectedToAliasSlot()));
 }
 
 void ClientConnection::sendFileFound(const Utilities::FileLocation& location)
@@ -187,6 +182,17 @@ void ClientConnection::sendNoSuchFile()
 {
     if (m_isConnected) {
         CommunicationProtocol::Communicate<CommunicationProtocol::NO_SUCH_FILE> message;
+        sendAllFunction(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
+}
+
+void ClientConnection::sendConnectedToAliasSlot()
+{
+    if (m_isConnected) {
+        CommunicationProtocol::Communicate<
+                CommunicationProtocol::CONNECTED_TO_ALIAS> message;
         sendAllFunction(message.toQByteArray());
     } else {
         qDebug() << "Trying to send but connection is not opened";

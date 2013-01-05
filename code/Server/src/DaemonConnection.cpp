@@ -85,13 +85,7 @@ void DaemonConnection::disconnectFromAliasSynch()
 
 void DaemonConnection::sendConnectedToAlias()
 {
-    if (m_isConnected) {
-        CommunicationProtocol::Communicate<
-                CommunicationProtocol::CONNECTED_TO_ALIAS> message;
-        sendAllFunction(message.toQByteArray());
-    } else {
-        qDebug() << "Trying to send but connection is not opened";
-    }
+    QTimer::singleShot(0, this, SLOT(sendConnectedToAliasSlot()));
 }
 
 void DaemonConnection::sendFindFile(const QString& fileName)
@@ -135,6 +129,17 @@ void DaemonConnection::sendSendFile(const QString& fileName,
         CommunicationProtocol::Communicate<CommunicationProtocol::SEND_FILE> message(
                 fileName, address, port);
         sendAllFunction(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
+}
+
+void DaemonConnection::sendConnectedToAliasSlot()
+{
+    if (m_isConnected) {
+        CommunicationProtocol::Communicate<
+                CommunicationProtocol::CONNECTED_TO_ALIAS> message;
+        this->sendAllFunction(message.toQByteArray());
     } else {
         qDebug() << "Trying to send but connection is not opened";
     }
