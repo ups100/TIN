@@ -45,9 +45,9 @@ void DaemonApplication::stopApplication()
     m_clientCommunication.wait();
 
     foreach (DaemonThread *dt, m_daemonThreads){
-    dt->stopThread();
-    delete dt;
-}
+        dt->stopThread();
+        delete dt;
+    }
     // Above we clean all things so object is clean:
     m_isClean = true;
 }
@@ -72,7 +72,7 @@ int DaemonApplication::start(int argc, char **argv)
     // Run listener for local client
     m_clientCommunication.start();
 
-    if (true) {
+    if (true) {     // TODO delete this block
         qDebug() << "Pierwszy testowy watek DaemonThread.";
         boost::shared_ptr<DaemonConfiguration::Config> cnf(new DaemonConfiguration::Config());
         QHostAddress addr(QHostAddress::LocalHost);
@@ -85,13 +85,13 @@ int DaemonApplication::start(int argc, char **argv)
     }
 
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
-        qDebug() << "Tworze watek DaemonThread";
+        qDebug() << "Tworze watek DaemonThread";    // TODO delete this line
     DaemonThread *dt = new DaemonThread(cnf);
     //dt->start();  //unnecessary because constructor above do everything
     // TODO ewentualnie funkcję start można wykorzystać do tego żeby zwracała status DeamonThread
     // i np jesli połączenie się nie powiodło to tutaj moglibyśmy coś zrobić
     m_daemonThreads.append(dt);
-}
+    }
 
     // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
     m_isClean = false;

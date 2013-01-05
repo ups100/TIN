@@ -33,7 +33,6 @@ DaemonThread::DaemonThread()
 
 DaemonThread::~DaemonThread()
 {
-    if (m_connectionOk) qDebug() << "Usuwam polaczenie w destruktorze";
     if (m_connectionOk)
         stopThread();
     // TODO choose:
@@ -50,6 +49,8 @@ DaemonThread::DaemonThread(
     m_connectionOk = false;
     m_aliasConnected = false;
     m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip), m_config->m_port);
+
+    // connecting to the Alias is in the onConnected() method
 }
 
 void DaemonThread::onAliasConnected()
@@ -67,6 +68,11 @@ void DaemonThread::onAliasConnectionError()
     qDebug() << m_config->m_aliasId;
 
     m_aliasConnected = false;
+
+    // TODO uzgodnic scenariusz wypadku niepołączenia się z Aliasem
+    // proponuję zakończyć wtedy komunikację z serwerem, żeby potem się nie plątała niepotrzebnie
+    // i można powiadomić DaemonApplication o tym zdarzeniu, żeby usunęła wątek
+    // stopThread()
 }
 
 void DaemonThread::onConnected()
@@ -78,6 +84,7 @@ void DaemonThread::onConnected()
     {
         qDebug() << "Connection to server successful. Starting connection to alias... ";
         m_connectionOk = true;  // if everything OK
+        // connecting to the Alias
         m_ServerConnection->connectToAlias(m_config->m_aliasId, Utilities::Password(m_config->m_password));
     }
 
@@ -87,7 +94,9 @@ void DaemonThread::onDisconnected()
 {
     qDebug() << "Unsuccessful connection to the server.";
     m_connectionOk = false;
+    m_aliasConnected = false;
 
+    // TODO uzgodnic scenariusz braku polaczenia
 }
 
 void DaemonThread::onFileNotRemoved()
@@ -203,11 +212,12 @@ void DaemonThread::onSendFile(const QString& fileName,
 
 }
 
+// this method comes from FileTransferListener class
 void DaemonThread::onTransferEnd(FileSender * sender)
 {
 
 }
-
+// this method comes from FileTransferListener class
 void DaemonThread::onTransferEnd(FileReciver * reciver)
 {
 
