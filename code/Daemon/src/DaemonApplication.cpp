@@ -14,7 +14,9 @@ namespace Daemon {
 
 // static members of DaemonApplication class definition
 QMutex DaemonApplication::m_mutex;
-DaemonApplication *DaemonApplication::instance = NULL;
+DaemonApplication* DaemonApplication::instance = NULL;
+int DaemonApplication::argc = 1;
+char **DaemonApplication::argv = NULL;
 
 DaemonApplication& DaemonApplication::getInstance()
 {
@@ -34,7 +36,8 @@ DaemonApplication* DaemonApplication::makeInstance()
 
 DaemonApplication::DaemonApplication()
         : m_clientCommunication(*this),
-          m_isClean(true)
+          m_isClean(true),
+          m_singleApplication(argc,argv) //argc,argv are static fields set by initDaemon() method
 {
 
 }
@@ -48,6 +51,7 @@ void DaemonApplication::stopApplication()
         dt->stopThread();
         delete dt;
     }
+
     // Above we clean all things so object is clean:
     m_isClean = true;
 }
@@ -61,10 +65,10 @@ DaemonApplication::~DaemonApplication()
 
 int DaemonApplication::start(int argc, char **argv)
 {
-    QtSingleCoreApplication application(argc, argv);
+    //QtSingleCoreApplication application(argc, argv);
 
     // Check if it is first instance of application
-    if (application.isRunning()) {
+    if (m_singleApplication.isRunning()) {
         qDebug() << "Another instance of daemon is now running";
         return -1;
     }
@@ -97,7 +101,7 @@ int DaemonApplication::start(int argc, char **argv)
     // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
     m_isClean = false;
     qDebug()<<"start petli zdarzen";
-    return application.exec();
+    return m_singleApplication.exec();
 }
 
 // TODO dispatch message to do what is needed
@@ -167,6 +171,28 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         }
     }
 }
+}
+
+QtSingleCoreApplication* DaemonApplication::getSingleApplicationPointer()
+{
+    return &m_singleApplication;
+}
+
+void signal_handler(int sig)
+{
+    qDebug()<<" Signal_handler";
+
+    DaemonApplication::getInstance().stopApplication();
+
+    // stop DaemonApplication's event loop
+    QTimer::singleShot(0, (DaemonApplication::getInstance().getSingleApplicationPointer()), SLOT(quit()));
+}
+
+void DaemonApplication::initDaemon(int argc, char **argv)
+{
+    signal(SIGINT, Daemon::signal_handler);
+    DaemonApplication::argc = argc;
+    DaemonApplication::argv = argv;
 }
 
 } //namespace Daemon

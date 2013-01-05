@@ -17,8 +17,10 @@
 #include <QHostAddress>
 #include <QString>
 #include <QMutexLocker>
+#include <QTimer>
 
 #include "qtsinglecoreapplication.h"
+#include <signal.h>
 
 namespace TIN_project {
 namespace Daemon {
@@ -64,6 +66,19 @@ public:
     static DaemonApplication& getInstance();
     static DaemonApplication* makeInstance();
 
+    /**
+     * @brief Simple geter which is used in SIGKILL handler when SingleShot is sending
+     */
+    QtSingleCoreApplication* getSingleApplicationPointer();
+
+    /**
+     * @brief Static method which should by invoke before DaemonApplication::start()
+     * @details It provide a arguments to the QtSimpleCoreAppplication before it is create
+     * and this method install UNIX signal SIGKILL handler
+     */
+    static void initDaemon(int argc, char **argv);
+
+
 private:
     /**
      * @brief Private class constructors
@@ -96,6 +111,14 @@ private:
      * @brief This variable is used in start and stop method to show destructor to clean behind this object
      */
     bool m_isClean;
+
+    /**
+      * @brief Public pointer to object which provide event loop
+      */
+     QtSingleCoreApplication m_singleApplication;
+
+    static int argc;
+    static char **argv;
 };
 
 } //namespace Daemon
