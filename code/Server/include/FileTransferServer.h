@@ -22,6 +22,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QThread>
+#include <QMutex>
 
 #include <boost/shared_ptr.hpp>
 
@@ -38,9 +39,10 @@ class FileTransferListener;
  * @details This class runs in separate thread.
  * Results are provided to FileTransferListener
  */
-class FileTransferServer
+class FileTransferServer : public QObject
 {
-
+Q_OBJECT
+    ;
 public:
     /**
      * @brief Constructor
@@ -60,25 +62,114 @@ public:
     virtual ~FileTransferServer();
 
     /**
+     * @brief Starts the server at passed address and port
+     *
+     * @param[in] address ip (Any by default)
+     *
+     * @param[in] port (0 by default - means let system choose)
+     *
+     * @return
+     * - true is server has been correctly started
+     * - false otherwise
+     */
+    bool startFileServer(const QHostAddress& address, quint16 port);
+
+    /**
      * @brief Disconnects and closes server
+     *
+     * @warning This function should not be called in context of #m_additionalThread
      */
     void disconnectFromAliasSynch();
 
     /**
      * @brief Gets address of server
+     *
+     * @return
+     * - server address
+     * - default object if server is not listening
      */
-    const QHostAddress& getAddress();
+    inline QHostAddress getAddress()
+    {
+        return (m_server != 0L ? m_server->isListening() : false) ?
+                m_address : QHostAddress();
+    }
 
     /**
      * @brief Gets server's port.
+     *
+     * @return
+     * - port number if set
+     * - 0 if server is not listening
      */
-    quint16 getPort();
+    quint16 getPort()
+    {
+        return (m_server != 0L ? m_server->isListening() : false) ? m_port : 0;
+    }
+
+    /**
+     * @brief Informs if server is working now.
+     *
+     * @return
+     * - true if yes
+     * - false if no
+     */
+    inline bool isRunning()
+    {
+        return m_serverStarted;
+    }
+signals:
+
+    /**
+     * @brief Some signal for internal class usage
+     *
+     * @warning Do not use this signal, startFileServer() method is synchronous.
+     */
+    void serverStartedSignal();
+
+private slots:
+
+    /**
+     * @brief Creates server object and starts it
+     */
+    void startServerSlot();
+
+    /**
+     * @brief Slot executed when there is new incoming connection to server
+     */
+    void addNewConnectionSlot();
+
+    /**
+     * @brief Slot executed when new data is available
+     */
+    void readDataSlot();
+
+    /**
+     * @brief Slot executed when some socket has been disconnected
+     */
+    void socketDisconnectedSlot();
+
+    /**
+     * @brief Slot executed when an error occurred in some socket
+     *
+     * @param[in] error occurred in socket
+     */
+    void socketErrorSlot(QAbstractSocket::SocketError error);
+
+    /**
+     * @brief Stops all connections and the server.
+     */
+    void stopAllSlot();
 
 private:
     /**
      * @brief Object notified about transfer status
      */
     FileTransferListener *m_FileTransferListener;
+
+    /**
+     * @brief Number of connections we would like to have to start transfer
+     */
+    int m_numberOfConenctions;
 
     /**
      * @brief Server address
@@ -91,6 +182,16 @@ private:
     quint16 m_port;
 
     /**
+     * @brief Size of file to be transfered.
+     */
+    quint64 m_fileSize;
+
+    /**
+     * @brief Current size of transfered file
+     */
+    quint64 m_currentSize;
+
+    /**
      * @brief Server for waiting for connection
      */
     QTcpServer *m_server;
@@ -98,12 +199,47 @@ private:
     /**
      * @brief List of connected clients
      */
-    QList<boost::shared_ptr<QTcpSocket> > m_clients;
+    QList<QTcpSocket*> m_clients;
+
+    /**
+     * @brief Thread which created this object
+     */
+    QThread *m_creatorThread;
 
     /**
      * @brief Additional thread for handling file transfer
      */
     QThread m_additionalThread;
+
+    /**
+     * @brief Informs if server is listening now
+     */
+    bool m_serverStarted;
+
+    /**
+     * @brief Informs if server is starting now
+     */
+    bool m_transferInProgres;
+
+    /**
+     * @brief Informs if server is stopping now
+     */
+    bool m_transferCompleted;
+
+    /**
+     * @brief Informs that error occurred during file transfer
+     */
+    bool m_errorOccurred;
+
+    /**
+     * @brief Informs that we are closing server
+     */
+    bool m_isClosing;
+
+    /**
+     * @brief Mutex for synchronization
+     */
+    QMutex m_mutex;
 };
 
 } //namespace server

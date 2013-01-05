@@ -21,8 +21,12 @@
 namespace TIN_project {
 namespace Server {
 
+class FileTransferServer;
+
 /**
  * @brief Interface for informing about file transfer state
+ *
+ * @warning Remember that all those methods are called in context of FileTransferServer's thread!
  */
 class FileTransferListener
 {
@@ -38,8 +42,31 @@ public:
      */
     virtual ~FileTransferListener();
 
+    /**
+     * @brief Informs that all clients has been properly connected and transfer may now be started.
+     *
+     * @param transfer FileTransferServer identity
+     */
     virtual void onFileTransferStarted(FileTransferServer *transfer) = 0;
+
+    /**
+     * @brief Informs that file transfer has been completed.
+     *
+     * @param transfer FileTransferServer identity
+     *
+     * @warning Do not delete FileTransferServer in this method!
+     *  Use slot instead and do it there!
+     */
     virtual void onFileTransferCompleted(FileTransferServer *transfer) = 0;
+
+    /**
+     * @brief Informs that some error occurred during file transfering
+     *
+     * @param transfer FileTransferServer identity
+     *
+     * @warning Do not delete FileTransferServer in this method!
+     *  Use slot instead and do it there!
+     */
     virtual void onFileTransferError(FileTransferServer *transfer) = 0;
 
 };
