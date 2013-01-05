@@ -1,26 +1,23 @@
 #include "DaemonApplication.h"
 #include <signal.h>
-#include <QCoreApplication>
 
-TIN_project::Daemon::DaemonApplication *app;
+#include "qtsinglecoreapplication.h"
+
+//TIN_project::Daemon::DaemonApplication *app;
 
 // TODO for a while while non QApp
 void signal_handler(int sig)
 {
-    app->~DaemonApplication();
-    exit(0);
+    qDebug()<<"Signla_handler";
+    //app->~DaemonApplication(); // przy Singleton'ie nie działa - czy mogę wywalić Destruktor do private?
+    TIN_project::Daemon::DaemonApplication::getInstance().stopApplication();
+    //exit(0);
 }
 
 
 int main(int argc, char **argv)
 {
-    QCoreApplication a(argc, argv);
-
     signal(SIGINT, signal_handler);
 
-    TIN_project::Daemon::DaemonApplication daemon;
-    app = &daemon;
-    daemon.start();
-
-    return a.exec();
+    return TIN_project::Daemon::DaemonApplication::getInstance().start(argc, argv);
 }

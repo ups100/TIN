@@ -26,6 +26,9 @@
 #include <QList>
 #include <QHostAddress>
 #include <QString>
+#include <QMutexLocker>
+
+#include "qtsinglecoreapplication.h"
 
 namespace TIN_project {
 namespace Daemon {
@@ -34,11 +37,11 @@ class DaemonApplication
 {
 public:
 
-    DaemonApplication();
     virtual ~DaemonApplication();
 
-    int start();
+    int start(int argc, char **argv);
 
+    void stopApplication();
     /**
      * @brief Dispatch received message
      * @param communicate Received communicate as QByteArray
@@ -65,7 +68,21 @@ public:
      */
     void removeCatalogueFromAlias(const QString &path, const QString &aliasId);
 
-    void stopDaemonThread(DaemonThread *daemonThread);
+    /**
+     * @brief Provide the instance of DaemonApplication object
+     * @details There could by only one such object - this method keep an eye on it.
+     * @return DaemonApplication class current instance.
+     */
+    static DaemonApplication& getInstance();
+    static DaemonApplication* makeInstance();
+
+private:
+    /**
+     * @brief Private class constructors
+     * @details Use DaemonApplication::getInstance() method
+     */
+    DaemonApplication();
+    DaemonApplication(const DaemonApplication &);
 
 private:
 
@@ -76,6 +93,21 @@ private:
 
     /** Daemon threads configuration */
     DaemonConfiguration m_config;
+
+    /**
+     * @brief Singleton implementation.
+     */
+    static DaemonApplication *instance;
+
+    /**
+     * @brief Mutex which lock singletron's function
+     */
+    static QMutex m_mutex;
+
+    /**
+     * @brief This variable is used in start and stop method to show destructor to clean behind this object
+     */
+    bool m_isClean;
 };
 
 } //namespace Daemon

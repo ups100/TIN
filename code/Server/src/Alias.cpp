@@ -129,12 +129,12 @@ void Alias::stop()
 
 void Alias::onConnectionClosed(ClientConnection* client)
 {
-
+    qDebug() << "Connection closed with client: ";
 }
 
 void Alias::onConnectionClosed(DaemonConnection* daemon)
 {
-
+    qDebug() << "Daemon exit.";
 }
 
 void Alias::onFileFound(DaemonConnection* daemon,
@@ -177,7 +177,7 @@ void Alias::onListAlias(ClientConnection* client)
 
 void Alias::onNoSuchFile(DaemonConnection* daemon)
 {
-
+    qDebug() << "Somebody call No such File";
 }
 
 void Alias::onPullFileFrom(ClientConnection* client,
