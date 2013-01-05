@@ -38,6 +38,13 @@ ClientConnection::ClientConnection(QTcpSocket *socket, QThread *targetThread,
 {
     moveToThread(targetThread);
     m_socket->moveToThread(targetThread);
+
+    connect(m_socket, SIGNAL(disconnected()), this,
+            SLOT(socketDisconnectedSlot()));
+    connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this,
+            SLOT(socketErrorSlot(
+                            QAbstractSocket::SocketError)));
+    connect(m_socket, SIGNAL(readyRead()), this, SLOT(socketReadyReadSlot()));
 }
 
 ClientConnection::~ClientConnection()

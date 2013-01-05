@@ -11,7 +11,7 @@ void signal_handler(int sig)
     qDebug()<<"Signla_handler";
     //app->~DaemonApplication(); // przy Singleton'ie nie działa - czy mogę wywalić Destruktor do private?
     TIN_project::Daemon::DaemonApplication::getInstance().stopApplication();
-    exit(0);
+    //exit(0);
 }
 
 

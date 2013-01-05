@@ -96,7 +96,7 @@ int DaemonApplication::start(int argc, char **argv)
 
     // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
     m_isClean = false;
-
+    qDebug()<<"start petli zdarzen";
     return application.exec();
 }
 
