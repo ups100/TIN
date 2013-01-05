@@ -36,7 +36,6 @@ DaemonApplication::~DaemonApplication()
 
     foreach (DaemonThread *dt, m_daemonThreads){
     dt->stopThread();
-    dt->wait();
     delete dt;
 }
 }

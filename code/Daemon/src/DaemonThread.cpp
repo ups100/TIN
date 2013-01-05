@@ -198,20 +198,15 @@ void DaemonThread::onTransferEnd(FileReciver * reciver)
 
 void DaemonThread::stopThread()
 {
-    terminate();
+
 }
 
-void DaemonThread::run()
+void DaemonThread::start()
 {
     m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip),
             m_config->m_port);
 
-    // TODO connect to server and start listening
-    while (1) {
-//        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
-//                << m_config->m_aliasId;
-        sleep(5);
-    }
+    qDebug()<<"started"<<this;
 }
 
 boost::shared_ptr<DaemonConfiguration::Config> DaemonThread::getConfig()
