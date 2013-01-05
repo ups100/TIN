@@ -24,7 +24,13 @@ public:
     CommandParser();
     virtual ~CommandParser();
 
-    boost::shared_ptr<Commands> parseCommand(QString const&);
+    /**
+     * @brief translate string command to Commands object
+     * @param[in] cmd command that should be create
+     * @return Commands object
+     * @warning if the Commands m_correct variable is false, Command should not be invoked
+     */
+    boost::shared_ptr<Commands> parseCommand(QString const& cmd);
 
 private:
     enum commandListEnum
@@ -43,6 +49,9 @@ private:
                 DISCONNECT,
                 EXIT,
             };
+    /**
+     * @brief list of all possible commands
+     */
     QStringList commandList;
 
 };

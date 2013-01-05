@@ -65,6 +65,8 @@ public:
      */
     void removeCatalogueFromAlias(const QString &path, const QString &aliasId);
 
+    void stopDaemonThread(DaemonThread *daemonThread);
+
 private:
 
     QList<DaemonThread*> m_daemonThreads;

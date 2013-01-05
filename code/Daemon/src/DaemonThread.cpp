@@ -19,6 +19,7 @@
 #include "FileTree.h"
 #include "DaemonApplication.h"
 #include "AliasFileList.h"
+#include "Password.h"
 #include <QDir>
 #include <QFile>
 #include <QBuffer>
@@ -28,6 +29,7 @@
 #include <QXmlStreamReader>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QHostAddress>
 #include <stdexcept>
 
 namespace TIN_project {
@@ -40,34 +42,39 @@ DaemonThread::DaemonThread()
 
 DaemonThread::~DaemonThread()
 {
-
+    delete m_ServerConnection;
 }
 
 DaemonThread::DaemonThread(
-        boost::shared_ptr<DaemonConfiguration::Config> config)
-        : m_config(config)
+        boost::shared_ptr<DaemonConfiguration::Config> config,
+        DaemonApplication *daemonApplication)
+        : m_config(config), m_ServerConnection(new ServerConnection(this)),
+                m_daemonApplication(daemonApplication)
 {
 
 }
 
 void DaemonThread::onAliasConnected()
 {
-
+    qDebug() << "ALIAS CONNECTED";
 }
 
 void DaemonThread::onAliasConnectionError()
 {
-
+    qDebug() << "ALIAS CONNECTION ERROR";
+    socketErrorHandler();
 }
 
 void DaemonThread::onConnected()
 {
-
+    qDebug() << "CONNECTING";
+    m_ServerConnection->connectToAlias(m_config->m_aliasId,
+            Utilities::Password(m_config->m_password));
 }
 
 void DaemonThread::onDisconnected()
 {
-
+    qDebug() << "DISCONNECTED";
 }
 
 void DaemonThread::onFileNotRemoved()
@@ -193,19 +200,21 @@ void DaemonThread::onTransferEnd(FileReciver * reciver)
 
 }
 
-void DaemonThread::stopThread()
+void DaemonThread::socketErrorHandler()
 {
-    terminate();
+    qDebug() << "Socket connection Error occurred, stop me now.";
+    m_daemonApplication->stopDaemonThread(this);
 }
 
-void DaemonThread::run()
+void DaemonThread::stopThread()
 {
-    // TODO connect to server and start listening
-    while (1) {
-//        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
-//                << m_config->m_aliasId;
-        sleep(5);
-    }
+
+}
+
+void DaemonThread::start()
+{
+    m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip),
+            m_config->m_port);
 }
 
 boost::shared_ptr<DaemonConfiguration::Config> DaemonThread::getConfig()

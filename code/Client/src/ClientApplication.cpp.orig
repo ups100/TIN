@@ -8,14 +8,9 @@
 #include "ClientApplication.h"
 #include "AliasFileList.h"
 #include "FileLocation.h"
-<<<<<<< HEAD
 
-#include "AliasFileList.h"
-const static QString NAME_OF_FILE = "/lua_tutorial.txt";
-=======
 #include "CommunicationProtocol.h"
-
->>>>>>> 6b43a19c2561f3e84cf91e6e7e0c2ab8ebca14f6
+const static QString NAME_OF_FILE = "/lua_tutorial.txt";
 namespace TIN_project {
 namespace Client {
 
@@ -148,6 +143,7 @@ void ClientApplication::onAliasDeletedSlot()
     QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 }
 
+<<<<<<< HEAD
 void ClientApplication::onAliasDeletionErrorSlot()
 {
     m_view->showMessage("Alias not deleted successfully");
@@ -266,11 +262,19 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         m_serverConnection.createAlias(cmd->getArg(), cmd->getPassword());
     } else if (cmd->getCommand() == "add") {
         //(*this).setState(ClientApplication::WAITING);
-        Utilities::CommunicationProtocol::Communicate<Utilities::CommunicationProtocol::ADD_DIRECTORY> message(Utilities::Message(m_alias,m_password),
-                cmd->getArg(),m_address,m_port));
-        //TODO TO DAEMON
+        Utilities::CommunicationProtocol::Communicate<
+             Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+             Utilities::Message(m_alias,
+             m_password,
+             cmd->getArg(),
+             m_address, m_port));
+        m_DaemonCommunication.talkToDaemon(message.toQByteArray());
+        //TODO needs check
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d")) {
         //(*this).setState(ClientApplication::WAITING);
+        Utilities::CommunicationProtocol::Communicate<
+        Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
+        Utilities::Message(m_alias,cmd->getArg()));
         //TODO TO DAEMON
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a")) {
         //(*this).setState(ClientApplication::WAITING);
@@ -326,25 +330,29 @@ int ClientApplication::start(const QHostAddress& address, quint16 port)
         return -1;
     }
     qDebug() << "Client application started" << endl;
+=======
+//        // ADD DIRECTORY TO ALIAS
+//        Utilities::CommunicationProtocol::Communicate<
+//                Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+//                Utilities::Message(QString(buf),
+//                        Utilities::Password(QString("passwd")),
+//                        "/home/kajo/workspace/tin/testDir1",
+//                        QHostAddress("127.0.0.1"), 8080));
 
-<<<<<<< HEAD
+//        // REMOVE DIRECTORY FROM ALIAS
+//        Utilities::CommunicationProtocol::Communicate<
+//                Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
+//                Utilities::Message(QString(buf),
+//                        "/home/kajo/workspace/tin/testDir2"));
+
+//        m_DaemonCommunication.talkToDaemon(message.toQByteArray());
+>>>>>>> e0abe227f2d8ffccc6c52bd2c13c63ab037bb0a2
+
     /** Server should be working */
     //(*this).setState(ClientApplication::WAITING);
     m_address = address;
     m_port = port;
     m_serverConnection.connectToServer(address, port);
-=======
-//        m_DaemonCommunication.talkToDaemon(Utilities::Message("id aliasu", Utilities::Password(QString("passwd")), "/home/kajo/workspace/tin", "127.0.0.1", 8080));
-
-        // TODO remove
-        Utilities::CommunicationProtocol::Communicate<
-                Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
-                Utilities::Message(QString(buf),
-                        Utilities::Password(QString("passwd")),
-                        "/home/abc/tin", QHostAddress("127.0.0.1"), 8080));
-
-        m_DaemonCommunication.talkToDaemon(message.toQByteArray());
->>>>>>> 6b43a19c2561f3e84cf91e6e7e0c2ab8ebca14f6
 
     return m_application.exec();
 

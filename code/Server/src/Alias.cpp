@@ -21,6 +21,7 @@
 #include <QTimer>
 #include <QEventLoop>
 #include <QtGlobal>
+#include <QDebug>
 
 namespace TIN_project {
 namespace Server {
@@ -145,7 +146,7 @@ void Alias::onFileFound(DaemonConnection* daemon,
 void Alias::onFileList(DaemonConnection* daemon,
         const Utilities::AliasFileList& list)
 {
-
+    qDebug()<<":P";
 }
 
 /**

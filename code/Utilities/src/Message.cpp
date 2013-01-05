@@ -35,6 +35,12 @@ Message::Message(const QString aliasId, const Password password,
 
 }
 
+Message::Message(const QString aliasId, const QString path)
+        : m_aliasId(aliasId), m_cataloguePath(path), m_serverPort(0)
+{
+
+}
+
 Message::Message(const QByteArray &bytes)
         : m_serverPort(0)
 {

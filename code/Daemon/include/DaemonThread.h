@@ -22,7 +22,6 @@
 #include <QtGlobal>
 #include <QString>
 #include <boost/shared_ptr.hpp>
-#include <QThread>
 #include "FileTransferListener.h"
 #include "ServerConnectionListener.h"
 #include "ServerConnection.h"
@@ -31,15 +30,17 @@
 namespace TIN_project {
 namespace Daemon {
 
+class DaemonApplication;
+
 class DaemonThread : public FileTransferListener,
-        public ServerConnectionListener, public QThread
+        public ServerConnectionListener
 {
 
 public:
     DaemonThread();
     virtual ~DaemonThread();
 
-    DaemonThread(boost::shared_ptr<DaemonConfiguration::Config> config);
+    DaemonThread(boost::shared_ptr<DaemonConfiguration::Config> config, DaemonApplication *daemonApplication);
     virtual void onAliasConnected();
     virtual void onAliasConnectionError();
     virtual void onConnected();
@@ -52,14 +53,19 @@ public:
     virtual void onSendFile(const QString& fileName, const QHostAddress& address, quint16 port);
     virtual void onTransferEnd(FileSender * sender);
     virtual void onTransferEnd(FileReciver * reciver);
+
+    virtual void socketErrorHandler();
+
     void stopThread();
-    void run();
+    void start();
 
     boost::shared_ptr<DaemonConfiguration::Config> getConfig();
 
 private:
     boost::shared_ptr<DaemonConfiguration::Config> m_config;
     ServerConnection *m_ServerConnection;
+
+    DaemonApplication *m_daemonApplication;
 
     /**
      * @brief Cut absolute file path to relative to supported catalogue

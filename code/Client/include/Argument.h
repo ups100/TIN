@@ -33,12 +33,30 @@ public:
     Q_DECLARE_FLAGS(Types, Type)
     Argument();
     Argument(QString, Argument::Types);
+
+    /**
+     * @brief getter for the flague
+     * @return Argument::Types flague
+     */
     Argument::Types getFlague() const;
+
+    /**
+     * @brief getter for data stored in argument
+     * @return data
+     */
     QString getData() const;
     virtual ~Argument();
 
 private:
+
+    /**
+     * @brief handles flague of command that argument is connected to
+     */
     Argument::Types m_flague;
+
+    /**
+     * @brief data stored in argument
+     */
     QString m_data;
 
 };

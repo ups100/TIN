@@ -25,22 +25,50 @@ Q_OBJECT
 public:
     ClientView(ClientApplication &);
     virtual ~ClientView();
+
+    /**
+     * @brief just to debug
+     */
     void prompt();
+
+    /**
+     * @brief shows message (usually after response from server)
+     */
     void showMessage(QString);
-    void showList(Utilities::AliasFileList&);
-signals:
-    void sendMessage(QString);
+
+    /**
+     * @brief show the list of files in alias
+     * @param[in] alf list of all files in alias
+     */
+    void showList(Utilities::AliasFileList& afl);
 
 public slots:
+    /**
+     * @brief switch the function attached to notifier from emptyRead() to waitForCommands()
+     */
     void reconnectNotifier();
 
 private slots:
+    /**
+     * @brief used to read the command, invoked by notifier
+     */
     void waitForCommands();
+    /**
+     * @brief used when notifier signal data, but we do not want to read it (due to waiting)
+     */
     void emptyRead();
 
 
 private:
+
+    /**
+     * @brief reference to ClientApplication
+     */
     ClientApplication & m_app;
+
+    /**
+     * @brief notifier used to asynchronous wait for commands
+     */
     QSocketNotifier * m_notifier;
 
 };

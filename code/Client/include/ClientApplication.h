@@ -65,12 +65,43 @@ enum State
     virtual void onFileTransferError();
     virtual void onFileTransferFinished();
     virtual void onFileTransferStarted();
+
+    /**
+     * @Probably to remove
+     */
     void setView(boost::shared_ptr<ClientView> view);
-    int start(const QHostAddress&, quint16);
+
+    /**
+     * @brief starter of the Client Application thread
+     * @param[in] address IP address of client
+     * @param[in] port port on which client connects
+     * @return exec
+     */
+    int start(const QHostAddress& address, quint16 port);
+
+    /**
+     * @brief used to communicate with daemon
+     * @param[in] message message to daemon
+     */
     void talkToDaemon(Utilities::Message message);
-    void setState(ClientApplication::States);
+
+    /**
+     * @brief setts actual state of application
+     * @param[in] state state to be set
+     */
+    void setState(ClientApplication::States state);
+
+    /**
+     * @brief getter for the actual state of application
+     * @return actual state of application
+     */
     ClientApplication::States getState() const;
-    void getCommand(QString);
+
+    /**
+     * @brief Invoked by Client View when client sets a command
+     * @param[in] command command typed by client
+     */
+    void getCommand(QString command);
 
 private slots:
     void onAliasConnectedSlot();
@@ -91,21 +122,95 @@ private slots:
     void onFileTransferStartedSlot();
 
 private:
-    bool checkIntegrity(boost::shared_ptr<Commands>) const;
-    bool checkStateCondition(boost::shared_ptr<Commands>) const;
-    bool checkRelativePath(QString) const;
-    bool checkAbsolutePath(QString) const;
+    /**
+     * @brief checks if the arguments of commands are correct (file exists etc.)
+     * @param[in] cmd command to be checked
+     * @return true if command may be invoked, false otherwise
+     */
+    bool checkIntegrity(boost::shared_ptr<Commands> cmd) const;
+
+    /**
+     * @brief checks if app is in appropriate state to invoke command
+     * @param[in] cmd command to be checked
+     * @return true if command may be invoked, false otherwise
+     */
+    bool checkStateCondition(boost::shared_ptr<Commands> cmd) const;
+
+    /**
+     * @brief checks if file exists
+     * @param[in] path relative path to be checked
+     * @return true if file exists, false otherwise
+     */
+    bool checkRelativePath(QString path) const;
+
+    /**
+     * @brief checks if file exists
+     * @param[in] path absolute path to be checked
+     * @return true if file exists, false otherwise
+     */
+    bool checkAbsolutePath(QString path) const;
+
+    /**
+     * @brief checks if exists config file
+     * @return true if exists, false otherwise
+     */
     bool checkIfConfigFileExists() const;
-    bool invokeCommand(boost::shared_ptr<Commands>);
+
+    /**
+     * @brief invokes command if everything is correct
+     * @param[in] cmd command to be invoked
+     * @return true if everything went wrong
+     */
+    bool invokeCommand(boost::shared_ptr<Commands> cmd);
+
+    /**
+     * @brief actual state of app
+     */
     ClientApplication::States m_state;
+
+    /**
+     * @brief used to make client application work as thread
+     */
     QtSingleCoreApplication m_application;
+
+    /**
+     * @brief parser used to change string commands to Commands objects
+     */
     CommandParser m_commandParser;
+
+    /**
+     * @brief handles connection to the server
+     */
     ServerConnection m_serverConnection;
+
+    /**
+     * @brief handles connection to the daemon
+     */
     DaemonCommunication m_DaemonCommunication;
+
+    /**
+     * @brief view that is responsible for interaction with user
+     */
     boost::shared_ptr<ClientView> m_view;
+
+    /**
+     * @brief name of alias under which works the app
+     */
     QString m_alias;
+
+    /**
+     * @brief password that is used to log to alias
+     */
     Password m_password;
+
+    /**
+     * @brief IP address of the client
+     */
     QHostAddress m_address;
+
+    /**
+     * @brief port on which client connects
+     */
     quint16 m_port;
 
 };

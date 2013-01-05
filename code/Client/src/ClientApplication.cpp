@@ -153,6 +153,7 @@ void ClientApplication::onAliasDeletionErrorSlot()
 void ClientApplication::onAliasListedSlot(const Utilities::AliasFileList& list)
 {
     (*this).setState(ClientApplication::FILELIST);
+    m_view->showList(const_cast<Utilities::AliasFileList&>(list));
     QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 }
 
@@ -229,6 +230,7 @@ void ClientApplication::getCommand(QString s)
     boost::shared_ptr<Commands> cmd = m_commandParser.parseCommand(s);
     /**
      * This singleShot shouldn't be here, but otherwise it wouldn't work at all
+     * reconnectNotifier should be invoked by slots
      */
     QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
     if ((!(*this).checkIntegrity(cmd)) || (!(*this).checkStateCondition(cmd)))
@@ -262,19 +264,17 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
     } else if (cmd->getCommand() == "add") {
         //(*this).setState(ClientApplication::WAITING);
         Utilities::CommunicationProtocol::Communicate<
-             Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
-             Utilities::Message(m_alias,
-             m_password,
-             cmd->getArg(),
-             m_address, m_port));
+                Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+                Utilities::Message(m_alias, m_password, cmd->getArg(),
+                        m_address, m_port));
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
         //TODO needs check
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d")) {
         //(*this).setState(ClientApplication::WAITING);
         Utilities::CommunicationProtocol::Communicate<
-        Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
-        Utilities::Message(m_alias,cmd->getArg()));
-        //TODO TO DAEMON
+                Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
+                Utilities::Message(m_alias, cmd->getArg()));
+        //TODO needs check
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a")) {
         //(*this).setState(ClientApplication::WAITING);
         m_serverConnection.removeAlias(cmd->getArg(), cmd->getPassword());
@@ -312,14 +312,6 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         m_serverConnection.pullFileFrom(FileLocation(cmd->getArg(), "Damn"));
     }
 
-
-    //Utilities::CommunicationProtocol::Communicate<
-    // Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
-    // Utilities::Message(QString(buf),
-    // Utilities::Password(QString("passwd")),
-    // "/home/kajo/workspace/tin/testDir1",
-    // QHostAddress("127.0.0.1"), 8080));
-
     return true;
 }
 int ClientApplication::start(const QHostAddress& address, quint16 port)
@@ -330,7 +322,7 @@ int ClientApplication::start(const QHostAddress& address, quint16 port)
     }
     qDebug() << "Client application started" << endl;
 
-    /** Server should be working */
+    /** Server should be working to set state to waiting */
     //(*this).setState(ClientApplication::WAITING);
     m_address = address;
     m_port = port;
@@ -384,6 +376,7 @@ bool ClientApplication::checkStateCondition(
         qDebug() << "We shouldn't be here at all";
     if (state == ClientApplication::WAITING_FOR_DISCONNECT)
         qDebug() << "We shouldn't be here at all";
+
     if (state == ClientApplication::CONNECTED) {
         if (cmd->getCommand() == "log")
             return true;
@@ -434,6 +427,10 @@ bool ClientApplication::checkAbsolutePath(QString s) const
 
 bool ClientApplication::checkIfConfigFileExists() const
 {
+    //This should be finally
+    //Checks if the file exists
+
+
     /*QString path = QDir::currentPath();
      path.append(QDir::separator());
      path.append(ConfigFileName::CONFIG_FILE_NAME);

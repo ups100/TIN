@@ -205,6 +205,8 @@ void ServerConnection::socketErrorSlot(QAbstractSocket::SocketError socketError)
     if (socketError != QAbstractSocket::RemoteHostClosedError) {
         qDebug() << "Socket error " << socketError;
     }
+
+    m_serverListener->socketErrorHandler();
 }
 
 void ServerConnection::socketDisconnectedSlot()
