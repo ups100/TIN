@@ -202,8 +202,8 @@ void ClientApplication::getString(QString s)
   boost::shared_ptr<Commands> cmd =  m_commandParser.parseCommand(s);
 
   qDebug()<<"Koniec petli";
-
-  QTimer::singleShot(10000, m_view, SLOT(showMessage("HELLO")));
+  //QTimer::singleShot(10000,&(*m_view),SLOT(showMessage("HELLO")));
+  m_view->showMessage("TR");
   (*this).setState(ClientApplication::CONNECTED);
 
 }

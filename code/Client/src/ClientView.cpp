@@ -28,7 +28,7 @@ void ClientView::prompt()
 
 void ClientView::showMessage(QString s)
 {
-    qDebug() << s;
+        qDebug()<<s;
         disconnect(m_notifier,SIGNAL(activated(int)), this, SLOT(emptyRead()));
         connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
 
@@ -51,6 +51,7 @@ void ClientView::waitForCommands()
 
     QMetaObject::invokeMethod((QObject*) &m_app, "getString",
                     Qt::AutoConnection, Q_ARG(QString,m_string));
+    //m_app.getString(m_string);
     disconnect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
       connect(m_notifier,SIGNAL(activated(int)), this, SLOT(emptyRead()));
 

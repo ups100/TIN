@@ -25,8 +25,8 @@ public:
     ClientView(ClientApplication &);
     virtual ~ClientView();
     void prompt();
-    void showMessage(QString);
     void disconnectNotifier();
+    void showMessage(QString);
 signals:
     void sendMessage(QString);
 

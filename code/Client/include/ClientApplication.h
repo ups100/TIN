@@ -90,7 +90,7 @@ private slots:
     void onFileTransferStartedSlot();
 
 private:
-    bool works = false;
+    bool works;
     ClientApplication::States m_state;
     QtSingleCoreApplication m_application;
     CommandParser m_commandParser;
