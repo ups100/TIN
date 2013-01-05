@@ -46,26 +46,30 @@ DaemonThread::~DaemonThread()
 }
 
 DaemonThread::DaemonThread(
-        boost::shared_ptr<DaemonConfiguration::Config> config)
-        : m_config(config), m_ServerConnection(new ServerConnection(this))
+        boost::shared_ptr<DaemonConfiguration::Config> config,
+        DaemonApplication *daemonApplication)
+        : m_config(config), m_ServerConnection(new ServerConnection(this)),
+                m_daemonApplication(daemonApplication)
 {
 
 }
 
 void DaemonThread::onAliasConnected()
 {
-
+    qDebug() << "ALIAS CONNECTED";
 }
 
 void DaemonThread::onAliasConnectionError()
 {
-
+    qDebug() << "ALIAS CONNECTION ERROR";
+    socketErrorHandler();
 }
 
 void DaemonThread::onConnected()
 {
     qDebug() << "CONNECTING";
-//    m_ServerConnection->connectToAlias(m_config->m_aliasId, Utilities::Password(m_config->m_password));
+    m_ServerConnection->connectToAlias(m_config->m_aliasId,
+            Utilities::Password(m_config->m_password));
 }
 
 void DaemonThread::onDisconnected()
@@ -196,6 +200,12 @@ void DaemonThread::onTransferEnd(FileReciver * reciver)
 
 }
 
+void DaemonThread::socketErrorHandler()
+{
+    qDebug() << "Socket connection Error occurred, stop me now.";
+    m_daemonApplication->stopDaemonThread(this);
+}
+
 void DaemonThread::stopThread()
 {
 
@@ -205,8 +215,6 @@ void DaemonThread::start()
 {
     m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip),
             m_config->m_port);
-
-    qDebug()<<"started"<<this;
 }
 
 boost::shared_ptr<DaemonConfiguration::Config> DaemonThread::getConfig()

@@ -31,7 +31,7 @@ DaemonApplication::DaemonApplication()
 
 DaemonApplication::~DaemonApplication()
 {
-    m_clientCommunication.terminate(); // TODO kopasiak check that: exit / terminate / quit / leave it alone
+    m_clientCommunication.terminate();
     m_clientCommunication.wait();
 
     foreach (DaemonThread *dt, m_daemonThreads){
@@ -46,7 +46,7 @@ int DaemonApplication::start()
     m_clientCommunication.start();
 
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
-    DaemonThread *dt = new DaemonThread(cnf);
+    DaemonThread *dt = new DaemonThread(cnf, this);
     dt->start(); // TODO if no thread js check
     m_daemonThreads.append(dt);
 }
@@ -93,6 +93,7 @@ void DaemonApplication::dispatchMessage(const QByteArray &communicate)
         return;
     }
 
+    // TODO to remove debug
     if (m_daemonThreads.size())
         m_daemonThreads.at(qrand() % m_daemonThreads.size())->onListFiles();
 
@@ -116,7 +117,7 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
 //    }
 
     if (m_config.addConfig(config)) {
-        DaemonThread *dt = new DaemonThread(config);
+        DaemonThread *dt = new DaemonThread(config, this);
         m_daemonThreads.append(dt);
         dt->start(); // TODO check if no thread etc
     }
@@ -129,10 +130,20 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         foreach (DaemonThread* thread, m_daemonThreads){
         if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path) {
             thread->stopThread(); // TODO check if no thread etc
+            m_config.removeConfig(aliasId, path);
             break;
         }
     }
 }
+}
+
+void DaemonApplication::stopDaemonThread(DaemonThread *daemonThread)
+{
+    qDebug() << "Remove thread and stop it.";
+
+    m_daemonThreads.removeOne(daemonThread);
+    daemonThread->stopThread();
+    delete daemonThread;
 }
 
 } //namespace Daemon
