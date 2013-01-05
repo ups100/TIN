@@ -79,6 +79,7 @@ int DaemonApplication::start(int argc, char **argv)
         cnf->m_ip = addr.toString();
         cnf->m_port = 8080;
         cnf->m_aliasId = "a";
+        cnf->m_password = "abc";
         DaemonThread *dt = new DaemonThread(cnf);
             //dt->start();  // TODO delete this line (look below)
             m_daemonThreads.append(dt);
