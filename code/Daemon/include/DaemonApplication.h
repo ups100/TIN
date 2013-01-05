@@ -38,7 +38,12 @@ public:
     virtual ~DaemonApplication();
 
     int start();
-    void dispatchMessage(const Utilities::Message &message);
+
+    /**
+     * @brief Dispatch received message
+     * @param communicate Received communicate as QByteArray
+     */
+    void dispatchMessage(const QByteArray &communicate);
 
     /**
      * @brief Add catalogue to alias, start DaemonThread, and add daemon data to config

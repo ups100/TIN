@@ -22,6 +22,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/unistd.h>
+#include <QByteArray>
 
 namespace TIN_project {
 namespace Utilities {
@@ -49,7 +50,7 @@ public:
      * @param message Message to send
      * @throw exception if no daemon listening for a message or writing error
      */
-    void talkToDaemon(Utilities::Message message);
+    void talkToDaemon(const QByteArray &message);
 };
 
 } //namespace Client

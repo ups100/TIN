@@ -33,13 +33,13 @@ DaemonCommunication::~DaemonCommunication()
 
 }
 
-void DaemonCommunication::talkToDaemon(Utilities::Message message)
+void DaemonCommunication::talkToDaemon(const QByteArray &message)
 {
     int m_socket;
     struct sockaddr_un m_server;
 
     // Need to convert into another representation than .data() due to BSD socket, HEX chosen
-    QByteArray array = message.toQByteArray().toHex();
+    QByteArray array = message.toHex();
 
     m_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 

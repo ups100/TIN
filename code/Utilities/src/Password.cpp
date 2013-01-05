@@ -32,6 +32,11 @@ Password::Password(const QString& password)
 
 }
 
+Password::Password(const QByteArray &data)
+{
+
+}
+
 /**
  * Check if password is correct
  */

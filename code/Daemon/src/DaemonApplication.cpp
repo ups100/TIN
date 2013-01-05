@@ -16,6 +16,7 @@
  */
 
 #include "DaemonApplication.h"
+#include "CommunicationProtocol.h"
 #include <QDebug>
 #include <QRegExp>
 
@@ -61,15 +62,30 @@ int DaemonApplication::start()
     return 0;
 }
 
-// TODO dispatch message to do what is needed
-void DaemonApplication::dispatchMessage(const Utilities::Message &message)
+void DaemonApplication::dispatchMessage(const QByteArray &communicate)
 {
-    qDebug() << message.getMessage();
-    qDebug() << "Waiting 4 a message";
+    uchar code = communicate.left(1)[0];
+    Utilities::Message msg;
 
-    if (m_daemonThreads.size())
-        m_daemonThreads.at(qrand() % m_daemonThreads.size())->onFindFile(
-                message.getMessage());
+    // I know.. ;]
+    if (code == 32) {
+        Utilities::CommunicationProtocol::Communicate<32> message(
+                communicate.mid(5, communicate.length()));
+        msg = message.getMessage();
+
+        qDebug() << "addCatalogueToAlias()"; //TODO invoke it
+    } else if (code == 33) {
+        Utilities::CommunicationProtocol::Communicate<33> message(
+                communicate.mid(5, communicate.length()));
+        msg = message.getMessage();
+
+        qDebug() << "removeCatalogueFromAlias()"; //TODO invoke it
+    } else {
+        return;
+    }
+
+    qDebug() << msg.getAliasId();
+    qDebug() << "Waiting 4 a message";
 
 //    if (m_daemonThreads.size())
 //    switch (qrand() % 4) {

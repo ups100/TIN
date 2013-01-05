@@ -19,6 +19,7 @@
 #include "Message.h"
 #include "InterprocessName.h"
 #include "DaemonApplication.h"
+#include "CommunicationProtocol.h"
 #include <stdexcept>
 
 namespace TIN_project {
@@ -90,9 +91,9 @@ void ClientCommunication::waitForMessage()
             } while (rval > 0);
 
             // Decode message, which has been sent in HEX format to avoid Qt-BSD problems
-            Utilities::Message message(QByteArray::fromHex(array.data()));
+            QByteArray bytes = QByteArray::fromHex(array.data());
 
-            m_daemonApplication.dispatchMessage(message);
+            m_daemonApplication.dispatchMessage(bytes);
         }
 
         close(msgsock);
