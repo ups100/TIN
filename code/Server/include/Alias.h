@@ -177,6 +177,16 @@ private:
      */
     QThread m_thread;
 
+    /**
+     * @brief How many daemons left to wait for them
+     */
+    quint32 m_waitForDaemons;
+
+    /**
+     * @brief Temporary AliasFileList to merge from each daemon and send it all to client
+     */
+    boost::shared_ptr<Utilities::AliasFileList> m_tmpAliasFileList;
+
 };
 
 } //namespace server

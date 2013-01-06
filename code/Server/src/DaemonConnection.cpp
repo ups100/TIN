@@ -106,6 +106,16 @@ void DaemonConnection::sendFindFile(const QString& fileName)
     }
 }
 
+void DaemonConnection::sendListYourFiles()
+{
+    if (m_isConnected) {
+        CommunicationProtocol::Communicate<CommunicationProtocol::LIST_YOUR_FILES> message;
+        sendAllFunction(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
+}
+
 void DaemonConnection::sendReciveFile(const QString& fileName,
         const QHostAddress& address, quint16 port)
 {

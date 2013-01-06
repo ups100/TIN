@@ -60,7 +60,8 @@ DaemonThread::DaemonThread(
     m_ServerConnection = new ServerConnection(this);
     m_connectionOk = false;
     m_aliasConnected = false;
-    m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip), m_config->m_port);
+    m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip),
+            m_config->m_port);
 
     // connecting to the Alias is in the onConnected() method
 }
@@ -69,8 +70,9 @@ void DaemonThread::onAliasConnected()
 {
     qDebug() << "Alias connected successful";
     if (m_aliasConnected) {
-        qDebug() << "Error. Double AliasConnected information from server to DeamonThread";
-    }else
+        qDebug()
+                << "Error. Double AliasConnected information from server to DeamonThread";
+    } else
         m_aliasConnected = true;
 }
 
@@ -90,14 +92,16 @@ void DaemonThread::onAliasConnectionError()
 void DaemonThread::onConnected()
 {
     if (m_connectionOk) {
-        qDebug() << "Incoming connection from server after previous connection was established. Double onConnected().";
+        qDebug()
+                << "Incoming connection from server after previous connection was established. Double onConnected().";
         m_connectionOk = false;
-    } else
-    {
-        qDebug() << "Connection to server successful. Starting connection to alias... ";
+    } else {
+        qDebug()
+                << "Connection to server successful. Starting connection to alias... ";
         m_connectionOk = true;  // if everything OK
         // connecting to the Alias
-        m_ServerConnection->connectToAlias(m_config->m_aliasId, Utilities::Password(m_config->m_password));
+        m_ServerConnection->connectToAlias(m_config->m_aliasId,
+                Utilities::Password(m_config->m_password));
     }
 
 }

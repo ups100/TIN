@@ -31,7 +31,7 @@ char **DaemonApplication::argv = NULL;
 
 DaemonApplication& DaemonApplication::getInstance()
 {
-    if(!instance) {
+    if (!instance) {
         QMutexLocker locker(&m_mutex);
         if (!instance)
             instance = makeInstance(); //it will by call only once
@@ -46,9 +46,8 @@ DaemonApplication* DaemonApplication::makeInstance()
 }
 
 DaemonApplication::DaemonApplication()
-        : m_clientCommunication(*this),
-          m_isClean(true),
-          m_singleApplication(argc,argv) //argc,argv are static fields set by initDaemon() method
+        : m_clientCommunication(*this), m_isClean(true),
+                m_singleApplication(argc, argv) //argc,argv are static fields set by initDaemon() method
 {
 
 }
@@ -59,11 +58,11 @@ void DaemonApplication::stopApplication()
     m_clientCommunication.wait();
 
     foreach (DaemonThread *dt, m_daemonThreads){
-        dt->stopThread();
-        delete dt;
-    }
+    dt->stopThread();
+    delete dt;
+}
 
-    // Above we clean all things so object is clean:
+// Above we clean all things so object is clean:
     m_isClean = true;
 }
 
@@ -87,31 +86,31 @@ int DaemonApplication::start(int argc, char **argv)
     // Run listener for local client
     m_clientCommunication.start();
 
-    if (true) {     // TODO delete this block
-        qDebug() << "Pierwszy testowy watek DaemonThread.";
-        boost::shared_ptr<DaemonConfiguration::Config> cnf(new DaemonConfiguration::Config());
-        QHostAddress addr(QHostAddress::LocalHost);
-        cnf->m_ip = addr.toString();
-        cnf->m_port = 8080;
-        cnf->m_aliasId = "a";
-        cnf->m_password = "abc";
-        DaemonThread *dt = new DaemonThread(cnf);
-            //dt->start();  // TODO delete this line (look below)
-            m_daemonThreads.append(dt);
-    }
+//    if (true) {     // TODO delete this block
+//        qDebug() << "Pierwszy testowy watek DaemonThread.";
+//        boost::shared_ptr<DaemonConfiguration::Config> cnf(new DaemonConfiguration::Config());
+//        QHostAddress addr(QHostAddress::LocalHost);
+//        cnf->m_ip = addr.toString();
+//        cnf->m_port = 8080;
+//        cnf->m_aliasId = "a";
+//        cnf->m_password = "abc";
+//        DaemonThread *dt = new DaemonThread(cnf);
+//            //dt->start();  // TODO delete this line (look below)
+//            m_daemonThreads.append(dt);
+//    }
 
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
-        qDebug() << "Tworze watek DaemonThread";    // TODO delete this line
+    qDebug() << "Tworze watek DaemonThread";    // TODO delete this line
     DaemonThread *dt = new DaemonThread(cnf);
     //dt->start();  //unnecessary because constructor above do everything
     // TODO ewentualnie funkcję start można wykorzystać do tego żeby zwracała status DeamonThread
     // i np jesli połączenie się nie powiodło to tutaj moglibyśmy coś zrobić
     m_daemonThreads.append(dt);
-    }
+}
 
-    // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
+// Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
     m_isClean = false;
-    qDebug()<<"start petli zdarzen";
+    qDebug() << "start petli zdarzen";
     return m_singleApplication.exec();
 }
 
@@ -192,12 +191,14 @@ QtSingleCoreApplication* DaemonApplication::getSingleApplicationPointer()
 
 void signal_handler(int sig)
 {
-    qDebug()<<" Signal_handler";
+    qDebug() << " Signal_handler";
 
     DaemonApplication::getInstance().stopApplication();
 
     // stop DaemonApplication's event loop
-    QTimer::singleShot(0, (DaemonApplication::getInstance().getSingleApplicationPointer()), SLOT(quit()));
+    QTimer::singleShot(0,
+            (DaemonApplication::getInstance().getSingleApplicationPointer()),
+            SLOT(quit()));
 }
 
 void DaemonApplication::initDaemon(int argc, char **argv)

@@ -82,6 +82,11 @@ public:
     void sendFindFile(const QString& fileName);
 
     /**
+     * @brief Sends information to daemon to list his files
+     */
+    void sendListYourFiles();
+
+    /**
      * @brief Sends information to daemon to receive file from some server
      *
      * @param fileName name of file and reletive path
