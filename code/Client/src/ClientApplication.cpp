@@ -8,24 +8,20 @@
 #include "ClientApplication.h"
 #include "AliasFileList.h"
 #include "FileLocation.h"
-
 #include "CommunicationProtocol.h"
+
 const static QString NAME_OF_FILE = "/lua_tutorial.txt";
 namespace TIN_project {
 namespace Client {
 
 ClientApplication::ClientApplication(int argc, char **argv)
         : m_state(ClientApplication::NOT_CONNECTED),
-                m_application((QString) "TIN_project_Client", argc, argv),
+                m_application(QString("TIN_project_Client"), argc, argv),
                 m_commandParser(), m_serverConnection(this, this),
-                m_DaemonCommunication(), m_view(new ClientView(*this))
+                m_DaemonCommunication(), m_view(new ClientView(this)),
+                m_address(QHostAddress("0.0.0.0")), m_port(quint16(0))
 {
-
-}
-
-ClientApplication::~ClientApplication()
-{
-
+    qDebug() << "KONSTRUKTOR";
 }
 
 void ClientApplication::onAliasConnected()
@@ -245,199 +241,222 @@ void ClientApplication::getCommand(QString s)
 
 bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
 {
-    if (cmd->getCommand() == "exit") {
-        //(*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
-        m_serverConnection.disconnectFromServer();
-    } else if (cmd->getCommand() == "disconnect") {
-        //(*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
-        m_serverConnection.disconnectFromServer();
-        //(*this).setState(ClientApplication::WAITING);
-        m_serverConnection.connectToAlias((*this).m_alias, (*this).m_password);
-    } else if (cmd->getCommand() == "log") {
-        (*this).m_alias = cmd->getArg();
-        (*this).m_password = cmd->getPassword();
-        //(*this).setState(ClientApplication::WAITING);
-        m_serverConnection.connectToAlias((*this).m_alias, (*this).m_password);
-    } else if (cmd->getCommand() == "create") {
-        //(*this).setState(ClientApplication::WAITING);
-        m_serverConnection.createAlias(cmd->getArg(), cmd->getPassword());
-    } else if (cmd->getCommand() == "add") {
-        //(*this).setState(ClientApplication::WAITING);
-        Utilities::CommunicationProtocol::Communicate<
-                Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
-                Utilities::Message(m_alias, m_password, cmd->getArg(),
-                        m_address, m_port));
-        m_DaemonCommunication.talkToDaemon(message.toQByteArray());
-        //TODO needs check
-    } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d")) {
-        //(*this).setState(ClientApplication::WAITING);
-        Utilities::CommunicationProtocol::Communicate<
-                Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
-                Utilities::Message(m_alias, cmd->getArg()));
-        //TODO needs check
-    } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a")) {
-        //(*this).setState(ClientApplication::WAITING);
-        m_serverConnection.removeAlias(cmd->getArg(), cmd->getPassword());
-    } else if ((cmd->getCommand() == "rm")) {
-        //(*this).setState(ClientApplication::WAITING);
-        m_serverConnection.removeFileFromAlias(cmd->getArg());
-    } else if ((cmd->getCommand() == "find")) {
-        //(*this).setState(ClientApplication::WAITING);
-        m_serverConnection.findFileInAlias(cmd->getArg());
-    } else if (cmd->getCommand() == "read") {
-        //(*this).setState(ClientApplication::WAITING);
-        //TODO FROM NUMBER TO FILE NAME
-        //Or maybe it will be better to invoke it by relative path
-    } else if (cmd->getCommand() == "push") {
-        //(*this).setState(ClientApplication::WAITING);
-        //TODO get Size of file
-        m_serverConnection.pushFileToAlias(cmd->getArg(), 0);
-    } else if (cmd->getCommand() == "ls") {
-        //(*this).setState(ClientApplication::WAITING);
-        m_serverConnection.listAlias();
-    } else if ((cmd->getCommand() == "synch") && (cmd->getParameter() == "o")) {
-        //(*this).setState(ClientApplication::WAITING);
-        //TODO Don't know which command to invoke
-    } else if ((cmd->getCommand() == "synch") && (cmd->getParameter() == "d")) {
-        //(*this).setState(ClientApplication::WAITING);
-        //TODO Not sure if this should be invoked
-        m_serverConnection.listAlias();
-    } else if ((cmd->getCommand() == "choose")) {
-        //(*this).setState(ClientApplication::WAITING);
-        //TODO change number to filename
-        //and decide if pull or push
-    } else if ((cmd->getCommand() == "pull")) {
-        //(*this).setState(ClientApplication::WAITING);
-        //TODO How to get the ID
-        m_serverConnection.pullFileFrom(FileLocation(cmd->getArg(), "Damn"));
-    }
+    m_command = cmd;
 
-    return true;
+    switch (cmd->getCommand()) {
+        case "exit":
+            //(*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
+            m_serverConnection.disconnectFromServer();
+            break;
+        case "disconnect":
+            //(*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
+            m_serverConnection.disconnectFromServer();
+            //(*this).setState(ClientApplication::WAITING);
+            m_serverConnection.connectToServer((*this).m_address,
+                    (*this).m_port);
+            break;
+        case "log":
+            (*this).m_alias = cmd->getArg();
+            (*this).m_password = cmd->getPassword();
+            //(*this).setState(ClientApplication::WAITING);
+            m_serverConnection.connectToAlias((*this).m_alias,
+                    (*this).m_password);
+            break;
+        case "create":
+            //(*this).setState(ClientApplication::WAITING);
+            m_serverConnection.createAlias(cmd->getArg(), cmd->getPassword());
+            break;
+        case "add":
+            //(*this).setState(ClientApplication::WAITING);
+            Utilities::CommunicationProtocol::Communicate<
+                    Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+                    Utilities::Message(m_alias, m_password, cmd->getArg(),
+                            m_address, m_port));
+            m_DaemonCommunication.talkToDaemon(message.toQByteArray());
+            break;
+        case "rm":
+            switch (cmd->getParameter()) {
+                case "d":
+                    //(*this).setState(ClientApplication::WAITING);
+                    Utilities::CommunicationProtocol::Communicate<
+                            Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
+                            Utilities::Message(m_alias, cmd->getArg()));
+                    m_DaemonCommunication.talkToDaemon(message.toQByteArray());
+                    break;
+                case "a":
+                    //(*this).setState(ClientApplication::WAITING);
+                    m_serverConnection.removeAlias(cmd->getArg(),
+                            cmd->getPassword());
+                    break;
+                default:
+                    //(*this).setState(ClientApplication::WAITING);
+                    m_serverConnection.removeFileFromAlias(cmd->getArg());
+                    break;
+            }
+            break;
+        case "find":
+            //(*this).setState(ClientApplication::WAITING);
+            m_serverConnection.findFileInAlias(cmd->getArg());
+            break;
+        case "read":
+            //(*this).setState(ClientApplication::WAITING);
+            m_serverConnection.pullFileFrom(FileLocation(cmd->getArg(), "damn"))
+            break;
+        case "push":
+            //(*this).setState(ClientApplication::WAITING);
+            //TODO GET SIZE OF FILE
+            m_serverConnection.pushFileToAlias(cmd->getArg(), 0)
+            break;
+        case "ls":
+            //(*this).setState(ClientApplication::WAITING);
+            m_serverConnection.listAlias();
+            break;
+        case "synch":
+            //(*this).setState(ClientApplication::WAITING);
+            m_serverConnection.listAlias();
+            break;
+        case "choose":
+            //(*this).setState(ClientApplication::WAITING);
+            //TODO CHANGE NUMBER TO FILENAME
+            //TODO AND DECIDE IF PULL OR PUSH
+
+            break;
+        case "pull":
+            //(*this).setState(ClientApplication::WAITING);
+            m_serverConnection.pullFileFrom(FileLocation(cmd->getArg(), "damn"))
+            break;
+    }
+return true;
 }
+
+
 int ClientApplication::start(const QHostAddress& address, quint16 port)
 {
-    if (m_application.isRunning()) {
-        qDebug() << "Another client application is running" << endl;
-        return -1;
-    }
-    qDebug() << "Client application started" << endl;
+if (m_application.isRunning()) {
+    qDebug() << "Another client application is running" << endl;
+    return -1;
+}
+qDebug() << "Client application started" << endl;
 
-    /** Server should be working to set state to waiting */
-    //(*this).setState(ClientApplication::WAITING);
-    m_address = address;
-    m_port = port;
-    m_serverConnection.connectToServer(address, port);
+/** Server should be working to set state to waiting */
+//(*this).setState(ClientApplication::WAITING);
+m_address = address;
+m_port = port;
+m_serverConnection.connectToServer(address, port);
 
-    return m_application.exec();
+return m_application.exec();
 
 }
 
 void ClientApplication::setState(ClientApplication::States s)
 {
-    m_state = s;
+m_state = s;
 }
 
 ClientApplication::States ClientApplication::getState() const
 {
-    return m_state;
+return m_state;
 }
 
 bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
 {
-    if (!cmd->isCorrect())
-        return false;
-    if (cmd->getCommand() == "log") {
-        return (*this).checkIfConfigFileExists();
-    }
+if (!cmd->isCorrect())
+    return false;
+if (cmd->getCommand() == "log") {
+    return (*this).checkIfConfigFileExists();
+}
 
-    if ((cmd->getCommand() == "add")
-            || ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d"))) {
-        return (*this).checkAbsolutePath(cmd->getArg());
-    }
-    if (((cmd->getCommand() == "rm") && (cmd->getParameter() == ""))
-            || (cmd->getCommand() == "push")) {
-        return (*this).checkRelativePath(cmd->getArg());
-    }
-    if ((cmd->getCommand() == "choose")) {
-        bool number;
-        cmd->getArg().toInt(&number, 10);
-        return number;
-    }
-    return true;
+if ((cmd->getCommand() == "add")
+        || ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d"))) {
+    return (*this).checkAbsolutePath(cmd->getArg());
+}
+if (((cmd->getCommand() == "rm") && (cmd->getParameter() == ""))
+        || (cmd->getCommand() == "push")) {
+    return (*this).checkRelativePath(cmd->getArg());
+}
+if ((cmd->getCommand() == "choose")) {
+    bool number;
+    cmd->getArg().toInt(&number, 10);
+    return number;
+}
+return true;
 }
 
 bool ClientApplication::checkStateCondition(
-        boost::shared_ptr<Commands> cmd) const
+    boost::shared_ptr<Commands> cmd) const
 {
-    ClientApplication::States state = (*this).getState();
-    if (state == ClientApplication::NOT_CONNECTED)
-        return false;
-    if (state == ClientApplication::WAITING)
-        qDebug() << "We shouldn't be here at all";
-    if (state == ClientApplication::WAITING_FOR_DISCONNECT)
-        qDebug() << "We shouldn't be here at all";
-
-    if (state == ClientApplication::CONNECTED) {
-        if (cmd->getCommand() == "log")
-            return true;
-        else if (cmd->getCommand() == "create")
-            return true;
-        else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a"))
-            return true;
-        else
-            return false;
-    }
-    if (state == ClientApplication::LOGGED) {
-        if (cmd->getCommand() == "log")
-            return false;
-        else if (cmd->getCommand() == "create")
-            return false;
-        else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a"))
-            return false;
-        else if ((cmd->getCommand() == "choose"))
-            return false;
-        else
-            return true;
-    }
-    if (state == ClientApplication::FILELIST) {
-        if (cmd->getCommand() == "log")
-            return false;
-        else if (cmd->getCommand() == "create")
-            return false;
-        else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a"))
-            return false;
-    }
+ClientApplication::States state = (*this).getState();
+if (state == ClientApplication::NOT_CONNECTED)
     return false;
+if (state == ClientApplication::WAITING)
+    qDebug() << "We shouldn't be here at all";
+if (state == ClientApplication::WAITING_FOR_DISCONNECT)
+    qDebug() << "We shouldn't be here at all";
+
+if (state == ClientApplication::CONNECTED) {
+    if (cmd->getCommand() == "log")
+        return true;
+    else if (cmd->getCommand() == "create")
+        return true;
+    else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a"))
+        return true;
+    else
+        return false;
+}
+if (state == ClientApplication::LOGGED) {
+    if (cmd->getCommand() == "log")
+        return false;
+    else if (cmd->getCommand() == "create")
+        return false;
+    else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a"))
+        return false;
+    else if ((cmd->getCommand() == "choose"))
+        return false;
+    else
+        return true;
+}
+if (state == ClientApplication::FILELIST) {
+    if (cmd->getCommand() == "log")
+        return false;
+    else if (cmd->getCommand() == "create")
+        return false;
+    else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a"))
+        return false;
+}
+return false;
 }
 
 bool ClientApplication::checkRelativePath(QString s) const
 {
-    QString tmpDir = QDir::currentPath();
-    tmpDir.append(QDir::separator());
-    tmpDir.append(s);
-    qDebug() << tmpDir;
-    return true;
+QString tmpDir = QDir::currentPath();
+tmpDir.append(QDir::separator());
+tmpDir.append(s);
+qDebug() << tmpDir;
+return true;
 }
 
 bool ClientApplication::checkAbsolutePath(QString s) const
 {
-    QFile file(s);
-    return file.exists();
+QFile file(s);
+return file.exists();
 }
 
 bool ClientApplication::checkIfConfigFileExists() const
 {
-    //This should be finally
-    //Checks if the file exists
+//This should be finally
+//Checks if the file exists
 
-
-    /*QString path = QDir::currentPath();
-     path.append(QDir::separator());
-     path.append(ConfigFileName::CONFIG_FILE_NAME);
-     QFile file(path);
-     return (file.exists());*/
-    return true;
+/*QString path = QDir::currentPath();
+ path.append(QDir::separator());
+ path.append(ConfigFileName::CONFIG_FILE_NAME);
+ QFile file(path);
+ return (file.exists());*/
+return true;
 }
 
+ClientApplication::~ClientApplication()
+{
+qDebug() << "DESTRUKTOR";
+}
 } //namespace Client
 } //namespace TIN_project

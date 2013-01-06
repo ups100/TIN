@@ -37,8 +37,6 @@ int main(int argc, char **argv)
 
     afl.str();
     ClientApplication app(argc,argv);
-    QNetworkInterface *inter=new QNetworkInterface();
-    QList<QHostAddress> list = inter->allAddresses();
-    return app.start(list.first(), 8080);
+    return app.start(QHostAddress::LocalHost, 8080);
     return 0;
 }
