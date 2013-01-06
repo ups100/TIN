@@ -92,7 +92,7 @@ void DaemonThread::onConnected()
 
 void DaemonThread::onDisconnected()
 {
-    qDebug() << "Unsuccessful connection to the server.";
+    qDebug() << "Disconnect from server.";
     m_connectionOk = false;
     m_aliasConnected = false;
 
