@@ -36,6 +36,8 @@ ServerConnection::ServerConnection(
                 m_isClosing(false), m_currentMessageId(CHAR_MAX),
                 m_sizeOk(false), m_messageSize(-1)
 {
+    m_creatorThread = QThread::currentThread(); // TODO  Krzysiek check this, please (by JS)
+
     connect(&m_additionalThread, SIGNAL(started()), this,
             SLOT(threadStartedSlot()));
     connect(&m_additionalThread, SIGNAL(finished()), this,
