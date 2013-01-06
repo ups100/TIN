@@ -11,6 +11,7 @@ INCLUDE_DIRECTORIES( 	${QT_INCLUDES}
 #if some class inherits QObject (has Q_OBJECT macro) add it's header file here
 SET( DAEMON_SRC
 		${TIN_SOURCE_DIR}/Daemon/src/ClientCommunication.cpp
+		${TIN_SOURCE_DIR}/Daemon/include/DaemonApplication.h
 		${TIN_SOURCE_DIR}/Daemon/src/DaemonApplication.cpp
 		${TIN_SOURCE_DIR}/Daemon/src/DaemonThread.cpp
 		${TIN_SOURCE_DIR}/Daemon/src/File.cpp
@@ -22,6 +23,7 @@ SET( DAEMON_SRC
 		${TIN_SOURCE_DIR}/Daemon/src/ServerConnectionListener.cpp
 		${TIN_SOURCE_DIR}/Daemon/src/main.cpp
 		${TIN_SOURCE_DIR}/Daemon/src/DaemonConfiguration.cpp
+		${TIN_SOURCE_DIR}/Daemon/src/DaemonThreadListener.cpp
 )
 
 add_executable( daemon ${DAEMON_SRC} )

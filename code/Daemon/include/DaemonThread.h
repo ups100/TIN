@@ -47,6 +47,8 @@ public:
     //void start(); // it could return status of starting DeamonThread only
 
     boost::shared_ptr<DaemonConfiguration::Config> getConfig();
+    /** @brief Tells if this object is ready to destroy **/
+    bool isReadyToDestroy();
 
 private:
     boost::shared_ptr<DaemonConfiguration::Config> m_config;
@@ -69,6 +71,12 @@ private:
      * @brief True if alias connected successful.
      */
     bool m_aliasConnected;
+
+    /**
+     * @brief Tells if this object is prepare to destroy by DaemonApplication;
+     * @detail This is set by onDisconect method before calling DaemonApplication::onClosed
+     */
+    bool m_readyToDestroy;
 
 };
 

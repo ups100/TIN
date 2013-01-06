@@ -95,8 +95,12 @@ void DaemonThread::onDisconnected()
     qDebug() << "Disconnect from server.";
     m_connectionOk = false;
     m_aliasConnected = false;
+    // this object may be delete by DaemonApplication so:
+    m_readyToDestroy = true;
 
-    // TODO uzgodnic scenariusz braku polaczenia
+    DaemonApplication::getInstance().onClosed(this);
+
+    // TODO uzgodnic scenariusz braku polaczenia - prawie gotowe ;)
 }
 
 void DaemonThread::onFileNotRemoved()
@@ -255,6 +259,11 @@ QString& DaemonThread::cutAbsolutePath(QString &str)
 {
     return str.replace(QRegExp(QString() + m_config->m_cataloguePath + "/?"),
             "/");
+}
+
+bool DaemonThread::isReadyToDestroy()
+{
+    return m_readyToDestroy;
 }
 
 } //namespace Daemon

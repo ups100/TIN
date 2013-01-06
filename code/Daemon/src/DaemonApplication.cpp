@@ -167,10 +167,51 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         foreach (DaemonThread* thread, m_daemonThreads){
         if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path) {
             thread->stopThread();
+            // TODO usunąć ten daemonThread z listy
             break;
         }
     }
 }
+}
+
+void DaemonApplication::onStarted(DaemonThread *dt)
+{
+    qDebug() << "DaemonThread started for alias: " << dt->getConfig()->m_aliasId;
+}
+
+void DaemonApplication::onStartingError(DaemonThread *dt)
+{
+    qDebug() << "DaemonThread starting error. ";
+}
+
+void DaemonApplication::onClosed(DaemonThread *dt)  // TODO maybe I can use this pointer, but how singleShot to SLOT with value ? I can't
+{
+    QMutexLocker lock(&m_mutex);
+    qDebug() << "Server closed connection with DaemonThread " << dt->getConfig()->m_cataloguePath;
+
+    QTimer::singleShot(0, this, SLOT(onDaemonThreadClosedSlot()));
+}
+
+
+void DaemonApplication::onDaemonThreadClosedSlot()
+{
+    QMutexLocker lock(&m_mutex);
+
+    QList<DaemonThread*>::iterator it;
+
+    for (it = m_daemonThreads.begin(); it != m_daemonThreads.end(); ) {
+        if ( (*it)->isReadyToDestroy() ) {
+            m_config.removeConfig((*it)->getConfig()->m_aliasId, (*it)->getConfig()->m_cataloguePath);
+            it = m_daemonThreads.erase(it);
+        }
+    }
+
+    // TODO Consider this concept - closing DaemonApplication when last DaemonThread close
+    if (m_daemonThreads.isEmpty()) {
+        stopApplication();
+        QTimer::singleShot(100, &m_singleApplication, SLOT(quit()));
+    }
+
 }
 
 QtSingleCoreApplication* DaemonApplication::getSingleApplicationPointer()

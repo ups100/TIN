@@ -19,22 +19,22 @@
 #include <QMutexLocker>
 #include <QTimer>
 
+#include "DaemonThreadListener.h"
 #include "qtsinglecoreapplication.h"
 #include <signal.h>
 
 namespace TIN_project {
 namespace Daemon {
 
-class DaemonApplication
+class DaemonApplication: public QObject, public DaemonThreadListener
 {
+    Q_OBJECT;
 public:
 
     virtual ~DaemonApplication();
 
     int start(int argc, char **argv);
-    /**
-     * @brief Call this method instead of ~DaemonApplication
-     */
+    /** @brief Call this method instead of ~DaemonApplication */
     void stopApplication();
     void dispatchMessage(const Utilities::Message &message);
 
@@ -78,14 +78,20 @@ public:
      */
     static void initDaemon(int argc, char **argv);
 
+    virtual void onStarted(DaemonThread *dt);
+    virtual void onStartingError(DaemonThread *dt);
+    virtual void onClosed(DaemonThread *dt);
 
 private:
     /**
-     * @brief Private class constructors
+     * @brief Private class constructors - because of Singleton
      * @details Use DaemonApplication::getInstance() method
      */
     DaemonApplication();
     DaemonApplication(const DaemonApplication &);
+
+private slots:
+    void onDaemonThreadClosedSlot();
 
 private:
 
