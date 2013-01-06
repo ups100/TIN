@@ -23,13 +23,36 @@
 namespace TIN_project {
 namespace Daemon {
 
+// static members of DaemonApplication class definition
+QMutex DaemonApplication::m_mutex;
+DaemonApplication* DaemonApplication::instance = NULL;
+int DaemonApplication::argc = 1;
+char **DaemonApplication::argv = NULL;
+
+DaemonApplication& DaemonApplication::getInstance()
+{
+    if (!instance) {
+        QMutexLocker locker(&m_mutex);
+        if (!instance)
+            instance = makeInstance(); //it will by call only once
+    }
+
+    return *instance;
+}
+DaemonApplication* DaemonApplication::makeInstance()
+{
+    static DaemonApplication s;
+    return &s;
+}
+
 DaemonApplication::DaemonApplication()
-        : m_clientCommunication(*this)
+        : m_clientCommunication(*this), m_isClean(true),
+                m_singleApplication(argc, argv) //argc,argv are static fields set by initDaemon() method
 {
 
 }
 
-DaemonApplication::~DaemonApplication()
+void DaemonApplication::stopApplication()
 {
     m_clientCommunication.terminate();
     m_clientCommunication.wait();
@@ -38,27 +61,57 @@ DaemonApplication::~DaemonApplication()
     dt->stopThread();
     delete dt;
 }
+
+// Above we clean all things so object is clean:
+    m_isClean = true;
 }
 
-int DaemonApplication::start()
+DaemonApplication::~DaemonApplication()
 {
+    // if nobody call stopApplication() method this object will be usually dirty
+    if (!m_isClean)
+        stopApplication();
+}
+
+int DaemonApplication::start(int argc, char **argv)
+{
+    //QtSingleCoreApplication application(argc, argv);
+
+    // Check if it is first instance of application
+    if (m_singleApplication.isRunning()) {
+        qDebug() << "Another instance of daemon is now running";
+        return -1;
+    }
+
     // Run listener for local client
     m_clientCommunication.start();
 
+//    if (true) {     // TODO delete this block
+//        qDebug() << "Pierwszy testowy watek DaemonThread.";
+//        boost::shared_ptr<DaemonConfiguration::Config> cnf(new DaemonConfiguration::Config());
+//        QHostAddress addr(QHostAddress::LocalHost);
+//        cnf->m_ip = addr.toString();
+//        cnf->m_port = 8080;
+//        cnf->m_aliasId = "a";
+//        cnf->m_password = "abc";
+//        DaemonThread *dt = new DaemonThread(cnf);
+//            //dt->start();  // TODO delete this line (look below)
+//            m_daemonThreads.append(dt);
+//    }
+
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
-    DaemonThread *dt = new DaemonThread(cnf, this);
-    dt->start(); // TODO if no thread js check
+    qDebug() << "Tworze watek DaemonThread";    // TODO delete this line
+    DaemonThread *dt = new DaemonThread(cnf);
+    //dt->start();  //unnecessary because constructor above do everything
+    // TODO ewentualnie funkcję start można wykorzystać do tego żeby zwracała status DeamonThread
+    // i np jesli połączenie się nie powiodło to tutaj moglibyśmy coś zrobić
     m_daemonThreads.append(dt);
 }
 
-// TODO remove demo loop
-    qDebug() << "Waiting 4 a message";
-    while (1) {
-        qDebug() << ".";
-        sleep(1);
-    }
-
-    return 0;
+// Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
+    m_isClean = false;
+    qDebug() << "start petli zdarzen";
+    return m_singleApplication.exec();
 }
 
 void DaemonApplication::dispatchMessage(const QByteArray &communicate)
@@ -111,9 +164,9 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
 //    }
 
     if (m_config.addConfig(config)) {
-        DaemonThread *dt = new DaemonThread(config, this);
+        DaemonThread *dt = new DaemonThread(config);
         m_daemonThreads.append(dt);
-        dt->start(); // TODO check if no thread etc
+        //dt->start();  // TODO delete this line
     }
 }
 
@@ -131,13 +184,28 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
 }
 }
 
-void DaemonApplication::stopDaemonThread(DaemonThread *daemonThread)
+QtSingleCoreApplication* DaemonApplication::getSingleApplicationPointer()
 {
-    qDebug() << "Remove thread and stop it.";
+    return &m_singleApplication;
+}
 
-    m_daemonThreads.removeOne(daemonThread);
-    daemonThread->stopThread();
-    delete daemonThread;
+void signal_handler(int sig)
+{
+    qDebug() << " Signal_handler";
+
+    DaemonApplication::getInstance().stopApplication();
+
+    // stop DaemonApplication's event loop
+    QTimer::singleShot(0,
+            (DaemonApplication::getInstance().getSingleApplicationPointer()),
+            SLOT(quit()));
+}
+
+void DaemonApplication::initDaemon(int argc, char **argv)
+{
+    signal(SIGINT, Daemon::signal_handler);
+    DaemonApplication::argc = argc;
+    DaemonApplication::argv = argv;
 }
 
 } //namespace Daemon

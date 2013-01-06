@@ -36,6 +36,8 @@ ServerConnection::ServerConnection(
                 m_isClosing(false), m_currentMessageId(CHAR_MAX),
                 m_sizeOk(false), m_messageSize(-1)
 {
+    m_creatorThread = QThread::currentThread(); // TODO  Krzysiek check this, please (by JS)
+
     connect(&m_additionalThread, SIGNAL(started()), this,
             SLOT(threadStartedSlot()));
     connect(&m_additionalThread, SIGNAL(finished()), this,
@@ -173,13 +175,13 @@ void ServerConnection::threadStartedSlot()
 }
 
 void ServerConnection::threadFinishedSlot()
-{
+{qDebug()<< "thread finished";
     m_mutex.lock();
     m_isReadyState = false;
     m_isConnecting = false;
     m_isClosing = false;
     m_mutex.unlock();
-
+    qDebug()<< "thread finished";
     delete m_socket;
     m_socket = 0L;
 
@@ -205,8 +207,6 @@ void ServerConnection::socketErrorSlot(QAbstractSocket::SocketError socketError)
     if (socketError != QAbstractSocket::RemoteHostClosedError) {
         qDebug() << "Socket error " << socketError;
     }
-
-    m_serverListener->socketErrorHandler();
 }
 
 void ServerConnection::socketDisconnectedSlot()
@@ -218,7 +218,7 @@ void ServerConnection::socketDisconnectedSlot()
 
     this->moveToThread(m_creatorThread);
     m_additionalThread.moveToThread(m_creatorThread);
-
+    qDebug()<<"socket disconnected";
     m_additionalThread.quit();
 }
 

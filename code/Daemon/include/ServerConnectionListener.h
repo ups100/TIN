@@ -104,11 +104,6 @@ public:
      */
     virtual void onSendFile(const QString& fileName, const QHostAddress& address, quint16 port) = 0;
 
-    /**
-     * @brief Handle socket error
-     */
-    virtual void socketErrorHandler() = 0;
-
 };
 
 } //namespace Daemon

@@ -142,6 +142,15 @@ int MainServer::start(const QHostAddress& address, quint16 port)
 
     qDebug() << "Server started at " << m_server.serverAddress().toString()
             << ":" << m_server.serverPort();
+
+    qDebug() << "Creating new alias process start...";
+    Utilities::Password pass(QString("abc"));
+    Alias *alias = new Alias("TEST", pass );
+       alias->start();
+       boost::shared_ptr<Alias> ptr(alias);
+       m_aliases.append(ptr);
+    qDebug() << "Creating new alias process end - alias should be created.";
+
     return m_application.exec();
 }
 

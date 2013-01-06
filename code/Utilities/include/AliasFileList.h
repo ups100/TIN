@@ -93,7 +93,8 @@ public:
      */
     QByteArray toQByteArray();
 
-    friend QDataStream& operator<<(QDataStream &out, const AliasFileList &fileList);
+    friend QDataStream& operator<<(QDataStream &out,
+            const AliasFileList &fileList);
     friend QDataStream& operator>>(QDataStream &in, AliasFileList &fileList);
 
 private:
