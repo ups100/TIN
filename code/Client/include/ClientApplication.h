@@ -30,6 +30,7 @@
 #include "CommunicationProtocol.h"
 #include "Message.h"
 #include "ConfigFileName.h"
+#include "Identify.h"
 #include "qtsinglecoreapplication.h"
 
 namespace TIN_project {
@@ -48,6 +49,24 @@ class ClientApplication : public QObject, public ServerConnectionListener,
 Q_OBJECT;
 
 public:
+/**
+ * @brief Used to synchronize without interaction with user
+ * @warning By now is public to make tests
+ * @info invokes moveOnTreeAutoSynch()
+ */
+bool synchWithOverWriting(const Utilities::AliasFileList & list);
+
+
+/**
+ * @brief Used to invoke commands, when user passed an index
+ * @warning By now is public to make tests
+ * @info Invokes moveOnTreeIndex();
+ */
+bool invokeCommandByIndex(const Utilities::AliasFileList & list, int index, QString command);
+
+
+void showList(const Utilities::AliasFileList &, bool);
+
 /**
  * @brief Enum that represents status of the application
  */
@@ -113,6 +132,10 @@ enum State
      * @param[in] list AliasFileList object with information about files in alias
      */
     virtual void onAliasListed(const Utilities::AliasFileList& list);
+
+    /**
+     * @brief Invoked by server when connected
+     */
     virtual void onConnected();
 
     /**
@@ -125,6 +148,10 @@ enum State
      * @param[in] location Location of File (held in FileLocation object)
      */
     virtual void onFileFound(const Utilities::FileLocation& location);
+
+    /**
+     * @brief Invoked by server when File was not found
+     */
     virtual void onFileNotFound();
 
     /**
@@ -331,6 +358,28 @@ private:
      */
     bool invokeCommand(boost::shared_ptr<Commands> cmd);
 
+
+    /**
+     * @brief invoked by synchWithOverWriting()
+     * @see synchWithOverWriting()
+     */
+    void moveOnTreeAutoSynch(boost::shared_ptr<AliasTree>, int indent, int & counter);
+
+
+
+
+    /**
+     * @brief Used to move on the tree, used by "ls" and "synch -d"
+     * @warning Remember about counter++
+     */
+    void moveOnTreeShowList(boost::shared_ptr<AliasTree>,int indent, int & counter, bool v);
+
+    /**
+     * @brief Used by push, pull and choose
+     * @warning Remember about counter++
+     */
+    void moveOnTreeIndex(boost::shared_ptr<AliasTree>, int indent, int & counter, int index, QString command);
+
     /**
      * @brief Actual state of app
      */
@@ -386,6 +435,8 @@ private:
      * @info Useful when onAliastList invoked
      */
     boost::shared_ptr<Commands> m_command;
+
+    Utilities::AliasFileList m_list;
 
 };
 

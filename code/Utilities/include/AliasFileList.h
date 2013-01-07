@@ -83,8 +83,14 @@ public:
      */
     quint32 getSize();
 
-    //TODO remove debug
-    void str();
+    /**
+     * @getter for the tree, used in ClientApplication
+     * @see ClientApplication::synchWithOverwriting();
+     */
+    const AliasTree& getTree() const;
+
+
+    void str(int&);
 
     /**
      * @brief Convert object to QByteArray

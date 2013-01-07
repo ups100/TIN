@@ -63,14 +63,14 @@ void ClientView::reconnectNotifier()
     connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
 }
 
-void ClientView::showList(AliasFileList& afl)
+void ClientView::showList(AliasFileList& list)
 {
-    afl.str();
+    int counter = 1;
+    list.str(counter);
 }
 ClientView::~ClientView()
 {
     delete m_notifier;
-    qDebug() << "DESTRUKTOR" << endl;
 }
 
 } //namespace Client

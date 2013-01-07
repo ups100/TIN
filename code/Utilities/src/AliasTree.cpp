@@ -21,24 +21,18 @@
 #include <QIODevice>
 #include <QDebug>
 #include <iostream> // TODO remove debug
-
 namespace TIN_project {
 namespace Utilities {
 
 AliasTree::AliasTree()
-        : m_path("")
-{
-
-}
-
-AliasTree::AliasTree(const QString &path)
-        : m_path(path)
 {
 
 }
 
 AliasTree::AliasTree(const QByteArray &data)
 {
+
+    static int i = 0;
     QDataStream in(data);
 
     in >> *this;
@@ -98,7 +92,7 @@ boost::shared_ptr<AliasTree> AliasTree::addFile(const QString &path,
     }
 }
 
-void AliasTree::str(int indent)
+void AliasTree::str(int indent, int & counter)
 {
     foreach (boost::shared_ptr<AliasTree> atree, m_dirContent){
     if (atree->isFile()) {
@@ -107,13 +101,13 @@ void AliasTree::str(int indent)
         for(int i = 0; i<atree->m_fileLocations.size();++i)
         {
             std::cout.width(indent * 4); std::cout<<" ";
-                  std::cout<<atree->getFilename().toStdString()<<"\t"<<atree->m_fileLocations[i].m_date.toStdString()<<"\t"<<atree->m_fileLocations[i].m_size<<"\t"<<atree->m_fileLocations[i].m_id.toStdString()<<"\n";
+            std::cout<<atree->getFilename().toStdString()<<"["<<(counter++)<<"]"<<"\t"<<atree->m_fileLocations[i].m_date.toStdString()<<"\t"<<atree->m_fileLocations[i].m_size<<"\t"<<atree->m_fileLocations[i].m_id.toStdString()<<"\n";
         }
     } else {
         std::cout.width(indent * 4); std::cout<<" ";
-       // std::cout<<atree->m_path.toStdString()<<"\n";
-        std::cout<<atree->getFilename().toStdString()<<"\n";
-        atree->str(indent + 1);
+        //std::cout<<atree->m_path.toStdString()<<"\n";
+        std::cout<<atree->getFilename().toStdString()<<"\t"<<"\n";
+        atree->str(indent + 1,counter);
     }
 }
 }
@@ -187,5 +181,14 @@ QDataStream& operator>>(QDataStream &in, boost::shared_ptr<AliasTree> &atree)
     return in;
 }
 
+QList<boost::shared_ptr<AliasTree> > AliasTree::getMDirContent()
+{
+    return m_dirContent;
+}
+
+QString AliasTree::getPath()
+{
+    return m_path;
+}
 } //namespace Utilities
 } //namespace TIN_project

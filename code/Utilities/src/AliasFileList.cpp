@@ -70,10 +70,9 @@ quint32 AliasFileList::getSize()
     return m_size;
 }
 
-//TODO remove
-void AliasFileList::str()
+void AliasFileList::str(int& counter)
 {
-    m_fileTree.str(0);
+    m_fileTree.str(0,counter);
 }
 
 QByteArray AliasFileList::toQByteArray()
@@ -102,5 +101,9 @@ QDataStream& operator>>(QDataStream &in, AliasFileList &fileList)
     return in;
 }
 
+const AliasTree& AliasFileList::getTree() const
+{
+    return m_fileTree;
+}
 } //namespace Utilities
 } //namespace TIN_project

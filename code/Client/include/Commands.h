@@ -12,12 +12,14 @@
 #include <QStringList>
 #include <QVariant>
 #include "Argument.h"
+
+
 namespace TIN_project {
 namespace Client {
 using namespace TIN_project::Utilities;
+
 class Commands
 {
-
 public:
     Commands();
     Commands(QString, Argument::Types);
@@ -71,8 +73,8 @@ private:
     /**
      * @brief command invoked by user
      */
+    //CommandParser::Command m_command2;
     QString m_command;
-
     /**
      * @brief parameter of command
      */
