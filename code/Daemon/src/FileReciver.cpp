@@ -185,10 +185,10 @@ void FileReciver::receiveDataSlot()
     m_currentlyReceived += buffer.size();
 
     m_file->write(buffer);
-
+    qDebug()<<"leci transfer";
     if (m_currentlyReceived == m_fileSize) {
         m_file->close();
-
+        qDebug()<<"status finished";
         m_state = TRANSFER_FINISHED;
 
         m_socket->disconnectFromHost();
@@ -204,7 +204,7 @@ void FileReciver::receiveDataSlot()
 
 void FileReciver::threadFinishedSlot()
 {
-    if (m_state == TRANSFER_FINISHED) {
+    if (m_state == TRANSFER_FINISHED) { qDebug()<<"finished fun";
         if (m_FileTransferListener != 0L) {
             m_FileTransferListener->onTransferEnd(this);
         }

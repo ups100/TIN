@@ -289,13 +289,13 @@ void FileTransferServer::threadFinishedSlot()
 {
     switch (m_state) {
         case ALL_DISCONNECTED:
-            if (m_FileTransferListener != 0L) {
+            if (m_FileTransferListener != 0L) { qDebug()<<"file transfer completed";
                 m_FileTransferListener->onFileTransferCompleted(this);
             }
             break;
         case ERROR_DISCONNECTING:
         case ERROR:
-            if (m_FileTransferListener != 0L) {
+            if (m_FileTransferListener != 0L) { qDebug()<<"file transfer error";
                 m_FileTransferListener->onFileTransferError(this);
             }
             break;

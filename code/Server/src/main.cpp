@@ -14,12 +14,20 @@
  * Allows user to do operations such as searching, copying and distributing files
  * gathered under one alias.
  */
-
+#include <QCoreApplication>
+#include <QFile>
 #include "MainServer.h"
 
+#include "FileTransferServer.h"
+using namespace TIN_project::Server;
 int main(int argc, char **argv)
 {
-    TIN_project::Server::MainServer server(argc, argv);
+    QCoreApplication app(argc, argv);
+   // TIN_project::Server::MainServer server(argc, argv);
 
-    return server.start(QHostAddress::LocalHost, 8080);
+    //return server.start(QHostAddress::LocalHost, 8080);
+    FileTransferServer serv(0L, 2, QFile("Nad.Zycie.2012.rar").size());
+
+    serv.startFileServer(QHostAddress("192.168.1.5"), 8080);
+    return app.exec();
 }
