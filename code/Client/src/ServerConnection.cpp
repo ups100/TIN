@@ -1,5 +1,5 @@
 /**
- * @file Client/include/ServerConnection.h
+ * @file Client/src/ServerConnection.cpp
  *
  * @date 08-12-2012
  *
