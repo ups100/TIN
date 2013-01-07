@@ -25,8 +25,6 @@
 #include <QMutex>
 #include <boost/shared_ptr.hpp>
 
-#include "File.h"
-
 namespace TIN_project {
 namespace Daemon {
 

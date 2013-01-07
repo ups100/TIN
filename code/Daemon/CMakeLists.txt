@@ -12,7 +12,6 @@ SET( DAEMON_SRC
 		${TIN_SOURCE_DIR}/Daemon/src/ClientCommunication.cpp
 		${TIN_SOURCE_DIR}/Daemon/src/DaemonApplication.cpp
 		${TIN_SOURCE_DIR}/Daemon/src/DaemonThread.cpp
-		${TIN_SOURCE_DIR}/Daemon/src/File.cpp
 		${TIN_SOURCE_DIR}/Daemon/include/FileReciver.h
 		${TIN_SOURCE_DIR}/Daemon/src/FileReciver.cpp
 		${TIN_SOURCE_DIR}/Daemon/include/FileSender.h

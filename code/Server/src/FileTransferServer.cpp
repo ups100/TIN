@@ -44,8 +44,7 @@ FileTransferServer::~FileTransferServer()
     }
 }
 
-bool FileTransferServer::startFileServer(const QHostAddress& address =
-        QHostAddress::Any, quint16 port = 0)
+bool FileTransferServer::startFileServer(const QHostAddress& address, quint16 port)
 {
     QMutexLocker locker(&(this->m_mutex));
 

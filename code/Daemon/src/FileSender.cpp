@@ -26,7 +26,7 @@ namespace TIN_project {
 namespace Daemon {
 
 FileSender::FileSender(FileTransferListener *listener, QFile *file,
-        qint64 bufferSize = 1024)
+        qint64 bufferSize)
         : m_FileTransferListener(listener), m_socket(0L), m_file(file),
                 m_port(0), m_state(UNCONNECTED), m_bufferSize(bufferSize)
 {

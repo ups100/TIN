@@ -27,8 +27,6 @@
 #include <QMutex>
 #include <QHostAddress>
 
-#include "File.h"
-
 namespace TIN_project {
 namespace Daemon {
 
@@ -62,7 +60,7 @@ public:
      * @note File passed to constructor should be present on disk and have read rights
      * This class takes the ownership of file object passed as argument.
      */
-    FileSender(FileTransferListener *listener, QFile *file, qint64 bufferSize);
+    FileSender(FileTransferListener *listener, QFile *file, qint64 bufferSize  = 1024);
 
     /**
      * @brief Starts new thread and connects to server

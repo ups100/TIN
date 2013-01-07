@@ -20,7 +20,6 @@
 #include "FileLocation.h"
 #include "AliasFileList.h"
 #include "CommunicationProtocol.h"
-#include "File.h"
 
 namespace TIN_project {
 

@@ -72,7 +72,8 @@ public:
      * - true is server has been correctly started
      * - false otherwise
      */
-    bool startFileServer(const QHostAddress& address, quint16 port);
+    bool startFileServer(const QHostAddress& address = QHostAddress::Any,
+            quint16 port = 0);
 
     /**
      * @brief Disconnects and closes server
