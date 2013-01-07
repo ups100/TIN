@@ -188,7 +188,17 @@ void DaemonThread::onTransferEnd(FileSender * sender)
 
 }
 
+void DaemonThread::onTransferError(FileSender *sender)
+{
+
+}
+
 void DaemonThread::onTransferEnd(FileReciver * reciver)
+{
+
+}
+
+void DaemonThread::onTransferError(FileReciver * reciver)
 {
 
 }

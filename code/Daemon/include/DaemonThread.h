@@ -51,7 +51,9 @@ public:
     virtual void onRemoveFile(const QString& fileName);
     virtual void onSendFile(const QString& fileName, const QHostAddress& address, quint16 port);
     virtual void onTransferEnd(FileSender * sender);
+    virtual void onTransferError(FileSender *sender);
     virtual void onTransferEnd(FileReciver * reciver);
+    virtual void onTransferError(FileReciver *receiver);
     void stopThread();
     void run();
 
