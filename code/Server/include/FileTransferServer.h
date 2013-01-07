@@ -115,7 +115,7 @@ public:
      */
     inline bool isRunning()
     {
-        return m_serverStarted;
+        return !(m_state == OFFLINE);
     }
 signals:
 
@@ -222,38 +222,54 @@ private:
     QThread m_additionalThread;
 
     /**
-     * @brief Informs if server is listening now
+     * @brief States of this class
      */
-    bool m_serverStarted;
-
-    /**
-     * @brief Informs if server is starting now
-     */
-    bool m_transferInProgres;
-
-    /**
-     * @brief Informs if server is stopping now
-     */
-    bool m_transferCompleted;
-
-    /**
-     * @brief Informs that error occurred during file transfer
-     */
-    bool m_errorOccurred;
-
-    /**
-     * @brief Informs that we are closing server
-     */
-    bool m_isClosing;
-
     enum STATE
     {
+        /**
+         * @brief Default state. Nothing running here.
+         */
         OFFLINE,
+
+        /**
+         * @brief Server is running and waiting for clients
+         */
         WAITING_FOR_CLIENTS,
+
+        /**
+         * @brief All clients are connected, peak sending.
+         */
         ALL_CLIENTS_CONNECTED,
+
+        /**
+         * @brief File transfer started
+         */
         TRANSFER_IN_PROGRESS,
+
+        /**
+         * @brief File transfer completed
+         */
         TRANSFER_COMPLETED,
+
+        /**
+         * @brief File transfer has been completed and all clients
+         * has been disconnected.
+         */
+        ALL_DISCONNECTED,
+
+        /**
+         * @brief Error occurred.
+         */
         ERROR,
+
+        /**
+         * @brief Error occurred and all clients has been disconnected
+         */
+        ERROR_DISCONNECTING,
+
+        /**
+         * @brief Forcing synchronous close.
+         */
         CLOSING
     };
 

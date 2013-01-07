@@ -79,18 +79,21 @@ void FileTransferServer::disconnectFromAliasSynch()
 {
     QMutexLocker locker(&(this->m_mutex));
 
-    if (!m_serverStarted) {
+    if (!(m_state == OFFLINE)) {
         return;
     }
 
-    m_isClosing = true;
-
     QEventLoop loop;
 
+    disconnect(&m_additionalThread, SIGNAL(finished()), this,
+            SLOT(threadFinishedSlot()));
     connect(&m_additionalThread, SIGNAL(finished()), &loop, SLOT(quit()));
 
-    QTimer::singleShot(0, this, SLOT("stopAllSlot()"));
+    QTimer::singleShot(0, this, SLOT(stopAllSlot()));
     loop.exec();
+    delete m_server;
+    m_server = 0L;
+    m_state = OFFLINE;
 
     return;
 }
@@ -221,69 +224,87 @@ void FileTransferServer::socketDisconnectedSlot()
     m_clients.removeOne(sender);
     sender->deleteLater();
 
-    //TU ZACZAC ZMIANY
-    if (m_transferCompleted) {
-        if (m_clients.size() == 0) {
-
-            //tu jest do zmiany!!! powiadomienie po zakonczeniu watku
-            if (this->m_FileTransferListener != 0L) {
-                m_FileTransferListener->onFileTransferCompleted(this);
-            }
-        }
-    } else if (!m_isClosing) {
-        if (!m_errorOccurred) {
-            m_errorOccurred = true;
-
-            foreach(QTcpSocket* rec, m_clients) {
-                rec->disconnectFromHost();
-            }
-        } else {
+    switch (m_state) {
+        case TRANSFER_COMPLETED:
             if (m_clients.size() == 0) {
-                if (this->m_FileTransferListener != 0L) {
-                    m_FileTransferListener->onFileTransferError(this);
+                m_state = ALL_DISCONNECTED;
+            }
+            //break should not be here
+        case CLOSING:
+        case ERROR_DISCONNECTING:
+            if (m_clients.size() == 0) {
+                moveToThread(m_creatorThread);
+                m_additionalThread.moveToThread(m_creatorThread);
+
+                m_additionalThread.quit();
+            }
+            break;
+        case ERROR:
+        case WAITING_FOR_CLIENTS:
+        case ALL_CLIENTS_CONNECTED:
+        case TRANSFER_IN_PROGRESS:
+            if (m_clients.size() == 0) {
+                moveToThread(m_creatorThread);
+                m_additionalThread.moveToThread(m_creatorThread);
+
+                m_additionalThread.quit();
+                return;
+            } else {
+                foreach(QTcpSocket* rec, m_clients) {
+                    rec->disconnectFromHost();
                 }
             }
-        }
-    } else {
-        //if m_isClosing
-        if (m_clients.size() == 0) {
-            QTimer::singleShot(0, this, SLOT(stopAllSlot()));
-        }
+            break;
     }
 }
 
 void FileTransferServer::socketErrorSlot(QAbstractSocket::SocketError error)
 {
     if (error != QAbstractSocket::RemoteHostClosedError) {
-        qDebug() << "Socket error " << error;
+        qDebug() << "Socket error " << error
+                << " occurred during file transfer";
     }
 }
 
 void FileTransferServer::stopAllSlot()
 {
+    if (m_state != ERROR) {
+        m_state = CLOSING;
+    }
+
     if (m_clients.size() != 0) {
 
         foreach(QTcpSocket* rec, m_clients) {
             rec->disconnectFromHost();
         }
     } else {
-        //stop server
-        m_server->close();
-        m_server->deleteLater();
-        m_server = 0L;
-
-        //change state
-        m_serverStarted = false;
-        m_transferInProgres = false;
-        m_transferCompleted = false;
-        m_errorOccurred = false;
-        m_isClosing = false;
-
-        //go back to thread
         moveToThread(m_creatorThread);
         m_additionalThread.moveToThread(m_creatorThread);
 
-        QTimer::singleShot(0, &m_additionalThread, SLOT(quit()));
+        m_additionalThread.quit();
+    }
+
+}
+void FileTransferServer::threadFinishedSlot()
+{
+    switch (m_state) {
+        case ALL_DISCONNECTED:
+            if (m_FileTransferListener != 0L) {
+                m_FileTransferListener->onFileTransferCompleted(this);
+            }
+            break;
+        case ERROR_DISCONNECTING:
+        case ERROR:
+            if (m_FileTransferListener != 0L) {
+                m_FileTransferListener->onFileTransferError(this);
+            }
+            break;
+        case CLOSING:
+            qDebug()<<"Forcing file transfer close";
+            break;
+        default:
+            qDebug()<<"We should not be here in state "<<m_state;
+            break;
     }
 }
 

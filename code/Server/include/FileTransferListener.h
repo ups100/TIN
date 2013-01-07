@@ -26,7 +26,8 @@ class FileTransferServer;
 /**
  * @brief Interface for informing about file transfer state
  *
- * @warning Remember that all those methods are called in context of FileTransferServer's thread!
+ * @note Those functions are called in context of thread in which FileTransferServer
+ * has been created
  */
 class FileTransferListener
 {

@@ -1,9 +1,19 @@
-///////////////////////////////////////////////////////////
-//  FileReciver.h
-//  Implementation of the Class FileReciver
-//  Created on:      07-gru-2012 00:33:36
-//  Original author: kopasiak
-///////////////////////////////////////////////////////////
+/**
+ * @file FileReciver.h
+ *
+ * @date 07-01-2013
+ *
+ * @author Opasiak Krzsztof <ups100@tlen.pl>
+ *
+ * @brief Implementation of the Class TIN_project::Server::FileSender
+ *
+ * @par Project
+ * This is a part of project realized on Warsaw University of Technology
+ * on TIN lectures. Project was created to simplify synchronization between catalogs,
+ * that are stored on different hosts to let clients work on the same files anywhere they want.
+ * Allows user to do operations such as searching, copying and distributing files
+ * gathered under one alias.
+ */
 
 #if !defined(EA_723305C7_1A82_4b81_8DF6_2EBC4C2063C7__INCLUDED_)
 #define EA_723305C7_1A82_4b81_8DF6_2EBC4C2063C7__INCLUDED_
@@ -17,14 +27,19 @@ namespace TIN_project {
 namespace Daemon {
 
 class FileTransferListener;
+
 /**
- * Used for receiving files
+ * @brief Class used for file receiving
+ *
+ * @details This class runs in separate thread.
  */
 class FileReciver
 {
 
 public:
-    FileReciver();
+    /**
+     * @brief Destructor
+     */
     virtual ~FileReciver();
     FileTransferListener *m_FileTransferListener;
 
