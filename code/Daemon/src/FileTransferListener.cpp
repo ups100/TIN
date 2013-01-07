@@ -1,11 +1,11 @@
 /**
- * @file FileTransferListener.cpp
+ * @file Daemon/src/FileTransferListener.cpp
  *
  * @date 05-01-2013
  *
  * @author Opasiak Krzsztof <ups100@tlen.pl>
  *
- * @brief Implementation of the Class TIN_project::Server::FileTransferServer
+ * @brief Implementation of the Class TIN_project::Daemon::FileTransferListener
  *
  * @par Project
  * This is a part of project realized on Warsaw University of Technology

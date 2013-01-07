@@ -5,7 +5,7 @@
  *
  * @author Opasiak Krzsztof <ups100@tlen.pl>
  *
- * @brief Implementation of the Class TIN_project::Server::FileSender
+ * @brief Implementation of the Class TIN_project::Daemon::FileSender
  *
  * @par Project
  * This is a part of project realized on Warsaw University of Technology
@@ -121,6 +121,9 @@ void FileSender::establishConnectionSlot()
 
     connect(m_socket, SIGNAL(readyRead()), this, SLOT(startDataSendingSlot()));
 
+    connect(m_socket, SIGNAL(bytesWritten(qint64)), this,
+                    SLOT(bytesWrittenSlot(qint64)));
+
     connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this,
             SLOT(socketErrorSlot(QAbstractSocket::SocketError)));
 
@@ -178,10 +181,7 @@ void FileSender::startDataSendingSlot()
         m_state = ERROR;
         qDebug() << "Received more than one data peak";
 
-        moveToThread(m_creatorThread);
-        m_additionalThread.moveToThread(m_creatorThread);
-
-        m_additionalThread.quit();
+        m_socket->disconnectFromHost();
         return;
     }
 
