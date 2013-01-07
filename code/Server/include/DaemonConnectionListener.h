@@ -66,7 +66,7 @@ public:
      * @param[in] location of file
      */
     virtual void onFileFound(DaemonConnection* daemon,
-            const Utilities::FileLocation& location) = 0;
+            const Utilities::AliasFileList& location) = 0;
 
     /**
      * @brief Informs about content of folder handled by daemon

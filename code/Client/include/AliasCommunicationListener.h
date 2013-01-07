@@ -66,7 +66,7 @@ public:
      * @param location location of found file
      */
     virtual void onFileFound(
-            const Utilities::FileLocation& location) = 0;
+            const Utilities::AliasFileList& location) = 0;
 
     /**
      * @brief Informs that searched file has not been found.

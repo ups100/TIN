@@ -97,7 +97,7 @@ void ClientConnection::sendConnectedToAlias()
     }
 }
 
-void ClientConnection::sendFileFound(const Utilities::FileLocation& location)
+void ClientConnection::sendFileFound(const Utilities::AliasFileList& location)
 {
     if (m_isConnected) {
         CommunicationProtocol::Communicate<CommunicationProtocol::FILE_LOCATION> message(

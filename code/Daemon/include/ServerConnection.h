@@ -115,7 +115,7 @@ public:
      *
      * @param[in] location object which contains location of file
      */
-    void sendFileFound(const Utilities::FileLocation& location);
+    void sendFileFound(const Utilities::AliasFileList& location);
 
     /**
      * @brief Sends information that there is no such file in this catalog

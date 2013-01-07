@@ -69,7 +69,7 @@ void ClientApplication::onDisconnected()
 
 }
 
-void ClientApplication::onFileFound(const Utilities::FileLocation& location)
+void ClientApplication::onFileFound(const Utilities::AliasFileList& location)
 {
 
 }

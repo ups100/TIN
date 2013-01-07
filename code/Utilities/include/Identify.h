@@ -31,12 +31,12 @@ namespace Utilities {
 class Identify
 {
     /**
-     * @breif Private C-tor
+     * @brief Private C-tor
      */
     Identify();
 
     /**
-     * @breif Private Copying C-tor
+     * @brief Private Copying C-tor
      */
     Identify(const Identify &other);
 

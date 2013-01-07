@@ -113,7 +113,7 @@ void ServerConnection::sendNoSuchFile()
     }
 }
 
-void ServerConnection::sendFileFound(const Utilities::FileLocation& location)
+void ServerConnection::sendFileFound(const Utilities::AliasFileList& location)
 {
     QMutexLocker locker(&this->m_mutex);
     if (m_isReadyState) {
