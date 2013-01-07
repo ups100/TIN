@@ -1,15 +1,13 @@
-#include <QCoreApplication>
-#include <QTcpSocket>
-#include <QString>
-#include <QString>
-#include <QHostAddress>
+#include "ClientApplication.h"
+#include <QDebug>
 
+using namespace TIN_project;
 using namespace std;
 
 int main(int argc, char **argv)
 {
-    QCoreApplication app(argc, argv);
+    TIN_project::Client::ClientApplication client;
+    client.start();
 
-    return app.exec();
+    return 0;
 }
-

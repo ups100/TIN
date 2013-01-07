@@ -26,10 +26,12 @@ public:
 
     Password(const Password& password);
     Password(const QString& password);
+    Password(const QByteArray &data);
     bool check(const QString& password) const;
     bool check(const Password& password) const;
     QByteArray toQByteArray() const;
     Password& operator=(const Password& other);
+    QString getPassword() const;
 
 };
 

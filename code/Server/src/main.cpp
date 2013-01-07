@@ -3,7 +3,10 @@
  *
  * @date 22-12-2012
  *
+ * @author Marcin Kubik <markubik@gmail.com>
+ * @author Mikolaj Markiewicz <kajo100@gmail.com>
  * @author Opasiak Krzsztof <ups100@tlen.pl>
+ * @author Jacek Sosnowski <jacek5656@tlen.pl>
  *
  * @brief TIN_project::Server module main function
  *

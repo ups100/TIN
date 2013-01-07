@@ -29,6 +29,7 @@
 #include "Password.h"
 #include "AliasFileList.h"
 #include "FileLocation.h"
+#include "Message.h"
 
 namespace TIN_project {
 
@@ -93,7 +94,10 @@ public:
         FILE_FOUND_HERE = 30,
 
         ADD_DIRECTORY = 31,
-        END_OF_CODES = 32
+
+        ADD_DIRECTORY_AND_CONNECT = 32,
+        REMOVE_DIRECTORY_AND_DISCONNECT = 33,
+        END_OF_CODES = 34
     };
 
     /**
@@ -553,6 +557,60 @@ public:
          * @brief qint64 to be converted.
          */
         qint64 m_length;
+    };
+
+    /**
+     * @brief Base class for Message converting
+     */
+    class CommunicateMessage
+    {
+    public:
+        /**
+         * @brief Gets message
+         */
+        inline const Message& getMessage()
+        {
+            return m_message;
+        }
+    protected:
+
+        /**
+         * @brief Converts an object to QByteArray
+         *
+         * @return Raw object data
+         */
+        inline QByteArray getQByteArray()
+        {
+            return m_message.toQByteArray();
+        }
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] message to be converted
+         */
+        inline CommunicateMessage(const Message& message)
+                : m_message(message)
+        {
+
+        }
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to construct the object
+         */
+        inline CommunicateMessage(const QByteArray &data)
+                : m_message(data)
+        {
+
+        }
+
+    private:
+        /**
+         * @brief Message to be converted
+         */
+        Message m_message;
     };
 
     /**
@@ -1220,6 +1278,88 @@ public:
         {
             QByteArray buff = CommunicateNameAndLong::getQByteArray();
             return QByteArray() + CommunicationProtocol::getCode(PUSH_FILE)
+                    + CommunicationProtocol::getQByteArrayFromInt(buff.size())
+                    + buff;
+        }
+
+    };
+
+    /**
+     * @brief Specialization of template class for #ADD_DIRECTORY_AND_CONNECT message
+     */
+    template<typename T>
+    class Communicate<32, T> : public CommunicateBase,
+            public CommunicateMessage
+    {
+    public:
+        /**
+         * @brief Constructor
+         *
+         * @param[in] message
+         */
+        Communicate(const Message &message)
+                : CommunicateMessage(message)
+        {
+
+        }
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateMessage(data)
+        {
+
+        }
+
+        virtual QByteArray toQByteArray()
+        {
+            QByteArray buff = CommunicateMessage::getQByteArray();
+            return QByteArray()
+                    + CommunicationProtocol::getCode(ADD_DIRECTORY_AND_CONNECT)
+                    + CommunicationProtocol::getQByteArrayFromInt(buff.size())
+                    + buff;
+        }
+
+    };
+
+    /**
+     * @brief Specialization of template class for #REMOVE_DIRECTORY_AND_DISCONNECT message
+     */
+    template<typename T>
+    class Communicate<33, T> : public CommunicateBase,
+            public CommunicateMessage
+    {
+    public:
+        /**
+         * @brief Constructor
+         *
+         * @param[in] message
+         */
+        Communicate(const Message &message)
+                : CommunicateMessage(message)
+        {
+
+        }
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data raw data to parse message.
+         */
+        Communicate(const QByteArray &data)
+                : CommunicateMessage(data)
+        {
+
+        }
+
+        virtual QByteArray toQByteArray()
+        {
+            QByteArray buff = CommunicateMessage::getQByteArray();
+            return QByteArray()
+                    + CommunicationProtocol::getCode(REMOVE_DIRECTORY_AND_DISCONNECT)
                     + CommunicationProtocol::getQByteArrayFromInt(buff.size())
                     + buff;
         }

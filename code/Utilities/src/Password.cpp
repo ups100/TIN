@@ -32,6 +32,11 @@ Password::Password(const QString& password)
 
 }
 
+Password::Password(const QByteArray &data)
+{
+
+}
+
 /**
  * Check if password is correct
  */
@@ -55,6 +60,11 @@ Password& Password::operator=(const Password& other)
 QByteArray Password::toQByteArray() const
 {
     return QByteArray();
+}
+
+QString Password::getPassword() const
+{
+    return QString();
 }
 
 } //namespace Utilities
