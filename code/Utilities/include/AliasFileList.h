@@ -62,7 +62,7 @@ public:
      * @brief Add file into list, if first file in directory tree'll be created,
      *          otherwise will be added onto location list
      *
-     * @param filename Path to file
+     * @param filePath Path to file
      * @param date Last file modification date timestamp
      * @param size Size of file
      */

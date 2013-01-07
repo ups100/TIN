@@ -137,7 +137,7 @@ void Alias::onConnectionClosed(DaemonConnection* daemon)
 }
 
 void Alias::onFileFound(DaemonConnection* daemon,
-        const Utilities::FileLocation& location)
+        const Utilities::AliasFileList& location)
 {
 
 }

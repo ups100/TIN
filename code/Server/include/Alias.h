@@ -121,7 +121,7 @@ public:
     virtual void onConnectionClosed(DaemonConnection* daemon);
 
     virtual void onFileFound(DaemonConnection* daemon,
-            const Utilities::FileLocation& location);
+            const Utilities::AliasFileList& location);
 
     virtual void onFileList(DaemonConnection* daemon,
             const Utilities::AliasFileList& list);

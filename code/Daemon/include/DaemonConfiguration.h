@@ -78,7 +78,7 @@ public:
         }
 
         /**
-         * @breif C-tor
+         * @brief C-tor
          * @param aliasId
          * @param cataloguePath
          */
@@ -162,7 +162,7 @@ public:
 
     /**
      * @brief Add new thread configuration and save configuration if added
-     * @param Thread configuration with address, pass, alias etc
+     * @param config configuration with address, pass, alias etc
      * @return true if added, false otherwise (if already exists)
      */
     bool addConfig(boost::shared_ptr<DaemonConfiguration::Config> config);
