@@ -28,9 +28,7 @@ FileTransferServer::FileTransferServer(FileTransferListener *listener,
         : m_FileTransferListener(listener),
                 m_numberOfConenctions(numberOfConnections), m_port(0),
                 m_fileSize(fileSize), m_currentSize(0), m_server(0L),
-                m_serverStarted(false), m_transferInProgres(false),
-                m_transferCompleted(false), m_errorOccurred(false),
-                m_isClosing(false)
+                m_state(OFFLINE)
 {
     m_creatorThread = QThread::currentThread();
 
@@ -40,7 +38,7 @@ FileTransferServer::FileTransferServer(FileTransferListener *listener,
 
 FileTransferServer::~FileTransferServer()
 {
-    if (m_serverStarted) {
+    if (m_state != OFFLINE) {
         qDebug() << "Destroying file transfer server with active connections";
         disconnectFromAliasSynch();
     }
@@ -51,7 +49,7 @@ bool FileTransferServer::startFileServer(const QHostAddress& address =
 {
     QMutexLocker locker(&(this->m_mutex));
 
-    if (m_serverStarted) {
+    if (m_state != OFFLINE) {
         return false;
     }
 
@@ -70,7 +68,11 @@ bool FileTransferServer::startFileServer(const QHostAddress& address =
 
     loop.exec();
 
-    return m_serverStarted;
+    if (m_state == ERROR) {
+        return false;
+    } else {
+        return true;
+    }
 }
 
 void FileTransferServer::disconnectFromAliasSynch()
@@ -110,12 +112,15 @@ void FileTransferServer::startServerSlot()
         connect(m_server, SIGNAL(newConnection()), this,
                 SLOT(addNewConnectionSlot()));
 
-        m_serverStarted = true;
+        connect(&m_additionalThread, SIGNAL(finished()), this,
+                SLOT(threadFinishedSlot()));
+
+        m_state = WAITING_FOR_CLIENTS;
 
         emit serverStartedSignal();
 
     } else {
-        m_serverStarted = false;
+        m_state = ERROR;
 
         moveToThread(m_creatorThread);
         m_additionalThread.moveToThread(m_creatorThread);
@@ -136,6 +141,8 @@ void FileTransferServer::addNewConnectionSlot()
         disconnect(m_server, SIGNAL(newConnection()), this,
                 SLOT(addNewConnectionSlot()));
 
+        m_state = ALL_CLIENTS_CONNECTED;
+
         foreach(QTcpSocket *client, m_clients) {
 
             connect(client, SIGNAL(readyRead()), this, SLOT(readDataSlot()));
@@ -147,14 +154,20 @@ void FileTransferServer::addNewConnectionSlot()
                     SLOT(socketErrorSlot(QAbstractSocket::SocketError)));
         }
 
-        if (this->m_FileTransferListener != 0L) {
-            m_FileTransferListener->onFileTransferStarted(this);
-        }
+        QTimer::singleShot(0, this, SLOT(sendPeak()));
     }
 }
 
 void FileTransferServer::readDataSlot()
 {
+    if (m_state == ALL_CLIENTS_CONNECTED) {
+        m_state = TRANSFER_IN_PROGRESS;
+    } else if (m_state != TRANSFER_IN_PROGRESS) {
+        qDebug() << "Too much date received";
+        m_state = ERROR;
+        QTimer::singleShot(0, this, SLOT(stopAllSlot()));
+    }
+
     QTcpSocket *sender = (QTcpSocket*) QObject::sender();
 
     //just one client is allowed to send data so we wont like to get data from others
@@ -165,10 +178,6 @@ void FileTransferServer::readDataSlot()
                         SLOT(readDataSlot()));
             }
         }
-    }
-
-    if ((!m_transferCompleted) && (!m_transferInProgres)) {
-        m_transferInProgres = true;
     }
 
     while (sender->bytesAvailable() != 0) {
@@ -193,9 +202,11 @@ void FileTransferServer::readDataSlot()
 
             if (sender->bytesAvailable() != 0) {
                 qDebug() << "Too much data sent in file transfer";
+                m_state = ERROR;
+                QTimer::singleShot(0, this, SLOT(stopAllSlot()));
             }
 
-            m_transferCompleted = true;
+            m_state = TRANSFER_COMPLETED;
             //we don't need any more data
             disconnect(sender, SIGNAL(readyRead()), this, SLOT(readDataSlot()));
             break;
@@ -210,8 +221,11 @@ void FileTransferServer::socketDisconnectedSlot()
     m_clients.removeOne(sender);
     sender->deleteLater();
 
+    //TU ZACZAC ZMIANY
     if (m_transferCompleted) {
         if (m_clients.size() == 0) {
+
+            //tu jest do zmiany!!! powiadomienie po zakonczeniu watku
             if (this->m_FileTransferListener != 0L) {
                 m_FileTransferListener->onFileTransferCompleted(this);
             }
@@ -271,6 +285,15 @@ void FileTransferServer::stopAllSlot()
 
         QTimer::singleShot(0, &m_additionalThread, SLOT(quit()));
     }
+}
+
+void FileTransferServer::sendPeak()
+{
+    QByteArray data;
+    data.append('S');
+    foreach(QTcpSocket* client, m_clients) {
+        client->write(data);
+    } //foreach
 }
 
 } //namespace server

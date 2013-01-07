@@ -43,13 +43,6 @@ public:
     virtual ~FileTransferListener();
 
     /**
-     * @brief Informs that all clients has been properly connected and transfer may now be started.
-     *
-     * @param transfer FileTransferServer identity
-     */
-    virtual void onFileTransferStarted(FileTransferServer *transfer) = 0;
-
-    /**
      * @brief Informs that file transfer has been completed.
      *
      * @param transfer FileTransferServer identity

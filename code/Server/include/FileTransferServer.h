@@ -160,6 +160,16 @@ private slots:
      */
     void stopAllSlot();
 
+    /**
+     * @brief Slot executed when additional thread has finished execution
+     */
+    void threadFinishedSlot();
+
+    /**
+     * @brief Slot used for sending initialization peak.
+     */
+    void sendPeak();
+
 private:
     /**
      * @brief Object notified about transfer status
@@ -235,6 +245,19 @@ private:
      * @brief Informs that we are closing server
      */
     bool m_isClosing;
+
+    enum STATE
+    {
+        OFFLINE,
+        WAITING_FOR_CLIENTS,
+        ALL_CLIENTS_CONNECTED,
+        TRANSFER_IN_PROGRESS,
+        TRANSFER_COMPLETED,
+        ERROR,
+        CLOSING
+    };
+
+    STATE m_state;
 
     /**
      * @brief Mutex for synchronization
