@@ -46,17 +46,20 @@ DaemonApplication* DaemonApplication::makeInstance()
 }
 
 DaemonApplication::DaemonApplication()
-        : m_clientCommunication(*this),
+        : /*m_clientCommunication(*this),*/
           m_isClean(true),
           m_singleApplication(argc,argv) //argc,argv are static fields set by initDaemon() method
 {
     connect(this, SIGNAL(onThreadClosedSingal(DaemonThread *)), this, SLOT(onThreadClosedSlot(DaemonThread *)));
+    // to avoid communication with client when this is the second running proces of ./daemon application
+    if (!m_singleApplication.isRunning())
+        m_clientCommunication = new ClientCommunication(*this);
 }
 
 void DaemonApplication::stopApplication()
 {
-    m_clientCommunication.terminate(); // TODO kopasiak check that: exit / terminate / quit / leave it alone
-    m_clientCommunication.wait();
+    m_clientCommunication->terminate(); // TODO kopasiak check that: exit / terminate / quit / leave it alone
+    m_clientCommunication->wait();
 
     foreach (DaemonThread *dt, m_daemonThreads){
         dt->stopThread();
@@ -83,7 +86,7 @@ int DaemonApplication::start(int argc, char **argv)
     }
 
     // Run listener for local client
-    m_clientCommunication.start();
+    m_clientCommunication->start();
 
     if (true) {     // TODO delete this block
         qDebug() << "Pierwszy testowy watek DaemonThread.";
@@ -102,7 +105,7 @@ int DaemonApplication::start(int argc, char **argv)
         qDebug() << "Tworze watek DaemonThread";    // TODO delete this line
     DaemonThread *dt = new DaemonThread(cnf);
     //dt->start();  //unnecessary because constructor above do everything
-    // TODO ewentualnie funkcję start można wykorzystać do tego żeby zwracała status DeamonThread
+    // TODO ewentualnie funkcję start można wykorzystać do tego żeby zwracała status DeamonThread -- TODO nie, bo to robi DaemonThreadListener
     // i np jesli połączenie się nie powiodło to tutaj moglibyśmy coś zrobić
     m_daemonThreads.append(dt);
     }
@@ -191,7 +194,7 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         foreach (DaemonThread* thread, m_daemonThreads){
         if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path) {
             thread->stopThread();
-            // TODO usunąć ten daemonThread z listy
+            m_daemonThreads.removeOne(thread); // disconnect this from the list
             break;
         }
     }
@@ -200,7 +203,6 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
 
 void DaemonApplication::onStarted(DaemonThread *dt)
 {
-    // comment
     qDebug() << "DaemonThread started successful for alias: " << dt->getConfig()->m_aliasId;
     qDebug() << " with catalog" << dt->getConfig()->m_cataloguePath;
 }
@@ -210,16 +212,16 @@ void DaemonApplication::onStartingError(DaemonThread *dt)
     qDebug() << "Error while DaemonThread tries connecting for alias: " << dt->getConfig()->m_aliasId;
     qDebug() << " with catalog" << dt->getConfig()->m_cataloguePath;
     // TODO usunięcie tego demona
+    emit onThreadClosedSingal(dt); // no nie wiem jeszcze co tam będzie się dziać - sprawdź najpierw tam wywoływaną metodę removeCatalogueFromAlias
 }
 
-void DaemonApplication::onClosed(DaemonThread *dt)  // TODO maybe I can use this pointer, but how singleShot to SLOT with value ? I can't
+void DaemonApplication::onClosed(DaemonThread *dt)
 {
-    //QMutexLocker lock(&m_mutex); //it is not unlock when signal is emiting
     qDebug() << "Server closed connection with DaemonThread " << dt->getConfig()->m_aliasId
              << " with catalog: "<< dt->getConfig()->m_cataloguePath;
 
     emit onThreadClosedSingal(dt);
-    //QTimer::singleShot(10, this, SLOT(onDaemonThreadClosedSlot()));
+    //QTimer::singleShot(10, this, SLOT(onDaemonThreadClosedSlot())); // can't passing arguments by it
 }
 
 

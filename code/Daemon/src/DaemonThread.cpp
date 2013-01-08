@@ -259,6 +259,7 @@ void DaemonThread::stopThread()
         // nevertheless disconnectFromServer() succeed or not, I select connection false
         m_connectionOk = false;
         m_aliasConnected = false;
+        m_readyToDestroy = true;
         m_ServerConnection->disconnectFromServer();
     }
 }

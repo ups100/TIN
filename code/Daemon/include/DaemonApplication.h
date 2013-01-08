@@ -118,9 +118,9 @@ private:
     QList<DaemonThread*> m_daemonThreads;
 
     /** Client communication thread filed */
-    ClientCommunication m_clientCommunication;
+    ClientCommunication *m_clientCommunication;
 
-    /** Daemon threads configuration */
+    /** Daemon threads configuration */     // TODO czy to nie powinna być lista?
     DaemonConfiguration m_config;
 
     /**

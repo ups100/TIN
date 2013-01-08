@@ -47,7 +47,7 @@ DaemonConfiguration::DaemonConfiguration()
 
 DaemonConfiguration::~DaemonConfiguration()
 {
-    saveConfiguration();
+    // saveConfiguration(); // TODO Kajo - I propose to delete it
 }
 
 void DaemonConfiguration::loadConfiguration()
