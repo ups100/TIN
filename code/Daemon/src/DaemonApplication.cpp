@@ -57,10 +57,12 @@ DaemonApplication::DaemonApplication()
 
 void DaemonApplication::stopApplication()
 {
+    qDebug() << "stopApplication() method";
     m_clientCommunication->terminate();
     m_clientCommunication->wait();
 
     foreach (DaemonThread *dt, m_daemonThreads){
+        qDebug() << "Stopping... " << dt->getConfig()->m_cataloguePath;
         dt->stopThread();
         delete dt;
     }
@@ -71,7 +73,7 @@ void DaemonApplication::stopApplication()
     m_isClean = true;
 
     // End event loop so DaemonApplication is ended at all
-    QTimer::singleShot(100, &m_singleApplication, SLOT(quit()));
+    QTimer::singleShot(0, &m_singleApplication, SLOT(quit()));
 }
 
 DaemonApplication::~DaemonApplication()
@@ -94,15 +96,22 @@ int DaemonApplication::start()
 
     if (true) {     // TODO delete this block
         qDebug() << "Pierwszy testowy watek DaemonThread.";
-        boost::shared_ptr<DaemonConfiguration::Config> cnf(new DaemonConfiguration::Config());
+        /*boost::shared_ptr<DaemonConfiguration::Config> cnf(new DaemonConfiguration::Config());
         QHostAddress addr(QHostAddress::LocalHost);
         cnf->m_ip = addr.toString();
         cnf->m_port = 8080;
         cnf->m_aliasId = "a";
         cnf->m_password = "abc";
-        DaemonThread *dt = new DaemonThread(cnf);
+        m_config.addConfig(cnf);
+        DaemonThread *dt = new DaemonThread(cnf);*/
+
+        //addCatalogueToAlias(".","a", Utilities::Password(QString("abc")), QHostAddress::LocalHost, 8080);
             //dt->start();  // TODO delete this line (look below)
-            m_daemonThreads.append(dt);
+
+           //m_daemonThreads.append(dt);
+
+           qDebug() << "m_deamonThread: ";
+           qDebug() << m_daemonThreads.size();
     }
 
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
@@ -199,11 +208,29 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         foreach (DaemonThread* thread, m_daemonThreads){
         if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path) {
             thread->stopThread();
+            delete thread;
             m_daemonThreads.removeOne(thread); // disconnect this from the list
             break;
         }
     }
 }
+}
+
+void DaemonApplication::detachDaemonThread(DaemonThread *dt)
+{
+    QMutexLocker lock(&m_mutex); // synchronization
+
+    QString aliasId(dt->getConfig()->m_aliasId);
+    QString path(dt->getConfig()->m_cataloguePath);
+
+    foreach (DaemonThread *thread, m_daemonThreads) {
+        if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path ) {
+            thread->stopThread();
+            delete thread;
+            m_daemonThreads.removeOne(thread); // disconnect this from the list
+            break;
+        }
+    }
 }
 
 void DaemonApplication::onStarted(DaemonThread *dt)
@@ -254,8 +281,8 @@ void DaemonApplication::onDaemonThreadClosedSlot()
 
 void DaemonApplication::onThreadClosedSlot(DaemonThread *dt)
 {
-
-    removeCatalogueFromAlias(dt->getConfig()->m_cataloguePath ,dt->getConfig()->m_aliasId);
+    //removeCatalogueFromAlias(dt->getConfig()->m_cataloguePath ,dt->getConfig()->m_aliasId);
+    detachDaemonThread(dt);
 
     // Closing DaemonApplication when last DaemonThread closed
      if (m_daemonThreads.isEmpty()) {

@@ -104,9 +104,9 @@ void DaemonThread::onConnected()
 
 void DaemonThread::onDisconnected()
 {
-    qDebug() << "Disconnect from server.";
-    m_connectionOk = false;
-    m_aliasConnected = false;
+    qDebug() << m_config->m_cataloguePath << "gets disconnect from server.";
+    //m_connectionOk = false;   // this sets onClose(this) // TODO think jeszcze raz
+    //m_aliasConnected = false;
     // this object may be delete by DaemonApplication so:
     m_readyToDestroy = true;
 

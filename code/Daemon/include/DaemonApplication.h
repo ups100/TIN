@@ -76,6 +76,13 @@ public:
     void removeCatalogueFromAlias(const QString &path, const QString &aliasId);
 
     /**
+     * @brief Similar to removeCatalogueFromAlias but this method don't use DaemonThread info from config.
+     * @brief This method take pointer and disconnect, remove and unlink from m_daemonThreads lists.
+     * @details It is call when application is ended (then all DeamonThreads are detached one by another.
+     */
+    void detachDaemonThread(DaemonThread *dt);
+
+    /**
      * @brief Provide the instance of DaemonApplication object
      * @details There could by only one such object - this method keep an eye on it.
      * @return DaemonApplication class current instance.

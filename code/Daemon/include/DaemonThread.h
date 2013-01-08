@@ -63,6 +63,8 @@ public:
     bool isReadyToDestroy();
 
 private:
+    DaemonThread(const DaemonThread&);
+    DaemonThread(DaemonThread&);
     boost::shared_ptr<DaemonConfiguration::Config> m_config;
     ServerConnection *m_ServerConnection;
 
