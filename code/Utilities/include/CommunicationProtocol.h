@@ -1126,7 +1126,7 @@ public:
      */
     template<typename T>
     class Communicate<12, T> : public CommunicateBase,
-            public CommunicateAliasFileLocation
+            public CommunicateAliasFileList
     {
     public:
         /**
@@ -1134,8 +1134,8 @@ public:
          *
          * @param[in] location of file
          */
-        Communicate(const FileLocation &location)
-                : CommunicateAliasFileLocation(location)
+        Communicate(const AliasFileList &location)
+                : CommunicateAliasFileList(location)
         {
 
         }
@@ -1146,14 +1146,14 @@ public:
          * @param[in] data raw data to parse message.
          */
         Communicate(const QByteArray &data)
-                : CommunicateAliasFileLocation(data)
+                : CommunicateAliasFileList(data)
         {
 
         }
 
         virtual QByteArray toQByteArray()
         {
-            QByteArray buff = CommunicateAliasFileLocation::getQByteArray();
+            QByteArray buff = CommunicateAliasFileList::getQByteArray();
             return QByteArray() + CommunicationProtocol::getCode(FILE_LOCATION)
                     + CommunicationProtocol::getQByteArrayFromInt(buff.size())
                     + buff;
@@ -1166,7 +1166,7 @@ public:
      */
     template<typename T>
     class Communicate<30, T> : public CommunicateBase,
-            public CommunicateAliasFileLocation
+            public CommunicateAliasFileList
     {
     public:
         /**
@@ -1174,8 +1174,8 @@ public:
          *
          * @param[in] location of file
          */
-        Communicate(const FileLocation &location)
-                : CommunicateAliasFileLocation(location)
+        Communicate(const AliasFileList &location)
+                : CommunicateAliasFileList(location)
         {
 
         }
@@ -1186,14 +1186,14 @@ public:
          * @param[in] data raw data to parse message.
          */
         Communicate(const QByteArray &data)
-                : CommunicateAliasFileLocation(data)
+                : CommunicateAliasFileList(data)
         {
 
         }
 
         virtual QByteArray toQByteArray()
         {
-            QByteArray buff = CommunicateAliasFileLocation::getQByteArray();
+            QByteArray buff = CommunicateAliasFileList::getQByteArray();
             return QByteArray()
                     + CommunicationProtocol::getCode(FILE_FOUND_HERE)
                     + CommunicationProtocol::getQByteArrayFromInt(buff.size())

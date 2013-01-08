@@ -234,7 +234,17 @@ void DaemonThread::onTransferEnd(FileSender * sender)
 
 }
 // this method comes from FileTransferListener class
+void DaemonThread::onTransferError(FileSender *sender)
+{
+
+}
+
 void DaemonThread::onTransferEnd(FileReciver * reciver)
+{
+
+}
+
+void DaemonThread::onTransferError(FileReciver * reciver)
 {
 
 }

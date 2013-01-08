@@ -71,7 +71,7 @@ void ClientApplication::onDisconnected()
     QTimer::singleShot(0, this, SLOT(onDisconnectedSlot()));
 }
 
-void ClientApplication::onFileFound(const Utilities::FileLocation& location)
+void ClientApplication::onFileFound(const Utilities::AliasFileList& location)
 {
     //TODO
 }

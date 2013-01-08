@@ -99,7 +99,7 @@ void ClientConnection::sendConnectedToAlias()
     QTimer::singleShot(0, this, SLOT(sendConnectedToAliasSlot()));
 }
 
-void ClientConnection::sendFileFound(const Utilities::FileLocation& location)
+void ClientConnection::sendFileFound(const Utilities::AliasFileList& location)
 {
     if (m_isConnected) {
         CommunicationProtocol::Communicate<CommunicationProtocol::FILE_LOCATION> message(

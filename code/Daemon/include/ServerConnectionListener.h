@@ -21,8 +21,6 @@
 #include <QString>
 #include <QHostAddress>
 
-#include "File.h"
-
 namespace TIN_project {
 namespace Daemon {
 

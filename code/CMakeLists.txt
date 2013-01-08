@@ -32,5 +32,5 @@ add_subdirectory(Utilities)
 add_subdirectory(Client)
 add_subdirectory(Daemon)
 add_subdirectory(Server)
-#add_subdirectory(doxygen)
+add_subdirectory(doxygen)
 

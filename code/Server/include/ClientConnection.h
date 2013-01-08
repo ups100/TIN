@@ -80,7 +80,7 @@ public:
      *
      * @param[in] location locations of file
      */
-    void sendFileFound(const Utilities::FileLocation& location);
+    void sendFileFound(const Utilities::AliasFileList& location);
 
     /**
      * @brief Sends listeted content of alias

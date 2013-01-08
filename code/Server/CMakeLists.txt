@@ -18,6 +18,7 @@ SET( SERVER_SRC
 		${TIN_SOURCE_DIR}/Server/src/DaemonConnection.cpp
 		${TIN_SOURCE_DIR}/Server/src/DaemonConnectionListener.cpp
 		${TIN_SOURCE_DIR}/Server/src/FileTransferListener.cpp
+		${TIN_SOURCE_DIR}/Server/include/FileTransferServer.h
 		${TIN_SOURCE_DIR}/Server/src/FileTransferServer.cpp
 		${TIN_SOURCE_DIR}/Server/include/MainServer.h
 		${TIN_SOURCE_DIR}/Server/src/MainServer.cpp
