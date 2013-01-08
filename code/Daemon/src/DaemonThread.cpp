@@ -109,7 +109,7 @@ void DaemonThread::onDisconnected()
 
 void DaemonThread::onFileNotRemoved()
 {
-
+    // TODO this
 }
 
 void DaemonThread::onFindFile(const QString &fileName)

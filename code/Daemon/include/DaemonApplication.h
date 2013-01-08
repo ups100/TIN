@@ -91,6 +91,7 @@ private:
     DaemonApplication(const DaemonApplication &);
 
 signals:
+    /** @brief It is connected to onThreadClosedSlot(DaemonThread*)
     void onThreadClosedSingal(DaemonThread *dt);
 
 private slots:

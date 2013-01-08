@@ -174,6 +174,7 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
 
 void DaemonApplication::onStarted(DaemonThread *dt)
 {
+    // comment
     qDebug() << "DaemonThread started successful for alias: " << dt->getConfig()->m_aliasId;
     qDebug() << " with catalog" << dt->getConfig()->m_cataloguePath;
 }
