@@ -46,8 +46,8 @@ void ClientView::waitForCommands()
        connect(m_notifier,SIGNAL(activated(int)), this, SLOT(emptyRead()));
        m_app->getCommand(m_string);
    }
-   else
-       m_app->setState(ClientApplication::LOGGED);
+   //else
+     //  m_app->setState(ClientApplication::LOGGED);
    return;
 }
 

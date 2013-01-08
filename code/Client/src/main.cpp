@@ -42,13 +42,15 @@ int main(int argc, char **argv)
     afl.addFile(tmp6,"5",5);
 
     int i = 1;
-    //afl.str(i);
+
 
     ClientApplication app(argc,argv);
 
-    //app.showList(afl,false);
-    app.synchWithOverWriting(afl);
-    //app.invokeCommandByIndex(afl,9,"choose");
-    return app.start(QHostAddress::LocalHost, 8080);
-    //return 0;
+    //app.showListOfRemote(afl);
+    //app.synchWithOverWriting(afl);
+    app.showListOfConflicts(afl);
+    app.invokeCommandByIndex(afl,"1","choose");
+    app.start(QHostAddress("127.0.0.1"), 8080);
+
+    return 0;
 }

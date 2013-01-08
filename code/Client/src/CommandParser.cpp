@@ -140,6 +140,8 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
     {
         if((tmpParameters.size() == 0) && (tmpArguments.size() == 0))
             return shared_ptr<Commands>(new Commands(tmpCommand, Argument::NONE));
+        else if((tmpParameters.size() == 1) && (tmpArguments.size() == 0))
+            return shared_ptr<Commands>(new Commands(tmpCommand,tmpParameters[0],Argument::NONE));
         else return shared_ptr<Commands>(new Commands());
     }
 

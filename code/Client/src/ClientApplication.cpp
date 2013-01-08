@@ -37,7 +37,7 @@ void ClientApplication::onAliasConnectionError()
 
 void ClientApplication::onAliasCreated()
 {
-    QTimer::singleShot(0, this, SLOT(onAliasConnectedSlot()));
+    QTimer::singleShot(0, this, SLOT(onAliasCreatedSlot()));
 }
 
 void ClientApplication::onAliasCreationError()
@@ -68,6 +68,8 @@ void ClientApplication::onConnected()
 
 void ClientApplication::onDisconnected()
 {
+    //TUTAJ
+    emit onDisconnectedSignal();
     QTimer::singleShot(0, this, SLOT(onDisconnectedSlot()));
 }
 
@@ -93,11 +95,13 @@ void ClientApplication::onFileRemovingError()
 
 void ClientApplication::onFileTransferError()
 {
+    emit onFileTransferSignal();
     QTimer::singleShot(0, this, SLOT(onFileTransferErrorSlot()));
 }
 
 void ClientApplication::onFileTransferFinished()
 {
+    emit onFileTransferSignal();
     QTimer::singleShot(0, this, SLOT(onFileTransferFinishedSlot()));
 }
 
@@ -150,18 +154,21 @@ void ClientApplication::onAliasDeletionErrorSlot()
 
 void ClientApplication::onAliasListedSlot(const Utilities::AliasFileList& list)
 {
-    (*this).setState(ClientApplication::FILELIST);
     (*this).m_list = list;
-    if ((*this).m_command->getCommand() == "ls")
-        //m_view->showList(const_cast<Utilities::AliasFileList&>(list));
-        (*this).showList(list, true);
+    if (((*this).m_command->getCommand() == "ls")
+            && ((*this).m_command->getParameter() == "l"))
+        (*this).showListOfLocal(list);
+    else if (((*this).m_command->getCommand() == "ls")
+            && ((*this).m_command->getParameter() == "r"))
+        (*this).showListOfRemote(list);
+    else if (((*this).m_command->getCommand() == "ls"))
+        (*this).showList(list);
     else if (((*this).m_command->getCommand() == "synch")
             && ((*this).m_command->getParameter() == "o")) {
         (*this).synchWithOverWriting(list);
     } else if (((*this).m_command->getCommand() == "synch")
             && ((*this).m_command->getParameter() == "d")) {
-        (*this).showList(list, false);
-        //(*this).synchWithDecisions(list);
+        (*this).showListOfConflicts(list);
     }
     QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 }
@@ -170,6 +177,7 @@ void ClientApplication::onConnectedSlot()
 {
     m_view->showMessage("Connected");
     (*this).setState(ClientApplication::CONNECTED);
+    qDebug() << "O TU O";
     QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 }
 
@@ -237,87 +245,117 @@ void ClientApplication::setView(boost::shared_ptr<ClientView> view)
 void ClientApplication::getCommand(QString s)
 {
     boost::shared_ptr<Commands> cmd = m_commandParser.parseCommand(s);
+
     /**
      * This singleShot shouldn't be here, but otherwise it wouldn't work at all
      * reconnectNotifier should be invoked by slots
+     * REMEMBER THAT THIS SHOULD BE REMOVED
      */
-
-    QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+    QTimer::singleShot(1000, &(*m_view), SLOT(reconnectNotifier()));
     if ((!(*this).checkIntegrity(cmd)) || (!(*this).checkStateCondition(cmd)))
+    {
+        qDebug()<<"SPRAWDZENIE POPRAWNOSCI NEGATYWNE";
         return;
-
+    }
     else {
-        qDebug() << "WYKONUJEMY";
-        (*this).invokeCommand(cmd);
+    qDebug() << "WYKONUJEMY";
+    (*this).invokeCommand(cmd);
     }
 
 }
 
 bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
 {
+
+    /**
+     * Here i'm trying to prevent user from random deletion, when
+     * he type push or pull with number and does not know, which file
+     * it is. So i'm trying to check whether the previous command
+     * allows user to get the info about indexes
+     */
+    if (cmd->getCommand() == "choose" || cmd->getCommand() == "push"
+            || cmd->getCommand() == "pull" || cmd->getCommand() == "read") {
+        if ((m_command->getCommand() != "ls")
+                && (!((m_command->getCommand() == "synch")
+                        && (m_command->getParameter() == "d")))
+                && (!(m_command->getCommand() == "read")))
+            qDebug() << "Risky";
+
+        //Maybe also if the previous command was the same as this one
+        //For example pull and then pull again
+    }
+
+
     m_command = cmd;
+    qDebug() << m_state;
     if (cmd->getCommand() == "exit") {
-        //(*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
+        (*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
         m_serverConnection.disconnectFromServer();
     } else if (cmd->getCommand() == "disconnect") {
-        //(*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
+        (*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
         m_serverConnection.disconnectFromServer();
-        //(*this).setState(ClientApplication::WAITING);
-        m_serverConnection.connectToAlias((*this).m_alias, (*this).m_password);
+        //MAGIA!!
+        QEventLoop loop;
+        QObject::connect(this, SIGNAL(onDisconnectedSignal()), &loop,
+                SLOT(quit()));
+        loop.exec();
+        (*this).setState(ClientApplication::WAITING);
+        m_serverConnection.connectToServer((*this).m_address, (*this).m_port);
     } else if (cmd->getCommand() == "log") {
         (*this).m_alias = cmd->getArg();
         (*this).m_password = cmd->getPassword();
-        //(*this).setState(ClientApplication::WAITING);
-        m_serverConnection.connectToServer((*this).m_address, (*this).m_port);
+        (*this).setState(ClientApplication::WAITING);
+        m_serverConnection.connectToAlias(cmd->getArg(), cmd->getPassword());
     } else if (cmd->getCommand() == "create") {
-        //(*this).setState(ClientApplication::WAITING);
+        (*this).setState(ClientApplication::WAITING);
         m_serverConnection.createAlias(cmd->getArg(), cmd->getPassword());
     } else if (cmd->getCommand() == "add") {
-        //(*this).setState(ClientApplication::WAITING);
+        (*this).setState(ClientApplication::WAITING);
         Utilities::CommunicationProtocol::Communicate<
                 Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
                 Utilities::Message(m_alias, m_password, cmd->getArg(),
                         m_address, m_port));
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d")) {
-        //(*this).setState(ClientApplication::WAITING);
+        (*this).setState(ClientApplication::WAITING);
         Utilities::CommunicationProtocol::Communicate<
                 Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
                 Utilities::Message(m_alias, cmd->getArg()));
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a")) {
-        //(*this).setState(ClientApplication::WAITING);
+        (*this).setState(ClientApplication::WAITING);
         m_serverConnection.removeAlias(cmd->getArg(), cmd->getPassword());
     } else if ((cmd->getCommand() == "rm")) {
-        //(*this).setState(ClientApplication::WAITING);
-        m_serverConnection.removeFileFromAlias(cmd->getArg());
+        (*this).setState(ClientApplication::WAITING);
+        (*this).m_serverConnection.removeFileFromAlias(cmd->getArg());
     } else if ((cmd->getCommand() == "find")) {
-        //(*this).setState(ClientApplication::WAITING);
+        (*this).setState(ClientApplication::WAITING);
         m_serverConnection.findFileInAlias(cmd->getArg());
     } else if (cmd->getCommand() == "read") {
-        //(*this).setState(ClientApplication::WAITING);
-        //TODO SWITCH QSTRING TO NUMBER AND INVOKE MY FUNCTION
-
+        (*this).setState(ClientApplication::WAITING);
+        (*this).invokeCommandByIndex((*this).m_list, cmd->getArg(),
+                cmd->getCommand());
     } else if (cmd->getCommand() == "push") {
-        //(*this).setState(ClientApplication::WAITING);
-        //TODO SWITCH QSTRING TO NUMBER AND INVOKE MY FUNCTION
+        (*this).setState(ClientApplication::WAITING);
+        (*this).invokeCommandByIndex((*this).m_list, cmd->getArg(),
+                cmd->getCommand());
     } else if (cmd->getCommand() == "ls") {
-        //(*this).setState(ClientApplication::WAITING);
+        (*this).setState(ClientApplication::WAITING);
         m_serverConnection.listAlias();
     } else if ((cmd->getCommand() == "synch") && (cmd->getParameter() == "o")) {
-        //(*this).setState(ClientApplication::WAITING);
+        (*this).setState(ClientApplication::WAITING);
     } else if ((cmd->getCommand() == "synch") && (cmd->getParameter() == "d")) {
-        //(*this).setState(ClientApplication::WAITING);
+        (*this).setState(ClientApplication::WAITING);
         m_serverConnection.listAlias();
     } else if ((cmd->getCommand() == "choose")) {
-        //(*this).setState(ClientApplication::WAITING);
-        //TODO SWITCH QSTRING TO NUMBER AND INVOKE MY COMMAND
+        (*this).setState(ClientApplication::WAITING);
+        (*this).invokeCommandByIndex((*this).m_list, cmd->getArg(),
+                cmd->getCommand());
     } else if ((cmd->getCommand() == "pull")) {
-        //(*this).setState(ClientApplication::WAITING);
-        //INVOKE MY COMMAND
-        //TODO SWITCH QSTRING TO NUMBER
+        (*this).setState(ClientApplication::WAITING);
+        (*this).invokeCommandByIndex((*this).m_list, cmd->getArg(),
+                cmd->getCommand());
     }
-
     return true;
 }
 
@@ -330,13 +368,13 @@ int ClientApplication::start(const QHostAddress& address, quint16 port)
     qDebug() << "Client application started" << endl;
 
     /** Server should be working to set state to waiting */
-//(*this).setState(ClientApplication::WAITING);
+    (*this).setState(ClientApplication::WAITING);
     m_address = address;
     m_port = port;
     m_serverConnection.connectToServer(address, port);
+    m_application.exec();
 
-    return m_application.exec();
-
+    return 0;
 }
 
 void ClientApplication::setState(ClientApplication::States s)
@@ -356,13 +394,11 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
     if (cmd->getCommand() == "log") {
         return (*this).checkIfConfigFileExists();
     }
-
     if ((cmd->getCommand() == "add")
             || ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d"))) {
         return (*this).checkAbsolutePath(cmd->getArg());
     }
-    if (((cmd->getCommand() == "rm") && (cmd->getParameter() == ""))
-            || (cmd->getCommand() == "push")) {
+    if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "")) {
         return (*this).checkRelativePath(cmd->getArg());
     }
     if ((cmd->getCommand() == "choose")
@@ -378,6 +414,7 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
 bool ClientApplication::checkStateCondition(
         boost::shared_ptr<Commands> cmd) const
 {
+
     ClientApplication::States state = (*this).getState();
     if (state == ClientApplication::NOT_CONNECTED)
         return false;
@@ -403,21 +440,6 @@ bool ClientApplication::checkStateCondition(
             return false;
         else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a"))
             return false;
-        else if ((cmd->getCommand() == "choose"))
-            return false;
-        else
-            return true;
-    }
-    if (state == ClientApplication::FILELIST) {
-        if (cmd->getCommand() == "log")
-            return false;
-        else if (cmd->getCommand() == "create")
-            return false;
-        else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a"))
-            return false;
-        else if (((*this).m_command->getCommand() == "ls")
-                && (cmd->getCommand() == "choose"))
-            return false;
         else
             return true;
     }
@@ -426,10 +448,14 @@ bool ClientApplication::checkStateCondition(
 
 bool ClientApplication::checkRelativePath(QString s) const
 {
+
+    //TODO PASS DIRECTORY AS ARGUMENT
     QString tmpDir = QDir::currentPath();
     tmpDir.append(QDir::separator());
     tmpDir.append(s);
     qDebug() << tmpDir;
+    QFile file(tmpDir);
+    //return file.exists();
     return true;
 }
 
@@ -452,7 +478,7 @@ bool ClientApplication::checkIfConfigFileExists() const
     return true;
 }
 
-bool ClientApplication::synchWithOverWriting(
+void ClientApplication::synchWithOverWriting(
         const Utilities::AliasFileList & list)
 {
     boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
@@ -460,18 +486,7 @@ bool ClientApplication::synchWithOverWriting(
 
     (*this).moveOnTreeAutoSynch(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
-    return true;
-}
 
-bool ClientApplication::invokeCommandByIndex(
-        const Utilities::AliasFileList & list, int index, QString command)
-{
-
-    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
-    int counter = 1;
-
-    (*this).moveOnTreeIndex(tree, 0, counter, index, command);
-    return true;
 }
 
 void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
@@ -494,53 +509,45 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
 
                 m_serverConnection.pushFileToAlias(QString(m_tree->getPath()),
                         m_tree->getFileLocations()[index].m_size);
+                QEventLoop loop;
+                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+                        SLOT(quit()));
+                loop.exec();
             } else {
                 m_serverConnection.pullFileFrom(
                         FileLocation(QString(m_tree->getPath()),
                                 m_tree->getFileLocations()[index].m_id));
+                QEventLoop loop;
+                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+                        SLOT(quit()));
+                loop.exec();
             }
 
             /** TODO Seems to be useless here */
-            qDebug()<<counter;
+            qDebug() << counter;
             counter++;
 
-            /*for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
-             std::cout.width(indent * 4);
-             std::cout << " ";
-             std::cout << m_tree->getFilename().toStdString() << "["
-             << (counter++) << "]" << "\t"
-             << m_tree->getFileLocations()[i].m_date.toStdString()
-             << "\t" << m_tree->getFileLocations()[i].m_size << "\t"
-             << m_tree->getFileLocations()[i].m_id.toStdString()
-             << "\n";
-             }*/
         } else {
-            /*std::cout.width(indent * 4);
-             std::cout << " ";
-             std::cout << m_tree->getFilename().toStdString() << "\t" << "\n";*/
             moveOnTreeAutoSynch(m_tree, indent + 1, counter);
-
         }
     }
 }
 
-void ClientApplication::showList(const Utilities::AliasFileList & list, bool v)
+void ClientApplication::showList(const Utilities::AliasFileList & list)
 {
     boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
-    (*this).moveOnTreeShowList(tree, 0, counter, v);
+    (*this).moveOnTreeShowList(tree, 0, counter);
     return;
 }
 
 void ClientApplication::moveOnTreeShowList(boost::shared_ptr<AliasTree> tree,
-        int indent, int & counter, bool v)
+        int indent, int & counter)
 {
     QList<boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
     for (int i = 0; i < list.size(); ++i) {
         boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
-            if ((m_tree->getFileLocations().size() == 1) && (v == false))
-                continue;
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
 
                 std::cout.width(indent * 4);
@@ -557,9 +564,140 @@ void ClientApplication::moveOnTreeShowList(boost::shared_ptr<AliasTree> tree,
             std::cout << " ";
             //std::cout<<atree->m_path.toStdString()<<"\n";
             std::cout << m_tree->getFilename().toStdString() << "\t" << "\n";
-            (*this).moveOnTreeShowList(m_tree, indent + 1, counter, v);
+            (*this).moveOnTreeShowList(m_tree, indent + 1, counter);
         }
     }
+}
+
+void ClientApplication::showListOfConflicts(const AliasFileList & list)
+{
+    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
+    int counter = 1;
+    (*this).moveOnTreeShowListOfConflicts(tree, 0, counter);
+    return;
+}
+
+void ClientApplication::moveOnTreeShowListOfConflicts(
+        boost::shared_ptr<AliasTree> tree, int indent, int & counter)
+{
+    QList<boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
+
+    for (int i = 0; i < list.size(); ++i) {
+        boost::shared_ptr<AliasTree> m_tree = list[i];
+        if (m_tree->isFile()) {
+            if (m_tree->getFileLocations().size() == 1)
+                continue;
+
+            for (int j = 0; j < m_tree->getFileLocations().size(); ++j) {
+                std::cout.width(indent * 4);
+                std::cout << " ";
+                std::cout << m_tree->getFilename().toStdString() << "["
+                        << (counter++) << "]" << "\t"
+                        << m_tree->getFileLocations()[j].m_date.toStdString()
+                        << "\t" << m_tree->getFileLocations()[j].m_size << "\t"
+                        << m_tree->getFileLocations()[j].m_id.toStdString()
+                        << "\n";
+
+            }
+        } else {
+            std::cout.width(indent * 4);
+            std::cout << " ";
+            //std::cout<<atree->m_path.toStdString()<<"\n";
+            std::cout << m_tree->getFilename().toStdString() << "\t" << "\n";
+
+            (*this).moveOnTreeShowListOfConflicts(m_tree, indent + 1, counter);
+        }
+    }
+}
+
+void ClientApplication::showListOfRemote(const AliasFileList& list)
+{
+    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
+    int counter = 1;
+    (*this).moveOnTreeShowListOfRemote(tree, 0, counter);
+    return;
+}
+
+void ClientApplication::moveOnTreeShowListOfRemote(
+        boost::shared_ptr<AliasTree> tree, int indent, int & counter)
+{
+    QList<boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
+    for (int i = 0; i < list.size(); ++i) {
+        boost::shared_ptr<AliasTree> m_tree = list[i];
+        if (m_tree->isFile()) {
+            for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
+                if (m_tree->getFileLocations()[i].m_id
+                        != Identify::getMachineIdentificator()) {
+                    std::cout.width(indent * 4);
+                    std::cout << " ";
+                    std::cout << m_tree->getFilename().toStdString() << "["
+                            << (counter++) << "]" << "\t"
+                            << m_tree->getFileLocations()[i].m_date.toStdString()
+                            << "\t" << m_tree->getFileLocations()[i].m_size
+                            << "\t"
+                            << m_tree->getFileLocations()[i].m_id.toStdString()
+                            << "\n";
+                }
+            }
+        } else {
+            std::cout.width(indent * 4);
+            std::cout << " ";
+            //std::cout<<atree->m_path.toStdString()<<"\n";
+            std::cout << m_tree->getFilename().toStdString() << "\t" << "\n";
+            (*this).moveOnTreeShowListOfRemote(m_tree, indent + 1, counter);
+        }
+    }
+}
+
+void ClientApplication::showListOfLocal(const AliasFileList& list)
+{
+    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
+    int counter = 1;
+    (*this).moveOnTreeShowListOfLocal(tree, 0, counter);
+    return;
+}
+
+void ClientApplication::moveOnTreeShowListOfLocal(
+        boost::shared_ptr<AliasTree> tree, int indent, int & counter)
+{
+    QList<boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
+    for (int i = 0; i < list.size(); ++i) {
+        boost::shared_ptr<AliasTree> m_tree = list[i];
+        if (m_tree->isFile()) {
+            for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
+                if (m_tree->getFileLocations()[i].m_id
+                        == Identify::getMachineIdentificator()) {
+                    std::cout.width(indent * 4);
+                    std::cout << " ";
+                    std::cout << m_tree->getFilename().toStdString() << "["
+                            << (counter++) << "]" << "\t"
+                            << m_tree->getFileLocations()[i].m_date.toStdString()
+                            << "\t" << m_tree->getFileLocations()[i].m_size
+                            << "\t"
+                            << m_tree->getFileLocations()[i].m_id.toStdString()
+                            << "\n";
+                }
+            }
+        } else {
+            std::cout.width(indent * 4);
+            std::cout << " ";
+            //std::cout<<atree->m_path.toStdString()<<"\n";
+            std::cout << m_tree->getFilename().toStdString() << "\t" << "\n";
+            (*this).moveOnTreeShowListOfLocal(m_tree, indent + 1, counter);
+        }
+    }
+}
+
+void ClientApplication::invokeCommandByIndex(Utilities::AliasFileList & list,
+        QString ind, QString command)
+{
+    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
+    int counter = 1;
+    bool ok;
+    int index = ind.toInt(&ok, 10);
+    if (ok)
+        (*this).moveOnTreeIndex(tree, 0, counter, index, command);
+
 }
 
 void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
@@ -581,12 +719,11 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
                     qDebug() << "ZNALEZIONO " << m_tree->getPath();
                     if ((command == "push")
                             && (m_tree->getFileLocations()[j].m_id
-                                    == Identify::getMachineIdentificator()))
-
-                            {
+                                    == Identify::getMachineIdentificator())) {
                         m_serverConnection.pushFileToAlias(m_tree->getPath(),
                                 m_tree->getFileLocations()[j].m_size);
-                    } else if (command == "pull") {
+                        (*this).setState(ClientApplication::WAITING);
+                    } else if (command == "pull" || command == "read") {
                         m_serverConnection.pullFileFrom(
                                 FileLocation(m_tree->getPath(),
                                         Identify::getMachineIdentificator()));
@@ -596,28 +733,19 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
                             m_serverConnection.pushFileToAlias(
                                     m_tree->getPath(),
                                     m_tree->getFileLocations()[j].m_size);
+                            (*this).setState(ClientApplication::WAITING);
                         } else {
                             m_serverConnection.pullFileFrom(
                                     FileLocation(m_tree->getPath(),
                                             Identify::getMachineIdentificator()));
+                            (*this).setState(ClientApplication::WAITING);
                         }
                     }
-                }
 
-                std::cout.width(indent * 4);
-                std::cout << " ";
-                std::cout << m_tree->getFilename().toStdString() << "["
-                        << (counter++) << "]" << "\t"
-                        << m_tree->getFileLocations()[i].m_date.toStdString()
-                        << "\t" << m_tree->getFileLocations()[i].m_size << "\t"
-                        << m_tree->getFileLocations()[i].m_id.toStdString()
-                        << "\n";
+                }
+                counter++;
             }
         } else {
-            std::cout.width(indent * 4);
-            std::cout << " ";
-            //std::cout<<atree->m_path.toStdString()<<"\n";
-            std::cout << m_tree->getFilename().toStdString() << "\t" << "\n";
             (*this).moveOnTreeIndex(m_tree, indent + 1, counter, index,
                     command);
         }
