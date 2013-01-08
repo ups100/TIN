@@ -144,7 +144,7 @@ int MainServer::start(const QHostAddress& address, quint16 port)
             << ":" << m_server.serverPort();
 
     qDebug() << "Creating new alias process start...";
-    Utilities::Password pass("abc");
+    Utilities::Password pass(QString("abc"));
     Alias *alias = new Alias("a", pass );
        alias->start();
        boost::shared_ptr<Alias> ptr(alias);

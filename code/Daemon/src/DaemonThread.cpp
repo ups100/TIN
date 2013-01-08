@@ -1,9 +1,19 @@
-///////////////////////////////////////////////////////////
-//  DaemonThread.cpp
-//  Implementation of the Class DaemonThread
-//  Created on:      07-gru-2012 00:33:35
-//  Original author: kopasiak
-///////////////////////////////////////////////////////////
+/**
+ * @file DaemonThread.cpp
+ *
+ * @date 04-01-2013
+ *
+ * @author Mikolaj Markiewicz <kajo100@gmail.com>
+ *
+ * @brief Implementation of the Class TIN_project::Daemon::DaemonThread
+ *
+ * @par Project
+ * This is a part of project realized on Warsaw University of Technology
+ * on TIN lectures. Project was created to simplify synchronization between catalogs,
+ * that are stored on different hosts to let clients work on the same files anywhere they want.
+ * Allows user to do operations such as searching, copying and distributing files
+ * gathered under one alias.
+ */
 
 #include "DaemonThread.h"
 #include "FileTree.h"
@@ -29,6 +39,7 @@ DaemonThread::DaemonThread()
     m_ServerConnection = new ServerConnection(this);
     m_connectionOk = false; //connection not established
     m_aliasConnected = false; //alias not connected
+    m_readyToDestroy = false;
 }
 
 DaemonThread::~DaemonThread()
@@ -51,6 +62,7 @@ DaemonThread::DaemonThread(
     m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip), m_config->m_port);
 
     // connecting to the Alias is in the onConnected() method
+    m_readyToDestroy = false;
 }
 
 void DaemonThread::onAliasConnected()
@@ -226,7 +238,17 @@ void DaemonThread::onTransferEnd(FileSender * sender)
 
 }
 // this method comes from FileTransferListener class
+void DaemonThread::onTransferError(FileSender *sender)
+{
+
+}
+
 void DaemonThread::onTransferEnd(FileReciver * reciver)
+{
+
+}
+
+void DaemonThread::onTransferError(FileReciver * receiver)
 {
 
 }

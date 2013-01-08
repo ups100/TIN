@@ -8,8 +8,7 @@
 #include "ClientApplication.h"
 #include "AliasFileList.h"
 #include "FileLocation.h"
-
-#include "AliasFileList.h"
+#include "CommunicationProtocol.h"
 
 namespace TIN_project {
 namespace Client {
@@ -70,7 +69,7 @@ void ClientApplication::onDisconnected()
 
 }
 
-void ClientApplication::onFileFound(const Utilities::FileLocation& location)
+void ClientApplication::onFileFound(const Utilities::AliasFileList& location)
 {
 
 }
@@ -121,7 +120,16 @@ void ClientApplication::start()
         if (strcmp(buf, "quit") == 0)
             break;
 
-        m_DaemonCommunication.talkToDaemon(Utilities::Message(buf));
+//        m_DaemonCommunication.talkToDaemon(Utilities::Message("id aliasu", Utilities::Password(QString("passwd")), "/home/kajo/workspace/tin", "127.0.0.1", 8080));
+
+        // TODO remove
+        Utilities::CommunicationProtocol::Communicate<
+                Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+                Utilities::Message(QString(buf),
+                        Utilities::Password(QString("passwd")),
+                        "/home/abc/tin", QHostAddress("127.0.0.1"), 8080));
+
+        m_DaemonCommunication.talkToDaemon(message.toQByteArray());
 
     } while (1);
 }

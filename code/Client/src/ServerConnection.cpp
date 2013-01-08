@@ -1,5 +1,5 @@
 /**
- * @file Client/include/ServerConnection.h
+ * @file Client/src/ServerConnection.cpp
  *
  * @date 08-12-2012
  *
@@ -387,7 +387,7 @@ void ServerConnection::socketReadyReadSlot()
                         CommunicationProtocol::FILE_LOCATION> message(data);
 
                 if (m_aliasListener != 0L) {
-                    m_aliasListener->onFileFound(message.getLocation());
+                    m_aliasListener->onFileFound(message.getList());
                 }
             }
                 break;

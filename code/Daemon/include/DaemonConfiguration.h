@@ -1,3 +1,20 @@
+/**
+ * @file DaemonConfiguration.h
+ *
+ * @date 04-01-2013
+ *
+ * @author Mikolaj Markiewicz <kajo100@gmail.com>
+ *
+ * @brief Implementation of the Class TIN_project::Daemon::DaemonConfiguration
+ *
+ * @par Project
+ * This is a part of project realized on Warsaw University of Technology
+ * on TIN lectures. Project was created to simplify synchronization between catalogs,
+ * that are stored on different hosts to let clients work on the same files anywhere they want.
+ * Allows user to do operations such as searching, copying and distributing files
+ * gathered under one alias.
+ */
+
 #if !defined(DAEMON_CONFIGURATION__INCLUDED_)
 #define DAEMON_CONFIGURATION__INCLUDED_
 
@@ -61,7 +78,7 @@ public:
         }
 
         /**
-         * @breif C-tor
+         * @brief C-tor
          * @param aliasId
          * @param cataloguePath
          */
@@ -145,7 +162,7 @@ public:
 
     /**
      * @brief Add new thread configuration and save configuration if added
-     * @param Thread configuration with address, pass, alias etc
+     * @param config configuration with address, pass, alias etc
      * @return true if added, false otherwise (if already exists)
      */
     bool addConfig(boost::shared_ptr<DaemonConfiguration::Config> config);

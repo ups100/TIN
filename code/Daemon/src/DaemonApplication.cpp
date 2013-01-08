@@ -1,11 +1,22 @@
-///////////////////////////////////////////////////////////
-//  DaemonApplication.cpp
-//  Implementation of the Class DaemonApplication
-//  Created on:      07-gru-2012 00:33:35
-//  Original author: kopasiak
-///////////////////////////////////////////////////////////
+/**
+ * @file DaemonApplication.cpp
+ *
+ * @date 04-01-2013
+ *
+ * @author Mikolaj Markiewicz <kajo100@gmail.com>
+ *
+ * @brief Implementation of the Class TIN_project::Daemon::DaemonApplication
+ *
+ * @par Project
+ * This is a part of project realized on Warsaw University of Technology
+ * on TIN lectures. Project was created to simplify synchronization between catalogs,
+ * that are stored on different hosts to let clients work on the same files anywhere they want.
+ * Allows user to do operations such as searching, copying and distributing files
+ * gathered under one alias.
+ */
 
 #include "DaemonApplication.h"
+#include "CommunicationProtocol.h"
 #include <QDebug>
 #include <QRegExp>
 
@@ -102,15 +113,30 @@ int DaemonApplication::start(int argc, char **argv)
     return m_singleApplication.exec();
 }
 
-// TODO dispatch message to do what is needed
-void DaemonApplication::dispatchMessage(const Utilities::Message &message)
+void DaemonApplication::dispatchMessage(const QByteArray &communicate)
 {
-    qDebug() << message.getMessage();
-    qDebug() << "Waiting 4 a message";
+    uchar code = communicate.left(1)[0];
+    Utilities::Message msg;
 
-    if (m_daemonThreads.size())
-        m_daemonThreads.at(qrand() % m_daemonThreads.size())->onFindFile(
-                message.getMessage());
+    // I know.. ;]
+    if (code == 32) {
+        Utilities::CommunicationProtocol::Communicate<32> message(
+                communicate.mid(5, communicate.length()));
+        msg = message.getMessage();
+
+        qDebug() << "addCatalogueToAlias()"; //TODO invoke it
+    } else if (code == 33) {
+        Utilities::CommunicationProtocol::Communicate<33> message(
+                communicate.mid(5, communicate.length()));
+        msg = message.getMessage();
+
+        qDebug() << "removeCatalogueFromAlias()"; //TODO invoke it
+    } else {
+        return;
+    }
+
+    qDebug() << msg.getAliasId();
+    qDebug() << "Waiting 4 a message";
 
 //    if (m_daemonThreads.size())
 //    switch (qrand() % 4) {

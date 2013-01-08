@@ -1,9 +1,19 @@
-///////////////////////////////////////////////////////////
-//  DaemonCommunication.cpp
-//  Implementation of the Class DaemonCommunication
-//  Created on:      07-gru-2012 00:33:35
-//  Original author: kopasiak
-///////////////////////////////////////////////////////////
+/**
+ * @file DaemonCommunication.cpp
+ *
+ * @date 04-01-2013
+ *
+ * @author Mikolaj Markiewicz <kajo100@gmail.com>
+ *
+ * @brief Implementation of the Class TIN_project::Client::DaemonCommunication
+ *
+ * @par Project
+ * This is a part of project realized on Warsaw University of Technology
+ * on TIN lectures. Project was created to simplify synchronization between catalogs,
+ * that are stored on different hosts to let clients work on the same files anywhere they want.
+ * Allows user to do operations such as searching, copying and distributing files
+ * gathered under one alias.
+ */
 
 #include "DaemonCommunication.h"
 #include "Message.h"
@@ -23,13 +33,13 @@ DaemonCommunication::~DaemonCommunication()
 
 }
 
-void DaemonCommunication::talkToDaemon(Utilities::Message message)
+void DaemonCommunication::talkToDaemon(const QByteArray &message)
 {
     int m_socket;
     struct sockaddr_un m_server;
 
     // Need to convert into another representation than .data() due to BSD socket, HEX chosen
-    QByteArray array = message.toQByteArray().toHex();
+    QByteArray array = message.toHex();
 
     m_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 

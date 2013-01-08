@@ -25,7 +25,7 @@ namespace Daemon {
 
 /**
  * @brief This class provide interface which allows DaemonThread send some communicates to DaemonApplication.
- * @detail This interface is implemented by DaemonApplication class
+ * @details This interface is implemented by DaemonApplication class
  *
  * @warning All this method is calling by DaemonThread objects but I'm not sure in which thread.
  * I suppose this method are called in context of ServerConnection's thread.

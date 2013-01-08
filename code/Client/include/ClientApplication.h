@@ -46,7 +46,7 @@ public:
     virtual void onAliasListed(const Utilities::AliasFileList& list);
     virtual void onConnected();
     virtual void onDisconnected();
-    virtual void onFileFound(const Utilities::FileLocation& location);
+    virtual void onFileFound(const Utilities::AliasFileList& location);
     virtual void onFileNotFound();
     virtual void onFileRemoved();
     virtual void onFileRemovingError();

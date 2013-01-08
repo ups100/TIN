@@ -137,7 +137,7 @@ void Alias::onConnectionClosed(DaemonConnection* daemon)
 }
 
 void Alias::onFileFound(DaemonConnection* daemon,
-        const Utilities::FileLocation& location)
+        const Utilities::AliasFileList& location)
 {
 
 }
@@ -148,10 +148,15 @@ void Alias::onFileList(DaemonConnection* daemon,
 
 }
 
+void Alias::onFileTransferStarted(FileTransferServer *transfer)
+{
+
+}
+
 /**
  * Notify if transfer completed
  */
-void Alias::onFileTransferCompleted(FileTransferServer * transfer)
+void Alias::onFileTransferCompleted(FileTransferServer *transfer)
 {
 
 }
@@ -159,7 +164,7 @@ void Alias::onFileTransferCompleted(FileTransferServer * transfer)
 /**
  * Notify if an error occurred
  */
-void Alias::onFileTransferError(FileTransferServer* transfer)
+void Alias::onFileTransferError(FileTransferServer *transfer)
 {
 
 }
