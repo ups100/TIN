@@ -43,8 +43,11 @@ public:
 
     virtual ~DaemonApplication();
 
-    int start(int argc, char **argv);
-    /** @brief Call this method instead of ~DaemonApplication */
+    int start();
+    /**
+     * @brief Call this method instead of ~DaemonApplication
+     * @details This close application at all.
+     */
     void stopApplication();
     /**
      * @brief Dispatch received message
@@ -78,7 +81,7 @@ public:
      * @return DaemonApplication class current instance.
      */
     static DaemonApplication& getInstance();
-    static DaemonApplication* makeInstance();
+
 
     /**
      * @brief Simple geter which is used in SIGKILL handler when SingleShot is sending
@@ -103,6 +106,11 @@ private:
      */
     DaemonApplication();
     DaemonApplication(const DaemonApplication &);
+    /**
+     * @brief Makes first instance of object this class.
+     * @details It should be call only from getInstance
+     */
+    static DaemonApplication* makeInstance();
 
 signals:
     /** @brief It is connected to onThreadClosedSlot(DaemonThread*) */

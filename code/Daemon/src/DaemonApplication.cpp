@@ -46,9 +46,8 @@ DaemonApplication* DaemonApplication::makeInstance()
 }
 
 DaemonApplication::DaemonApplication()
-        : /*m_clientCommunication(*this),*/
-          m_isClean(true),
-          m_singleApplication(argc,argv) //argc,argv are static fields set by initDaemon() method
+        : m_singleApplication(argc,argv), //argc,argv are static fields set by initDaemon() method
+          m_isClean(true)
 {
     connect(this, SIGNAL(onThreadClosedSingal(DaemonThread *)), this, SLOT(onThreadClosedSlot(DaemonThread *)));
     // to avoid communication with client when this is the second running proces of ./daemon application
@@ -58,16 +57,21 @@ DaemonApplication::DaemonApplication()
 
 void DaemonApplication::stopApplication()
 {
-    m_clientCommunication->terminate(); // TODO kopasiak check that: exit / terminate / quit / leave it alone
+    m_clientCommunication->terminate();
     m_clientCommunication->wait();
 
     foreach (DaemonThread *dt, m_daemonThreads){
         dt->stopThread();
         delete dt;
     }
+    // remove all element from the list
+    m_daemonThreads.clear();
 
     // Above we clean all things so object is clean:
     m_isClean = true;
+
+    // End event loop so DaemonApplication is ended at all
+    QTimer::singleShot(100, &m_singleApplication, SLOT(quit()));
 }
 
 DaemonApplication::~DaemonApplication()
@@ -77,7 +81,7 @@ DaemonApplication::~DaemonApplication()
         stopApplication();
 }
 
-int DaemonApplication::start(int argc, char **argv)
+int DaemonApplication::start()
 {
     // Check if it is first instance of application
     if (m_singleApplication.isRunning()) {
@@ -112,7 +116,6 @@ int DaemonApplication::start(int argc, char **argv)
 
     // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
     m_isClean = false;
-    qDebug()<<"start petli zdarzen";
     return m_singleApplication.exec();
 }
 
@@ -190,6 +193,8 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
 void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         const QString &aliasId)
 {
+    QMutexLocker lock(&m_mutex); // synchronization
+
     if (m_config.removeConfig(aliasId, path)) {
         foreach (DaemonThread* thread, m_daemonThreads){
         if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path) {
@@ -240,26 +245,21 @@ void DaemonApplication::onDaemonThreadClosedSlot()
         }
     }
 
-    // TODO Consider this concept - closing DaemonApplication when last DaemonThread close
+    // Closing DaemonApplication when last DaemonThread closed
     if (m_daemonThreads.isEmpty()) {
         stopApplication();
-        QTimer::singleShot(100, &m_singleApplication, SLOT(quit()));
     }
 
 }
 
 void DaemonApplication::onThreadClosedSlot(DaemonThread *dt)
 {
-    QMutexLocker lock(&m_mutex);
 
-    // TODO it can done be better:
     removeCatalogueFromAlias(dt->getConfig()->m_cataloguePath ,dt->getConfig()->m_aliasId);
-    m_daemonThreads.removeAll(dt);
 
-    // TODO Consider this concept - closing DaemonApplication when last DaemonThread close
+    // Closing DaemonApplication when last DaemonThread closed
      if (m_daemonThreads.isEmpty()) {
          stopApplication();
-         QTimer::singleShot(100, &m_singleApplication, SLOT(quit()));
      }
 }
 
@@ -275,7 +275,7 @@ void signal_handler(int sig)
     DaemonApplication::getInstance().stopApplication();
 
     // stop DaemonApplication's event loop
-    QTimer::singleShot(0, (DaemonApplication::getInstance().getSingleApplicationPointer()), SLOT(quit()));
+    //QTimer::singleShot(0, (DaemonApplication::getInstance().getSingleApplicationPointer()), SLOT(quit()));
 }
 
 void DaemonApplication::initDaemon(int argc, char **argv)

@@ -46,10 +46,8 @@ DaemonThread::~DaemonThread()
 {
     if (m_connectionOk)
         stopThread();
-    // TODO choose:
+    // delete ServerConnection object
     m_ServerConnection->deleteLater();
-    // or if in m_ServerConnection is no event loop choose this:
-    // delete m_ServerConnection;
 }
 
 DaemonThread::DaemonThread(
@@ -79,16 +77,14 @@ void DaemonThread::onAliasConnected()
 
 void DaemonThread::onAliasConnectionError()
 {
-    qDebug() << "Unsuccessful connection to the Alias: ";
-    qDebug() << m_config->m_aliasId;
+    qDebug() << "Unsuccessful connection to the Alias: " << m_config->m_aliasId;
 
     m_aliasConnected = false;
+    m_readyToDestroy = true;
+
+    // it cause this->stopThread() and deleting this thread from DaemonApplication
     DaemonApplication::getInstance().onStartingError(this);
 
-    // TODO uzgodnic scenariusz wypadku niepołączenia się z Aliasem
-    // proponuję zakończyć wtedy komunikację z serwerem, żeby potem się nie plątała niepotrzebnie
-    // i można powiadomić DaemonApplication o tym zdarzeniu, żeby usunęła wątek
-    // stopThread()
 }
 
 void DaemonThread::onConnected()
@@ -114,9 +110,9 @@ void DaemonThread::onDisconnected()
     // this object may be delete by DaemonApplication so:
     m_readyToDestroy = true;
 
+    // cause normal procedure for ending DaemonThread include stopThread() and delete this
     DaemonApplication::getInstance().onClosed(this);
 
-    // TODO uzgodnic scenariusz braku polaczenia - prawie gotowe ;)
 }
 
 void DaemonThread::onFileNotRemoved()
