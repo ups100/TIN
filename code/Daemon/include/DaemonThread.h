@@ -22,6 +22,7 @@
 #include <QtGlobal>
 #include <QString>
 #include <boost/shared_ptr.hpp>
+#include <QThread>
 #include "FileTransferListener.h"
 #include "ServerConnectionListener.h"
 #include "ServerConnection.h"
@@ -30,10 +31,8 @@
 namespace TIN_project {
 namespace Daemon {
 
-class DaemonApplication;
-
 class DaemonThread : public FileTransferListener,
-        public ServerConnectionListener
+        public ServerConnectionListener, public QThread
 {
 
 public:
@@ -52,10 +51,11 @@ public:
     virtual void onRemoveFile(const QString& fileName);
     virtual void onSendFile(const QString& fileName, const QHostAddress& address, quint16 port);
     virtual void onTransferEnd(FileSender * sender);
+    virtual void onTransferError(FileSender *sender);
     virtual void onTransferEnd(FileReciver * reciver);
-    /** @brief Stop DeamonThread communication */
+    virtual void onTransferError(FileReciver *receiver);
     void stopThread();
-    //void start(); // it could return status of starting DeamonThread only
+    void run();
 
     boost::shared_ptr<DaemonConfiguration::Config> getConfig();
 

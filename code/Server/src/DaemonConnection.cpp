@@ -237,7 +237,7 @@ void DaemonConnection::socketReadyReadSlot()
 
                 if (m_connectionListener != 0L) {
                     m_connectionListener->onFileFound(this,
-                            message.getLocation());
+                            message.getList());
                 }
             }
                 break;

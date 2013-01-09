@@ -234,7 +234,17 @@ void DaemonThread::onTransferEnd(FileSender * sender)
 
 }
 // this method comes from FileTransferListener class
+void DaemonThread::onTransferError(FileSender *sender)
+{
+
+}
+
 void DaemonThread::onTransferEnd(FileReciver * reciver)
+{
+
+}
+
+void DaemonThread::onTransferError(FileReciver * reciver)
 {
 
 }
@@ -249,18 +259,15 @@ void DaemonThread::stopThread()
     }
 }
 
-//void DaemonThread::start()
-//{
-//    // TODO connect to server and start listening <-- // it has been done by constructor (comment by js)
-////    while (1) {
-//////        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
-//////                << m_config->m_aliasId;
-////        sleep(5);
-////    }
-//
-//    // start event loop
-//    // exec();
-//}
+void DaemonThread::run()
+{
+    // TODO connect to server and start listening
+    while (1) {
+//        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
+//                << m_config->m_aliasId;
+        sleep(5);
+    }
+}
 
 boost::shared_ptr<DaemonConfiguration::Config> DaemonThread::getConfig()
 {
