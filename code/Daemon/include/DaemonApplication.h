@@ -135,7 +135,7 @@ private:
     /** Client communication thread filed */
     ClientCommunication *m_clientCommunication;
 
-    /** Daemon threads configuration */     // TODO czy to nie powinna być lista?
+    /** Daemon threads configuration */
     DaemonConfiguration m_config;
 
     /**

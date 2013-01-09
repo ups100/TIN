@@ -19,6 +19,7 @@
 #include "FileTree.h"
 #include "DaemonApplication.h"
 #include "AliasFileList.h"
+#include "Password.h"
 #include <QDir>
 #include <QFile>
 #include <QBuffer>
@@ -28,6 +29,7 @@
 #include <QXmlStreamReader>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QHostAddress>
 #include <stdexcept>
 
 namespace TIN_project {
@@ -80,8 +82,9 @@ void DaemonThread::onAliasConnected()
 {
     qDebug() << "Alias connected successful";
     if (m_aliasConnected) {
-        qDebug() << "Error. Double AliasConnected information from server to DeamonThread";
-    }else
+        qDebug()
+                << "Error. Double AliasConnected information from server to DeamonThread";
+    } else
         m_aliasConnected = true;
 
     // tells DaemonApplication that connection with server is established
@@ -217,7 +220,7 @@ void DaemonThread::onListFiles()
 }
 
 void DaemonThread::onReciveFile(const QString& fileName,
-        const QHostAddress& address, quint16 port)
+        const QHostAddress& address, quint16 port, qint64 size)
 {
     //TODO onReceive
     QString filePath(m_config->m_cataloguePath);
