@@ -18,13 +18,7 @@
 #if !defined(EA_F8C56EF9_6597_4618_8783_B8F31AB3B1AC__INCLUDED_)
 #define EA_F8C56EF9_6597_4618_8783_B8F31AB3B1AC__INCLUDED_
 
-#include <QString>
-#include <QDir>
-#include <QObject>
-#include <QFileInfo>
-#include <QMetaType>
-#include <QDebug>
-
+#include "Identifier.h"
 #include <QByteArray>
 #include <QString>
 
@@ -41,25 +35,23 @@ class FileLocation
     /** Relative to alias path to file */
     QString m_path;
 
-    /** ID of machine where the file is */
-    QString m_ownerId;
+    /** File size */
+    quint32 m_size;
+
+    /** Identifier of the machine where the file is */
+    Identifier m_ownerIdentifier;
 
 public:
-
-    /**
-     * @brief Constructor
-     *
-     * @details Creates invalid object
-     */
-    FileLocation();
 
     /**
      * @brief C-tor
      *
      * @param path Path to file relative to alias
-     * @param ownerId ID of the files owner machine
+     * @param size Size of file
+     * @param ownerIdentifier Identifier of the files owner machine
      */
-    FileLocation(const QString &path, const QString &ownerId);
+    FileLocation(const QString &path, const quint32 &size,
+            const Identifier &ownerIdentifier);
 
     /**
      * @brief C-tor
@@ -81,11 +73,18 @@ public:
     QString getPath();
 
     /**
+     * @brief Get file size
+     *
+     * @return Size of file
+     */
+    quint32 getSize();
+
+    /**
      * @brief Get file owner ID
      *
      * @return ID of the owner
      */
-    QString getOwnerId();
+    Identifier getOwnerIdentifier();
 
     /**
      * @brief Convert object to QByteArray
@@ -98,5 +97,4 @@ public:
 
 } //namespace Utilities
 } //namespace TIN_project
-Q_DECLARE_METATYPE(TIN_project::Utilities::FileLocation);
-#endif // !defined(EA_F8C56EF9_6597_4618_8783_B8F31AB3B1AC__INCLUDED_
+#endif // !defined(EA_F8C56EF9_6597_4618_8783_B8F31AB3B1AC__INCLUDED_)

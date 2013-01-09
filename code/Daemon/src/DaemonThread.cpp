@@ -1,25 +1,25 @@
 /**
- /**
-* @file DaemonThread.cpp
-*
-* @date 04-01-2013
-*
-* @author Mikolaj Markiewicz <kajo100@gmail.com>
-*
-* @brief Implementation of the Class TIN_project::Daemon::DaemonThread
-*
-* @par Project
-* This is a part of project realized on Warsaw University of Technology
-* on TIN lectures. Project was created to simplify synchronization between catalogs,
-* that are stored on different hosts to let clients work on the same files anywhere they want.
-* Allows user to do operations such as searching, copying and distributing files
-* gathered under one alias.
-*/
+ * @file DaemonThread.cpp
+ *
+ * @date 04-01-2013
+ *
+ * @author Mikolaj Markiewicz <kajo100@gmail.com>
+ *
+ * @brief Implementation of the Class TIN_project::Daemon::DaemonThread
+ *
+ * @par Project
+ * This is a part of project realized on Warsaw University of Technology
+ * on TIN lectures. Project was created to simplify synchronization between catalogs,
+ * that are stored on different hosts to let clients work on the same files anywhere they want.
+ * Allows user to do operations such as searching, copying and distributing files
+ * gathered under one alias.
+ */
 
 #include "DaemonThread.h"
 #include "FileTree.h"
 #include "DaemonApplication.h"
 #include "AliasFileList.h"
+#include "Password.h"
 #include <QDir>
 #include <QFile>
 #include <QBuffer>
@@ -29,6 +29,7 @@
 #include <QXmlStreamReader>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QHostAddress>
 #include <stdexcept>
 
 namespace TIN_project {
@@ -36,39 +37,82 @@ namespace Daemon {
 
 DaemonThread::DaemonThread()
 {
-
+    //create an object to connect to the server
+    m_ServerConnection = new ServerConnection(this);
+    m_connectionOk = false; //connection not established
+    m_aliasConnected = false; //alias not connected
 }
 
 DaemonThread::~DaemonThread()
 {
-
+    if (m_connectionOk)
+        stopThread();
+    // TODO choose:
+    m_ServerConnection->deleteLater();
+    // or if in m_ServerConnection is no event loop choose this:
+    // delete m_ServerConnection;
 }
 
 DaemonThread::DaemonThread(
         boost::shared_ptr<DaemonConfiguration::Config> config)
         : m_config(config)
 {
+    m_ServerConnection = new ServerConnection(this);
+    m_connectionOk = false;
+    m_aliasConnected = false;
+    m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip),
+            m_config->m_port);
 
+    // connecting to the Alias is in the onConnected() method
 }
 
 void DaemonThread::onAliasConnected()
 {
-
+    qDebug() << "Alias connected successful";
+    if (m_aliasConnected) {
+        qDebug()
+                << "Error. Double AliasConnected information from server to DeamonThread";
+    } else
+        m_aliasConnected = true;
 }
 
 void DaemonThread::onAliasConnectionError()
 {
+    qDebug() << "Unsuccessful connection to the Alias: ";
+    qDebug() << m_config->m_aliasId;
 
+    m_aliasConnected = false;
+
+    // TODO uzgodnic scenariusz wypadku niepołączenia się z Aliasem
+    // proponuję zakończyć wtedy komunikację z serwerem, żeby potem się nie plątała niepotrzebnie
+    // i można powiadomić DaemonApplication o tym zdarzeniu, żeby usunęła wątek
+    // stopThread()
 }
 
 void DaemonThread::onConnected()
 {
+    if (m_connectionOk) {
+        qDebug()
+                << "Incoming connection from server after previous connection was established. Double onConnected().";
+        m_connectionOk = false;
+    } else {
+        qDebug()
+                << "Connection to server successful. Starting connection to alias... ";
+        m_connectionOk = true;  // if everything OK
+        // connecting to the Alias
+        m_ServerConnection->connectToAlias(m_config->m_aliasId,
+                Utilities::Password(m_config->m_password));
+    }
 
 }
 
 void DaemonThread::onDisconnected()
 {
+    qDebug() << "Disconnect from server.";
+    m_connectionOk = false;
+    m_aliasConnected = false;
 
+    // TODO uzgodnic scenariusz braku polaczenia
 }
 
 void DaemonThread::onFileNotRemoved()
@@ -104,10 +148,10 @@ void DaemonThread::onFindFile(const QString &fileName)
 }
 
 // TODO kopasiak check / change communicates / method / param
-// if (files.getSize())
-// m_ServerConnection->sendFileFound(files);
-// else
-// m_ServerConnection->sendNoSuchFile();
+//    if (files.getSize())
+//        m_ServerConnection->sendFileFound(files);
+//    else
+//        m_ServerConnection->sendNoSuchFile();
 }
 
 void DaemonThread::onListFiles()
@@ -168,14 +212,14 @@ void DaemonThread::onReciveFile(const QString& fileName,
 void DaemonThread::onRemoveFile(const QString& fileName)
 {
     // TODO uncomment that when communication method 'll be exist
-// QFile file(QString(m_config->m_cataloguePath) + QString(fileLocation->path));
-// if (file.exists())
-// if (file.remove()) {
-// onFileRemoved();
-// return;
-// }
+//    QFile file(QString(m_config->m_cataloguePath) + QString(fileLocation->path));
+//    if (file.exists())
+//        if (file.remove()) {
+//            onFileRemoved();
+//            return;
+//        }
 //
-// onFileNotRemoved();
+//    onFileNotRemoved();
 }
 
 void DaemonThread::onSendFile(const QString& fileName,
@@ -184,11 +228,12 @@ void DaemonThread::onSendFile(const QString& fileName,
 
 }
 
+// this method comes from FileTransferListener class
 void DaemonThread::onTransferEnd(FileSender * sender)
 {
 
 }
-
+// this method comes from FileTransferListener class
 void DaemonThread::onTransferError(FileSender *sender)
 {
 
@@ -206,15 +251,20 @@ void DaemonThread::onTransferError(FileReciver * reciver)
 
 void DaemonThread::stopThread()
 {
-    terminate();
+    if (m_connectionOk) {
+        // nevertheless disconnectFromServer() succeed or not, I select connection false
+        m_connectionOk = false;
+        m_aliasConnected = false;
+        m_ServerConnection->disconnectFromServer();
+    }
 }
 
 void DaemonThread::run()
 {
     // TODO connect to server and start listening
     while (1) {
-// qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
-// << m_config->m_aliasId;
+//        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
+//                << m_config->m_aliasId;
         sleep(5);
     }
 }
