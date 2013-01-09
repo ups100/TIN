@@ -226,14 +226,9 @@ void Alias::onPullFileFrom(ClientConnection* client,
 
     if(fts->startFileServer(QHostAddress::LocalHost)==false) qDebug() << "Zle serwer ftp nie wystartowal";
 
+    qDebug() << "rozmiar pliku do wysylki" << QFile("/home/major/aaa/abc").size();
     m_daemons[1]->sendSendFile("abc",QHostAddress::LocalHost,fts->getPort());
     m_daemons[0]->sendReciveFile("abc",QHostAddress::LocalHost,fts->getPort(),QFile("/home/major/aaa/abc").size());
-
-    qDebug() << "onPullFileFrom runing...";
-//    sleep(1);
-//    fts->disconnectFromAliasSynch();
-
-    qDebug() << "onPullFileFrom ending... ";
 }
 
 void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,

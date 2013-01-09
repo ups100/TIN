@@ -72,7 +72,6 @@ private:
     ServerConnection *m_ServerConnection;
     FileReciver *m_receiver;
     FileSender *m_sender;
-    QEventLoop *m_loop;
 
     /**
      * @brief Cut absolute file path to relative to supported catalogue

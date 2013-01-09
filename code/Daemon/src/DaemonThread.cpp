@@ -43,9 +43,7 @@ DaemonThread::DaemonThread()
     m_aliasConnected = false; //alias not connected
     m_readyToDestroy = false;
     m_receiver = NULL;
-
-    // helping with file transmising EventLoop object
-    //m_loop = new QEventLoop();
+    m_sender = NULL;
 }
 
 DaemonThread::~DaemonThread()
@@ -54,25 +52,16 @@ DaemonThread::~DaemonThread()
         stopThread();
     // delete ServerConnection object
     m_ServerConnection->deleteLater();
-
- /*   if (m_loop->isRunning()) {
-        QTimer::singleShot(0, m_loop, SLOT(quit()));
-    }
-
-    delete m_loop;*/
 }
 
 DaemonThread::DaemonThread(
         boost::shared_ptr<DaemonConfiguration::Config> config)
-        : m_config(config), m_receiver(NULL)
+        : m_config(config), m_receiver(NULL), m_sender(NULL)
 {
     m_ServerConnection = new ServerConnection(this);
     m_connectionOk = false;
     m_aliasConnected = false;
     m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip), m_config->m_port);
-
-    // helping with file transmising EventLoop object
-    //m_loop = new QEventLoop();
 
     // connecting to the Alias is in the onConnected() method
     m_readyToDestroy = false;
@@ -228,39 +217,19 @@ void DaemonThread::onReciveFile(const QString& fileName,
     filePath += fileName;
     qDebug() << "Somebody wants to Receive file in: " << filePath;
 
- /*   QFile recFile(filePath);
-    qDebug() << "Piekny adres pliku receiver: " << recFile.fileName();
+    QFile recFile(filePath);
 
-
+    // if file exists then I change it name for having backup in case
     if (recFile.exists()) {
         QString orig(filePath);
         orig += ".orig";
-        recFile.copy(orig);     // TODO zadbaj o plik .orig
-        qDebug() << "usuwam plik w reciverze.";
-        recFile.remove();
+        recFile.rename(orig);
     }
 
-    if (recFile.open(QIODevice::ReadWrite) == false ) { //; // TODO check if is sufficient permissions
-        qDebug() << "\t Rzeczywiscie receiver nie moze otworzyc pliku do odczytu i zapisu ";
-    } else
-        qDebug() << "\t A mimo wszystko receiver otworzyl plik do zapisu.";
-
-//    if (!recFile.exists()) {
-        //recFile.seek(4);     // TODO nie wiem jaki rozmiar ma plik
-        char bitki[4];
-        recFile.write(bitki);
-        qDebug() << "Zmienilem rozmiar pliku i teraz ma: " << recFile.size();
-        recFile.close();
-//    }*/
-
-    //m_loop = new QEventLoop();
-
-    qDebug() << QFile("/home/major/aaa/abc").size() ;
-    m_receiver = new FileReciver(this, new QFile("blabla"), QFile("/home/major/aaa/abc").size());    // TODO Nie mam rozmiaru PLIKU !!
-    qDebug() << address << " "<< port;
+    qDebug() << "receiver ma taki plik " << size;
+    m_receiver = new FileReciver(this, new QFile(filePath), size);
     qDebug() << m_receiver->connectToServer(address, port);
 
-    //m_loop->exec();
 }
 
 void DaemonThread::onRemoveFile(const QString& fileName)
@@ -279,42 +248,32 @@ void DaemonThread::onRemoveFile(const QString& fileName)
 void DaemonThread::onSendFile(const QString& fileName,
         const QHostAddress& address, quint16 port)
 {
-    // TODO onSendFile
+    // TODO onSendFile - permission zrobic i co jesli plik nie istnieje?
     QString filePath(m_config->m_cataloguePath);
     filePath += "/";
     filePath += fileName;
     qDebug() << "I send somebody file: " << filePath;
 
-    //QFile sendFile(filePath);
-    //qDebug() << "Piekny adres pliku sender: " << sendFile.fileName();
+    QFile sendFile(filePath);
 
-    //sendFile.open(QIODevice::ReadOnly);
-    //if (sendFile.exists() )
+    //sendFile.open(QIODevice::ReadOnly); // don't do this
+    if (sendFile.exists() )
            //&& (sendFile.permissions()==QFile::ReadOwner || sendFile.permissions()==QFile::ReadUser))
-    //{
-        //qDebug() << "Przed Open w sender";
-
-       //qDebug() <<" Po open w sender";
-       m_sender = new FileSender(this, new QFile(filePath));//, 4);//QFile(sendFile.fileName()).size());
-//       FileSender sender(this, &sendFile/*, sendFile.size()*/);
+    {
+       m_sender = new FileSender(this, new QFile(filePath));
        m_sender->connectToServer(address, port);
-
-//    }
-//    else
-//    {
-//        qDebug() << " Blad .Request file has no read rights. " << filePath;
-//
-//    }
+    }
+    else
+        qDebug() << "Request file has no read rights or it isn't exist. " << filePath;
 }
 
 // this method comes from FileTransferListener class
 void DaemonThread::onTransferEnd(FileSender * sender)
 {
-    //TODO onTransferEnd
+    //TODO onTransferEnd - never disconnect
     qDebug() << "File sending completed: ";
-    //sender->disconnectFromServer();
-        //delete m_sender;
-    //QTimer::singleShot(0, m_loop, SLOT(quit()));
+
+    delete m_sender;
 
 }
 // this method comes from FileTransferListener class
@@ -322,29 +281,21 @@ void DaemonThread::onTransferError(FileSender *sender)
 {
     // TODO onTransferError
     qDebug() << "File sending with error. ";
-    //sender->disconnectFromServer();
-    //delete m_sender;
-    ///QTimer::singleShot(0, m_loop, SLOT(quit()));
+    delete m_sender;
 }
 
 void DaemonThread::onTransferEnd(FileReciver * reciver)
 {
     // TODO onTransferEnd Reciver
     qDebug() << "File receiving completed. ";
-    //reciver->disconnectFromServer();
-    //delete m_receiver;
-    //m_loop->quit();
-    ///QTimer::singleShot(0, m_loop, SLOT(quit()));
+    delete m_receiver;
 }
 
 void DaemonThread::onTransferError(FileReciver * receiver)
 {
     // TODO onTransferError
     qDebug() << "File receiving with error. ";
-    //m_receiver->disconnectFromServer();     //TODO think
-    //delete m_receiver;
-//    m_loop->quit();
-    ///QTimer::singleShot(0, m_loop, SLOT(quit()));
+    delete m_receiver;
 }
 
 void DaemonThread::stopThread()
@@ -357,19 +308,6 @@ void DaemonThread::stopThread()
         m_ServerConnection->disconnectFromServer();
     }
 }
-
-//void DaemonThread::start()
-//{
-//    // TODO connect to server and start listening <-- // it has been done by constructor (comment by js)
-////    while (1) {
-//////        qDebug() << m_config->m_cataloguePath << " " << m_config->m_port << " "
-//////                << m_config->m_aliasId;
-////        sleep(5);
-////    }
-//
-//    // start event loop
-//    // exec();
-//}
 
 boost::shared_ptr<DaemonConfiguration::Config> DaemonThread::getConfig()
 {

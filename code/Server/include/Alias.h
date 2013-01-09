@@ -38,11 +38,12 @@ namespace Server {
 /**
  * Remember to disable copy constructor
  */
-class Alias : public FileTransferListener,
+class Alias : public QObject,
+        public FileTransferListener,
         public ClientConnectionListener,
         public DaemonConnectionListener
 {
-
+    Q_OBJECT;
 public:
     /**
      * @brief Constructor
