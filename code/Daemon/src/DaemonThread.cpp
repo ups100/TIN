@@ -40,6 +40,10 @@ DaemonThread::DaemonThread()
     m_connectionOk = false; //connection not established
     m_aliasConnected = false; //alias not connected
     m_readyToDestroy = false;
+    m_receiver = NULL;
+
+    // helping with file transmising EventLoop object
+    m_loop = new QEventLoop();
 }
 
 DaemonThread::~DaemonThread()
@@ -48,16 +52,25 @@ DaemonThread::~DaemonThread()
         stopThread();
     // delete ServerConnection object
     m_ServerConnection->deleteLater();
+
+    if (m_loop->isRunning()) {
+        QTimer::singleShot(0, m_loop, SLOT(quit()));
+    }
+
+    delete m_loop;
 }
 
 DaemonThread::DaemonThread(
         boost::shared_ptr<DaemonConfiguration::Config> config)
-        : m_config(config)
+        : m_config(config), m_receiver(NULL)
 {
     m_ServerConnection = new ServerConnection(this);
     m_connectionOk = false;
     m_aliasConnected = false;
     m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip), m_config->m_port);
+
+    // helping with file transmising EventLoop object
+    m_loop = new QEventLoop();
 
     // connecting to the Alias is in the onConnected() method
     m_readyToDestroy = false;
@@ -117,7 +130,7 @@ void DaemonThread::onDisconnected()
 
 void DaemonThread::onFileNotRemoved()
 {
-    // TODO this
+    // TODO onFileNotRemoved
 }
 
 void DaemonThread::onFindFile(const QString &fileName)
@@ -206,7 +219,32 @@ void DaemonThread::onListFiles()
 void DaemonThread::onReciveFile(const QString& fileName,
         const QHostAddress& address, quint16 port)
 {
+    //TODO onReceive
+    QString filePath(m_config->m_cataloguePath);
+    filePath += fileName;
+    qDebug() << "Somebody wants to Receive file in: " << filePath;
 
+    QFile recFile(fileName);
+
+    if (recFile.exists()) {
+        QString orig(filePath);
+        orig += ".orig";
+        recFile.copy(orig);     // TODO zadbaj o plik .orig
+    }
+
+    recFile.open(QIODevice::ReadWrite); // TODO check if is sufficient permissions
+
+    if (!recFile.exists()) {
+        recFile.seek(4);     // TODO nie wiem jaki rozmiar ma plik
+        qDebug() << "Zmienilem rozmiar pliku i teraz ma: " << recFile.size();
+    }
+
+    //m_loop = new QEventLoop();
+
+    m_receiver = new FileReciver(this, &recFile, 4);    // TODO Nie mam rozmiaru PLIKU !!
+    m_receiver->connectToServer(address, port);
+
+    m_loop->exec();
 }
 
 void DaemonThread::onRemoveFile(const QString& fileName)
@@ -225,28 +263,61 @@ void DaemonThread::onRemoveFile(const QString& fileName)
 void DaemonThread::onSendFile(const QString& fileName,
         const QHostAddress& address, quint16 port)
 {
+    // TODO onSendFile
+    QString filePath(m_config->m_cataloguePath);
+    filePath += fileName;
+    qDebug() << "I send somebody file: " << filePath;
 
+    QFile sendFile(fileName);
+
+    if (sendFile.exists()
+           && (sendFile.permissions()==QFile::ReadOwner || sendFile.permissions()==QFile::ReadUser))
+    {
+       //m_loop = new QEventLoop();
+
+       FileSender sender(this, &sendFile/*, sendFile.size()*/);
+       sender.connectToServer(address, port);
+
+       m_loop->exec(); //waiting for send complete
+    }
+    else
+    {
+        qDebug() << "Request file has no read rights. ";
+
+    }
 }
 
 // this method comes from FileTransferListener class
 void DaemonThread::onTransferEnd(FileSender * sender)
 {
+    //TODO onTransferEnd
+    qDebug() << "File sending completed: ";
+    QTimer::singleShot(0, m_loop, SLOT(quit()));
 
 }
 // this method comes from FileTransferListener class
 void DaemonThread::onTransferError(FileSender *sender)
 {
-
+    // TODO onTransferError
+    qDebug() << "File sending with error. ";
+    QTimer::singleShot(0, m_loop, SLOT(quit()));
 }
 
 void DaemonThread::onTransferEnd(FileReciver * reciver)
 {
-
+    // TODO onTransferEnd Reciver
+    qDebug() << "File receiving completed: ";
+    //m_loop->quit();
+    QTimer::singleShot(0, m_loop, SLOT(quit()));
 }
 
 void DaemonThread::onTransferError(FileReciver * receiver)
 {
-
+    // TODO onTransferError
+    qDebug() << "File receiving with error. ";
+    m_receiver->disconnectFromServer();     //TODO think
+//    m_loop->quit();
+    QTimer::singleShot(0, m_loop, SLOT(quit()));
 }
 
 void DaemonThread::stopThread()
@@ -286,6 +357,7 @@ QString& DaemonThread::cutAbsolutePath(QString &str)
 
 bool DaemonThread::isReadyToDestroy()
 {
+    // Rather don't use this method.
     return m_readyToDestroy;
 }
 

@@ -23,10 +23,13 @@
 #include <QString>
 #include <boost/shared_ptr.hpp>
 #include <QThread>
+#include <QEventLoop>
 #include "FileTransferListener.h"
 #include "ServerConnectionListener.h"
 #include "ServerConnection.h"
 #include "DaemonConfiguration.h"
+#include "FileReciver.h"
+#include "FileSender.h"
 
 namespace TIN_project {
 namespace Daemon {
@@ -67,6 +70,8 @@ private:
     DaemonThread(DaemonThread&);
     boost::shared_ptr<DaemonConfiguration::Config> m_config;
     ServerConnection *m_ServerConnection;
+    FileReciver *m_receiver;
+    QEventLoop *m_loop;
 
     /**
      * @brief Cut absolute file path to relative to supported catalogue

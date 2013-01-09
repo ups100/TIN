@@ -187,7 +187,10 @@ void Alias::onNoSuchFile(DaemonConnection* daemon)
 void Alias::onPullFileFrom(ClientConnection* client,
         const Utilities::FileLocation& location)
 {
-
+    FileTransferServer fts(this, 2, 4);
+    fts.startFileServer(QHostAddress::LocalHost);
+    m_daemons[0]->sendSendFile("abc",QHostAddress::LocalHost,fts.getPort());
+    m_daemons[1]->sendReciveFile("abc",QHostAddress::LocalHost,fts.getPort());
 }
 
 void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
