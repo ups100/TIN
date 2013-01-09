@@ -512,8 +512,8 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
                 loop.exec();
             } else {
                 m_serverConnection.pullFileFrom(
-                        FileLocation(QString(m_tree->getPath()),
-                                m_tree->getFileLocations()[index].m_id));
+                        FileLocation(QString(m_tree->getPath()), m_tree->getFileLocations()[index].m_size,
+                                Identifier(m_tree->getFileLocations()[index].m_id)));
                 QEventLoop loop;
                 QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
                         SLOT(quit()));
@@ -732,7 +732,10 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
                         }
                         m_serverConnection.pullFileFrom(
                                 FileLocation(m_tree->getPath(),
-                                        m_tree->getFileLocations()[j].m_id));
+                                        m_tree->getFileLocations()[j].m_size,
+                                        Identifier(
+                                                m_tree->getFileLocations()[j]
+                                                        .m_id)));
                         counter++;
                         (*this).setState(ClientApplication::WAITING);
                     } else if (command == "choose") {
@@ -749,7 +752,10 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
                         } else {
                             m_serverConnection.pullFileFrom(
                                     FileLocation(m_tree->getPath(),
-                                            Identify::getMachineIdentificator()));
+                                            m_tree->getFileLocations()[j].m_size,
+                                            Identifier(
+                                                    m_tree->getFileLocations()[j]
+                                                            .m_id)));
                             if (index == counter) {
                                 qDebug() << "ZNALEZIONO " << m_tree->getPath();
                             }
