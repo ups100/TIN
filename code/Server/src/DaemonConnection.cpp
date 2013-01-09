@@ -117,11 +117,11 @@ void DaemonConnection::sendListYourFiles()
 }
 
 void DaemonConnection::sendReciveFile(const QString& fileName,
-        const QHostAddress& address, quint16 port)
+        const QHostAddress& address, quint16 port, qint64 size)
 {
     if (m_isConnected) {
         CommunicationProtocol::Communicate<CommunicationProtocol::RECIVE_FILE> message(
-                fileName, address, port);
+                fileName, address, port, size);
         sendAllFunction(message.toQByteArray());
     } else {
         qDebug() << "Trying to send but connection is not opened";

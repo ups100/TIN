@@ -47,7 +47,7 @@ public:
     virtual void onFindFile(const QString& fileName);
     virtual void onFileNotRemoved();
     virtual void onListFiles();
-    virtual void onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port);
+    virtual void onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port, qint64 size);
     virtual void onRemoveFile(const QString& fileName);
     virtual void onSendFile(const QString& fileName, const QHostAddress& address, quint16 port);
     virtual void onTransferEnd(FileSender * sender);

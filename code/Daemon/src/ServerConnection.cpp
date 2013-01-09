@@ -272,7 +272,7 @@ void ServerConnection::socketReadyReadSlot()
 
                 if (m_serverListener != 0L) {
                     m_serverListener->onReciveFile(message.getName(),
-                            message.getAddress(), message.getPort());
+                            message.getAddress(), message.getPort(), message.getSize());
                 }
             }
                 break;
