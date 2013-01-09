@@ -27,8 +27,8 @@ Identifier::Identifier()
 
 }
 
-Identifier::Identifier(const QString &path, const QString &id)
-        : m_path(path), m_id(id)
+Identifier::Identifier(const QString &id, const QString &path)
+        : m_id(id), m_path(path)
 {
 
 }
@@ -37,8 +37,8 @@ Identifier::Identifier(const QByteArray& data)
 {
     QDataStream in(data);
 
-    in >> m_path;
     in >> m_id;
+    in >> m_path;
 }
 
 Identifier::~Identifier()
@@ -46,14 +46,14 @@ Identifier::~Identifier()
 
 }
 
-QString Identifier::getPath()
-{
-    return m_path;
-}
-
 QString Identifier::getId()
 {
     return m_id;
+}
+
+QString Identifier::getPath()
+{
+    return m_path;
 }
 
 QByteArray Identifier::toQByteArray()
@@ -61,24 +61,24 @@ QByteArray Identifier::toQByteArray()
     QByteArray bytes;
     QDataStream out(&bytes, QIODevice::WriteOnly);
 
-    out << m_path;
     out << m_id;
+    out << m_path;
 
     return bytes;
 }
 
 QDataStream& operator<<(QDataStream &out, const Identifier &identifier)
 {
-    out << identifier.m_path;
     out << identifier.m_id;
+    out << identifier.m_path;
 
     return out;
 }
 
 QDataStream& operator>>(QDataStream &in, Identifier &identifier)
 {
-    in >> identifier.m_path;
     in >> identifier.m_id;
+    in >> identifier.m_path;
 
     return in;
 }

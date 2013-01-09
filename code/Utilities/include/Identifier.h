@@ -47,10 +47,10 @@ public:
     /**
      * @brief C-tor
      *
-     * @param path Absolute path to catalogue
      * @param id ID of the machine where the catalogue is
+     * @param path Absolute path to catalogue - default empty => client identifier
      */
-    Identifier(const QString &path, const QString &id);
+    Identifier(const QString &id, const QString &path = "");
 
     /**
      * @brief C-tor
@@ -65,18 +65,18 @@ public:
     virtual ~Identifier();
 
     /**
-     * @brief Get path to catalogue
-     *
-     * @return Path to catalogue
-     */
-    QString getPath();
-
-    /**
      * @brief Get ID
      *
      * @return ID
      */
     QString getId();
+
+    /**
+     * @brief Get path to catalogue
+     *
+     * @return Path to catalogue
+     */
+    QString getPath();
 
     /**
      * @brief Convert object to QByteArray
