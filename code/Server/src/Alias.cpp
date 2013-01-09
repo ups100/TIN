@@ -27,12 +27,14 @@ namespace Server {
 
 Alias::~Alias()
 {
-
+    // TODO
 }
 
 Alias::Alias(const QString& name, Utilities::Password password)
         : m_name(name), m_password(password)
 {
+    // TODO and disable copy constructor
+    // start(); // TODO comments tells to start this
 
 }
 
@@ -139,7 +141,10 @@ void Alias::onConnectionClosed(DaemonConnection* daemon)
 void Alias::onFileFound(DaemonConnection* daemon,
         const Utilities::AliasFileList& location)
 {
-
+    qDebug() << "Client search for file and Daemon found file ";
+    // TODO jak wykombinować kogo powiadomić ?
+    // niby mogę chwilow przechowywać klienta który czeka na odpowiedź
+    // i teraz ją wysłać
 }
 
 void Alias::onFileList(DaemonConnection* daemon,
@@ -171,6 +176,12 @@ void Alias::onFileTransferError(FileTransferServer *transfer)
 
 void Alias::onFindFile(ClientConnection* client, const QString& name)
 {
+    // TODO onFindFile
+    qDebug() << "Klient chce znalezc plik " << name;
+
+    foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
+        dc->sendFindFile(name);
+    }
 
 }
 
@@ -181,7 +192,7 @@ void Alias::onListAlias(ClientConnection* client)
 
 void Alias::onNoSuchFile(DaemonConnection* daemon)
 {
-    qDebug() << "Somebody call No such File";
+    qDebug() << "Client call FindFile, but daemon doesn't have it";
 }
 
 void Alias::onPullFileFrom(ClientConnection* client,

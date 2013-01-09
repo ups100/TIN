@@ -110,7 +110,7 @@ void DaemonThread::onConnected()
         qDebug() << "Connection to server successful. Starting connection to alias... ";
         m_connectionOk = true;  // if everything OK
         // connecting to the Alias
-        m_ServerConnection->connectToAlias(m_config->m_aliasId, Utilities::Password(m_config->m_password));
+        m_ServerConnection->connectToAlias(m_config->m_aliasId, Utilities::Password(m_config->m_password)); // TODO check if it is not a Hash
     }
 
 }
