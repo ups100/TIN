@@ -77,7 +77,7 @@ public:
      *
      * @param[in] argv command line arguments
      */
-    ClientApplication (int, char**);
+ClientApplication    (int, char**);
 
     /**
      * @brief Destructor
@@ -177,7 +177,7 @@ public:
      * @param[in] port Port on which client connects
      * @return exec
      */
-    int start(const QHostAddress& address, quint16 port);
+    int start(const QHostAddress& address, quint16 port, QString path);
 
     /**
      * @brief Used to communicate with daemon
@@ -219,9 +219,27 @@ public slots:
     void invokeCommandByIndex(Utilities::AliasFileList & list, QString index,
             QString command);
 
+    /**
+     * @brief Used to show list with files, that are multiplied on different hosts
+     * @details After this client can type "choose"
+     */
     void showListOfConflicts(const Utilities::AliasFileList &);
+
+    /**
+     * @brief Used to show list of files at every but client computer
+     * @details After this client can type "pull"
+     */
     void showListOfRemote(const Utilities::AliasFileList&);
+
+    /**
+     * @brief Used to show list of files on client's computer
+     * @details After this client can type "push"
+     */
     void showListOfLocal(const Utilities::AliasFileList&);
+
+    /**
+     * @brief Used to show list of all files in alias
+     */
     void showList(const Utilities::AliasFileList&);
 
 private slots:
@@ -286,7 +304,7 @@ private slots:
      * @see onFileFound()
      * @param[in] location Location of file in alias
      */
-    void onFileFoundSlot(const Utilities::FileLocation& location);
+    void onFileFoundSlot(const Utilities::AliasFileList& location);
 
     /**
      * @brief Helper slot for onFileNotFound()
@@ -447,7 +465,16 @@ private:
      */
     boost::shared_ptr<Commands> m_command;
 
+    /**
+     * @brief List of files under the alias
+     * @details Each listing, synch, push, pull or read update the list
+     */
     Utilities::AliasFileList m_list;
+
+    /**
+     * @brief Path to the root of an alias catalog
+     */
+    QString m_path;
 
 };
 

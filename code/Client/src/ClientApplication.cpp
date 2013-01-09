@@ -68,15 +68,16 @@ void ClientApplication::onConnected()
 
 void ClientApplication::onDisconnected()
 {
-    //TUTAJ
+
     emit onDisconnectedSignal();
     QTimer::singleShot(0, this, SLOT(onDisconnectedSlot()));
 }
 
 void ClientApplication::onFileFound(const Utilities::AliasFileList& location)
 {
-    //TODO
-}
+    QMetaObject::invokeMethod(this, "onAliasListedSlot", Qt::AutoConnection,
+            Q_ARG(const AliasFileList&, location));
+        }
 
 void ClientApplication::onFileNotFound()
 {
@@ -155,6 +156,7 @@ void ClientApplication::onAliasDeletionErrorSlot()
 void ClientApplication::onAliasListedSlot(const Utilities::AliasFileList& list)
 {
     (*this).m_list = list;
+
     if (((*this).m_command->getCommand() == "ls")
             && ((*this).m_command->getParameter() == "l"))
         (*this).showListOfLocal(list);
@@ -171,6 +173,7 @@ void ClientApplication::onAliasListedSlot(const Utilities::AliasFileList& list)
         (*this).showListOfConflicts(list);
     }
     QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+
 }
 
 void ClientApplication::onConnectedSlot()
@@ -188,9 +191,11 @@ void ClientApplication::onDisconnectedSlot()
     QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 }
 
-void ClientApplication::onFileFoundSlot(const Utilities::FileLocation& location)
+void ClientApplication::onFileFoundSlot(
+        const Utilities::AliasFileList& location)
 {
-    //TODO
+    m_view->showMessage("File found");
+    (*this).showList(location);
     (*this).setState(ClientApplication::LOGGED);
     QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 }
@@ -271,17 +276,30 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
      * it is. So i'm trying to check whether the previous command
      * allows user to get the info about indexes
      */
-    if (cmd->getCommand() == "choose" || cmd->getCommand() == "push"
-            || cmd->getCommand() == "pull" || cmd->getCommand() == "read") {
-        if ((m_command->getCommand() != "ls")
-                && (!((m_command->getCommand() == "synch")
-                        && (m_command->getParameter() == "d")))
-                && (!(m_command->getCommand() == "read")))
-            qDebug() << "Risky";
+    if ((cmd->getCommand() == "choose")
+            && (!(m_command->getCommand() == "choose")
+                    || ((m_command->getCommand() == "synch")
+                            && (m_command->getParameter() == "o"))))
+        qDebug() << "NIEDOPSZ";
+    if ((cmd->getCommand() == "push")
+            && (!((m_command->getCommand() == "push")
+                    || ((m_command->getCommand() == "ls")
+                            && (m_command->getParameter() == "l")))))
+        qDebug() << "NIEDOPSZ";
+    if ((cmd->getCommand() == "pull")
+            && (!((m_command->getCommand() == "pull")
+                    || ((m_command->getCommand() == "ls")
+                            && (m_command->getParameter() == "r")))))
+        qDebug() << "NIEDOPSZ";
+    if ((cmd->getCommand() == "read")
+            && (!((m_command->getCommand() == "read")
+                    || ((m_command->getCommand() == "ls")
+                            && (m_command->getParameter() == "r")))))
+        qDebug() << "NIEDOPSZ";
 
-        //Maybe also if the previous command was the same as this one
-        //For example pull and then pull again
-    }
+    /**
+     * End of checking the previous command, maybe it will be deleted later
+     */
 
     m_command = cmd;
     qDebug() << m_state;
@@ -291,7 +309,6 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
     } else if (cmd->getCommand() == "disconnect") {
         (*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
         m_serverConnection.disconnectFromServer();
-        //MAGIA!!
         QEventLoop loop;
         QObject::connect(this, SIGNAL(onDisconnectedSignal()), &loop,
                 SLOT(quit()));
@@ -356,7 +373,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
     return true;
 }
 
-int ClientApplication::start(const QHostAddress& address, quint16 port)
+int ClientApplication::start(const QHostAddress& address, quint16 port, QString path)
 {
     if (m_application.isRunning()) {
         qDebug() << "Another client application is running" << endl;
@@ -368,6 +385,7 @@ int ClientApplication::start(const QHostAddress& address, quint16 port)
     (*this).setState(ClientApplication::WAITING);
     m_address = address;
     m_port = port;
+    m_path = path;
     m_serverConnection.connectToServer(address, port);
     m_application.exec();
 
@@ -446,8 +464,8 @@ bool ClientApplication::checkStateCondition(
 bool ClientApplication::checkRelativePath(QString s) const
 {
 
-    //TODO PASS DIRECTORY AS ARGUMENT
-    QString tmpDir = QDir::currentPath();
+
+    QString tmpDir = m_path;
     tmpDir.append(QDir::separator());
     tmpDir.append(s);
     qDebug() << tmpDir;
@@ -467,7 +485,7 @@ bool ClientApplication::checkIfConfigFileExists() const
     //This should be finally
     //Checks if the file exists
 
-    /*QString path = QDir::currentPath();
+    /*QString path = m_path;
      path.append(QDir::separator());
      path.append(ConfigFileName::CONFIG_FILE_NAME);
      QFile file(path);
@@ -483,6 +501,8 @@ void ClientApplication::synchWithOverWriting(
 
     (*this).moveOnTreeAutoSynch(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
+    m_view->showMessage("End of synchronization");
+    QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 
 }
 
@@ -495,6 +515,8 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
         if (m_tree->isFile()) {
             int index = 0;
             long int max = m_tree->getFileLocations().first().m_date.toLong();
+            if (m_tree->getFileLocations().size() == 1)
+                continue;
             for (int j = 0; j < m_tree->getFileLocations().size(); ++j) {
                 if (m_tree->getFileLocations()[j].m_date.toLong() > max) {
                     max = m_tree->getFileLocations()[j].m_date.toLong();
@@ -503,21 +525,26 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
             }
             if (m_tree->getFileLocations()[index].m_id.toStdString()
                     == Identify::getMachineIdentificator().toStdString()) {
-
+                qDebug() << m_tree->getPath() << "PUSH"
+                        << m_tree->getFileLocations()[index].m_date;
                 m_serverConnection.pushFileToAlias(QString(m_tree->getPath()),
                         m_tree->getFileLocations()[index].m_size);
-                QEventLoop loop;
-                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
-                        SLOT(quit()));
-                loop.exec();
+                //QEventLoop loop;
+                //QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+                // SLOT(quit()));
+                //loop.exec();
             } else {
+                qDebug() << m_tree->getPath() << "PULL"
+                        << m_tree->getFileLocations()[index].m_date;
                 m_serverConnection.pullFileFrom(
-                        FileLocation(QString(m_tree->getPath()), m_tree->getFileLocations()[index].m_size,
-                                Identifier(m_tree->getFileLocations()[index].m_id)));
-                QEventLoop loop;
-                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
-                        SLOT(quit()));
-                loop.exec();
+                        FileLocation(QString(m_tree->getPath()),
+                                m_tree->getFileLocations()[index].m_size,
+                                Identifier(
+                                        m_tree->getFileLocations()[index].m_id)));
+                //QEventLoop loop;
+                //QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+                //SLOT(quit()));
+                //loop.exec();
             }
 
             /** TODO Seems to be useless here */
@@ -535,6 +562,7 @@ void ClientApplication::showList(const Utilities::AliasFileList & list)
     boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
     (*this).moveOnTreeShowList(tree, 0, counter);
+    QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
     return;
 }
 
@@ -571,6 +599,7 @@ void ClientApplication::showListOfConflicts(const AliasFileList & list)
     boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
     (*this).moveOnTreeShowListOfConflicts(tree, 0, counter);
+    QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
     return;
 }
 
@@ -612,6 +641,7 @@ void ClientApplication::showListOfRemote(const AliasFileList& list)
     boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
     (*this).moveOnTreeShowListOfRemote(tree, 0, counter);
+    QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
     return;
 }
 
@@ -651,6 +681,7 @@ void ClientApplication::showListOfLocal(const AliasFileList& list)
     boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
     (*this).moveOnTreeShowListOfLocal(tree, 0, counter);
+    QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
     return;
 }
 
@@ -694,7 +725,8 @@ void ClientApplication::invokeCommandByIndex(Utilities::AliasFileList & list,
     int index = ind.toInt(&ok, 10);
     if (ok)
         (*this).moveOnTreeIndex(tree, 0, counter, index, command);
-
+    QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+    return;
 }
 
 void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
