@@ -71,6 +71,7 @@ private:
     boost::shared_ptr<DaemonConfiguration::Config> m_config;
     ServerConnection *m_ServerConnection;
     FileReciver *m_receiver;
+    FileSender *m_sender;
     QEventLoop *m_loop;
 
     /**

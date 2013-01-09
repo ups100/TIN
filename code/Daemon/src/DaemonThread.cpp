@@ -43,7 +43,7 @@ DaemonThread::DaemonThread()
     m_receiver = NULL;
 
     // helping with file transmising EventLoop object
-    m_loop = new QEventLoop();
+    //m_loop = new QEventLoop();
 }
 
 DaemonThread::~DaemonThread()
@@ -53,11 +53,11 @@ DaemonThread::~DaemonThread()
     // delete ServerConnection object
     m_ServerConnection->deleteLater();
 
-    if (m_loop->isRunning()) {
+ /*   if (m_loop->isRunning()) {
         QTimer::singleShot(0, m_loop, SLOT(quit()));
     }
 
-    delete m_loop;
+    delete m_loop;*/
 }
 
 DaemonThread::DaemonThread(
@@ -70,7 +70,7 @@ DaemonThread::DaemonThread(
     m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip), m_config->m_port);
 
     // helping with file transmising EventLoop object
-    m_loop = new QEventLoop();
+    //m_loop = new QEventLoop();
 
     // connecting to the Alias is in the onConnected() method
     m_readyToDestroy = false;
@@ -221,30 +221,43 @@ void DaemonThread::onReciveFile(const QString& fileName,
 {
     //TODO onReceive
     QString filePath(m_config->m_cataloguePath);
+    filePath += "/";
     filePath += fileName;
     qDebug() << "Somebody wants to Receive file in: " << filePath;
 
-    QFile recFile(fileName);
+ /*   QFile recFile(filePath);
+    qDebug() << "Piekny adres pliku receiver: " << recFile.fileName();
+
 
     if (recFile.exists()) {
         QString orig(filePath);
         orig += ".orig";
         recFile.copy(orig);     // TODO zadbaj o plik .orig
+        qDebug() << "usuwam plik w reciverze.";
+        recFile.remove();
     }
 
-    recFile.open(QIODevice::ReadWrite); // TODO check if is sufficient permissions
+    if (recFile.open(QIODevice::ReadWrite) == false ) { //; // TODO check if is sufficient permissions
+        qDebug() << "\t Rzeczywiscie receiver nie moze otworzyc pliku do odczytu i zapisu ";
+    } else
+        qDebug() << "\t A mimo wszystko receiver otworzyl plik do zapisu.";
 
-    if (!recFile.exists()) {
-        recFile.seek(4);     // TODO nie wiem jaki rozmiar ma plik
+//    if (!recFile.exists()) {
+        //recFile.seek(4);     // TODO nie wiem jaki rozmiar ma plik
+        char bitki[4];
+        recFile.write(bitki);
         qDebug() << "Zmienilem rozmiar pliku i teraz ma: " << recFile.size();
-    }
+        recFile.close();
+//    }*/
 
     //m_loop = new QEventLoop();
 
-    m_receiver = new FileReciver(this, &recFile, 4);    // TODO Nie mam rozmiaru PLIKU !!
-    m_receiver->connectToServer(address, port);
+    qDebug() << QFile("/home/major/aaa/abc").size() ;
+    m_receiver = new FileReciver(this, new QFile("blabla"), QFile("/home/major/aaa/abc").size());    // TODO Nie mam rozmiaru PLIKU !!
+    qDebug() << address << " "<< port;
+    qDebug() << m_receiver->connectToServer(address, port);
 
-    m_loop->exec();
+    //m_loop->exec();
 }
 
 void DaemonThread::onRemoveFile(const QString& fileName)
@@ -265,26 +278,30 @@ void DaemonThread::onSendFile(const QString& fileName,
 {
     // TODO onSendFile
     QString filePath(m_config->m_cataloguePath);
+    filePath += "/";
     filePath += fileName;
     qDebug() << "I send somebody file: " << filePath;
 
-    QFile sendFile(fileName);
+    //QFile sendFile(filePath);
+    //qDebug() << "Piekny adres pliku sender: " << sendFile.fileName();
 
-    if (sendFile.exists()
-           && (sendFile.permissions()==QFile::ReadOwner || sendFile.permissions()==QFile::ReadUser))
-    {
-       //m_loop = new QEventLoop();
+    //sendFile.open(QIODevice::ReadOnly);
+    //if (sendFile.exists() )
+           //&& (sendFile.permissions()==QFile::ReadOwner || sendFile.permissions()==QFile::ReadUser))
+    //{
+        //qDebug() << "Przed Open w sender";
 
-       FileSender sender(this, &sendFile/*, sendFile.size()*/);
-       sender.connectToServer(address, port);
+       //qDebug() <<" Po open w sender";
+       m_sender = new FileSender(this, new QFile(filePath));//, 4);//QFile(sendFile.fileName()).size());
+//       FileSender sender(this, &sendFile/*, sendFile.size()*/);
+       m_sender->connectToServer(address, port);
 
-       m_loop->exec(); //waiting for send complete
-    }
-    else
-    {
-        qDebug() << "Request file has no read rights. ";
-
-    }
+//    }
+//    else
+//    {
+//        qDebug() << " Blad .Request file has no read rights. " << filePath;
+//
+//    }
 }
 
 // this method comes from FileTransferListener class
@@ -292,7 +309,9 @@ void DaemonThread::onTransferEnd(FileSender * sender)
 {
     //TODO onTransferEnd
     qDebug() << "File sending completed: ";
-    QTimer::singleShot(0, m_loop, SLOT(quit()));
+    //sender->disconnectFromServer();
+        //delete m_sender;
+    //QTimer::singleShot(0, m_loop, SLOT(quit()));
 
 }
 // this method comes from FileTransferListener class
@@ -300,24 +319,29 @@ void DaemonThread::onTransferError(FileSender *sender)
 {
     // TODO onTransferError
     qDebug() << "File sending with error. ";
-    QTimer::singleShot(0, m_loop, SLOT(quit()));
+    //sender->disconnectFromServer();
+    //delete m_sender;
+    ///QTimer::singleShot(0, m_loop, SLOT(quit()));
 }
 
 void DaemonThread::onTransferEnd(FileReciver * reciver)
 {
     // TODO onTransferEnd Reciver
-    qDebug() << "File receiving completed: ";
+    qDebug() << "File receiving completed. ";
+    //reciver->disconnectFromServer();
+    //delete m_receiver;
     //m_loop->quit();
-    QTimer::singleShot(0, m_loop, SLOT(quit()));
+    ///QTimer::singleShot(0, m_loop, SLOT(quit()));
 }
 
 void DaemonThread::onTransferError(FileReciver * receiver)
 {
     // TODO onTransferError
     qDebug() << "File receiving with error. ";
-    m_receiver->disconnectFromServer();     //TODO think
+    //m_receiver->disconnectFromServer();     //TODO think
+    //delete m_receiver;
 //    m_loop->quit();
-    QTimer::singleShot(0, m_loop, SLOT(quit()));
+    ///QTimer::singleShot(0, m_loop, SLOT(quit()));
 }
 
 void DaemonThread::stopThread()

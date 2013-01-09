@@ -191,9 +191,20 @@ void FileSender::startDataSendingSlot()
 
     m_buffer = m_file->read(m_bufferSize);
 
+    //added if block to file transfer defect fixed
+    if (m_file->atEnd()) {
+        m_state = ALL_DATA_READ;
+        m_file->close();
+    }
+
     qint64 written = m_socket->write(m_buffer);
 
     m_buffer = m_buffer.right(m_buffer.size() - written);
+
+    //added if block to file transfer defect fixed
+    if ((m_state == ALL_DATA_READ) && (m_buffer.size() == 0)) {
+        m_state = ALL_DATA_WRITTEN;
+    }
 }
 
 void FileSender::bytesWrittenSlot(qint64 bytes)

@@ -21,6 +21,8 @@
 #include <QTimer>
 #include <QEventLoop>
 #include <QtGlobal>
+#include "FileLocation.h"
+#include <QFile>
 
 namespace TIN_project {
 namespace Server {
@@ -34,7 +36,6 @@ Alias::Alias(const QString& name, Utilities::Password password)
         : m_name(name), m_password(password)
 {
     // TODO and disable copy constructor
-    // start(); // TODO comments tells to start this
 
 }
 
@@ -68,6 +69,13 @@ void Alias::addDaemon(boost::shared_ptr<UnknownConnection> daemon)
     m_daemons.append(shared);
 
     shared->sendConnectedToAlias();
+
+    static int ile= 0;
+    ile++;
+    if(ile == 2) {
+        qDebug() << "Przesylanie .... ";
+        onPullFileFrom(NULL, *(new Utilities::FileLocation(QString(), QString())));     // TODO usun to
+    }
 }
 
 bool Alias::checkPassword(const Utilities::Password& password)
@@ -130,7 +138,8 @@ void Alias::stop()
 
 void Alias::onConnectionClosed(ClientConnection* client)
 {
-    qDebug() << "Connection closed with client: ";
+    qDebug() << "Connection closed with client: "; // TODO wypisac jakies info o kliencie
+
 }
 
 void Alias::onConnectionClosed(DaemonConnection* daemon)
@@ -150,12 +159,12 @@ void Alias::onFileFound(DaemonConnection* daemon,
 void Alias::onFileList(DaemonConnection* daemon,
         const Utilities::AliasFileList& list)
 {
-
+    qDebug() << "onFileList not implemented ";
 }
 
 void Alias::onFileTransferStarted(FileTransferServer *transfer)
 {
-
+    qDebug() << "FileTransferStarted not implemented";
 }
 
 /**
@@ -163,7 +172,7 @@ void Alias::onFileTransferStarted(FileTransferServer *transfer)
  */
 void Alias::onFileTransferCompleted(FileTransferServer *transfer)
 {
-
+    qDebug() << "FileTransferCompleted not implemented";
 }
 
 /**
@@ -171,7 +180,7 @@ void Alias::onFileTransferCompleted(FileTransferServer *transfer)
  */
 void Alias::onFileTransferError(FileTransferServer *transfer)
 {
-
+    qDebug() << "FileTransferError ";
 }
 
 void Alias::onFindFile(ClientConnection* client, const QString& name)
@@ -187,7 +196,7 @@ void Alias::onFindFile(ClientConnection* client, const QString& name)
 
 void Alias::onListAlias(ClientConnection* client)
 {
-
+    qDebug() << "onListAlias not implemented";
 }
 
 void Alias::onNoSuchFile(DaemonConnection* daemon)
@@ -198,21 +207,30 @@ void Alias::onNoSuchFile(DaemonConnection* daemon)
 void Alias::onPullFileFrom(ClientConnection* client,
         const Utilities::FileLocation& location)
 {
-    FileTransferServer fts(this, 2, 4);
-    fts.startFileServer(QHostAddress::LocalHost);
-    m_daemons[0]->sendSendFile("abc",QHostAddress::LocalHost,fts.getPort());
-    m_daemons[1]->sendReciveFile("abc",QHostAddress::LocalHost,fts.getPort());
+    boost::shared_ptr<FileTransferServer> fts(new FileTransferServer(this,2,QFile("/home/major/aaa/abc").size()));
+    m_transfers.append(fts);
+
+    if(fts->startFileServer(QHostAddress::LocalHost)==false) qDebug() << "Zle serwer ftp nie wystartowal";
+
+    m_daemons[1]->sendSendFile("abc",QHostAddress::LocalHost,fts->getPort());
+    m_daemons[0]->sendReciveFile("abc",QHostAddress::LocalHost,fts->getPort());
+
+    qDebug() << "onPullFileFrom runing...";
+//    sleep(1);
+//    fts->disconnectFromAliasSynch();
+
+    qDebug() << "onPullFileFrom ending... ";
 }
 
 void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
         quint64 size)
 {
-
+    qDebug() << "onPushFileAlias not implemented";
 }
 
 void Alias::onRemoveFromAlias(ClientConnection* client, const QString& fileName)
 {
-
+    qDebug() << "onRemoveFromAlias not implemented";
 }
 
 } //namespace server
