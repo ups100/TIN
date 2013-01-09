@@ -159,7 +159,7 @@ void DaemonThread::onListFiles()
 }
 
 void DaemonThread::onReciveFile(const QString& fileName,
-        const QHostAddress& address, quint16 port)
+        const QHostAddress& address, quint16 port, qint64 size)
 {
 
 }

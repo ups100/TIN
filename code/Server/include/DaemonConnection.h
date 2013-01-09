@@ -77,37 +77,39 @@ public:
     /**
      * @brief Sends information to daemon to look for some file
      *
-     * @param fileName name of file to look for
+     * @param[in] fileName name of file to look for
      */
     void sendFindFile(const QString& fileName);
 
     /**
      * @brief Sends information to daemon to receive file from some server
      *
-     * @param fileName name of file and reletive path
+     * @param[in] fileName name of file and reletive path
      *
-     * @param address of server
+     * @param[in] address of server
      *
-     * @param port of server
+     * @param[in] port of server
+     *
+     * @param[in] size of file to be received
      */
     void sendReciveFile(const QString& fileName, const QHostAddress& address,
-            quint16 port);
+            quint16 port, qint64 size);
 
     /**
      * @brief Sends information to daemon to remove file
      *
-     * @param fileName name of file and reletive path
+     * @param[in] fileName name of file and reletive path
      */
     void sendRemoveFile(const QString& fileName);
 
     /**
      * @brief Sends information to daemon to send file to some server
      *
-     * @param fileName name of file and reletive path
+     * @param[in] fileName name of file and reletive path
      *
-     * @param address of server
+     * @param[in] address of server
      *
-     * @param port of server
+     * @param[in] port of server
      */
     void sendSendFile(const QString& fileName, const QHostAddress& address,
             quint16 port);

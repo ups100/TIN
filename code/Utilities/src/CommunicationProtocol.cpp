@@ -123,6 +123,61 @@ QByteArray CommunicationProtocol::CommunicateNameAddressAndPort::getQByteArray()
             + address + port;
 }
 
+CommunicationProtocol::CommunicateNameAddressPortAndSize::CommunicateNameAddressPortAndSize(
+        const QString& name, const QHostAddress& address, quint16 port, qint64 size)
+        : m_name(name), m_address(address), m_port(port), m_size(size)
+{
+
+}
+
+CommunicationProtocol::CommunicateNameAddressPortAndSize::CommunicateNameAddressPortAndSize(
+        const QByteArray& data)
+{
+    int nameSize = CommunicationProtocol::getIntFromQByteArray(data.left(4));
+
+    m_name = QString(data.mid(4, nameSize));
+
+    m_address = QHostAddress(QString(data.mid(4 + nameSize, data.size() - (4 + nameSize + 2 + 8))));
+
+    uchar dataRaw[2];
+
+    for (int i = 0; i < 2; ++i) {
+        dataRaw[i] = data[data.size() - 10 + i];
+    }
+
+    m_port = (quint16) qFromBigEndian<qint16>(dataRaw);
+
+    uchar dataRaw2[8];
+
+    for (int i = 0; i < 8; ++i) {
+        dataRaw2[i] = data[data.size() - 8 + i];
+    }
+
+    m_size = qFromBigEndian<qint64>(dataRaw2);
+}
+
+QByteArray CommunicationProtocol::CommunicateNameAddressPortAndSize::getQByteArray() const
+{
+    QByteArray name = m_name.toAscii();
+
+    QByteArray address = m_address.toString().toAscii();
+
+    uchar data[2];
+    qToBigEndian((qint16) m_port, data);
+
+    QByteArray port;
+    port.append(reinterpret_cast<char*>(data), 2);
+
+    uchar data2[8];
+    qToBigEndian( m_size, data2);
+
+    QByteArray size;
+    size.append(reinterpret_cast<char*>(data), 8);
+
+    return CommunicationProtocol::getQByteArrayFromInt(name.size()) + name
+            + address + port + size;
+}
+
 CommunicationProtocol::CommunicateNameAndPassword::CommunicateNameAndPassword(
         const QString& name, const Password& password)
         : m_name(name), m_password(password)
