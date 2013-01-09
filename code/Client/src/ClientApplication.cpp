@@ -252,14 +252,12 @@ void ClientApplication::getCommand(QString s)
      * REMEMBER THAT THIS SHOULD BE REMOVED
      */
     QTimer::singleShot(1000, &(*m_view), SLOT(reconnectNotifier()));
-    if ((!(*this).checkIntegrity(cmd)) || (!(*this).checkStateCondition(cmd)))
-    {
-        qDebug()<<"SPRAWDZENIE POPRAWNOSCI NEGATYWNE";
+    if ((!(*this).checkIntegrity(cmd)) || (!(*this).checkStateCondition(cmd))) {
+        qDebug() << "SPRAWDZENIE POPRAWNOSCI NEGATYWNE";
         return;
-    }
-    else {
-    qDebug() << "WYKONUJEMY";
-    (*this).invokeCommand(cmd);
+    } else {
+        qDebug() << "WYKONUJEMY";
+        (*this).invokeCommand(cmd);
     }
 
 }
@@ -284,7 +282,6 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         //Maybe also if the previous command was the same as this one
         //For example pull and then pull again
     }
-
 
     m_command = cmd;
     qDebug() << m_state;
@@ -716,34 +713,53 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
 
             for (int j = 0; j < m_tree->getFileLocations().size(); ++j) {
                 if (index == counter) {
-                    qDebug() << "ZNALEZIONO " << m_tree->getPath();
+
                     if ((command == "push")
                             && (m_tree->getFileLocations()[j].m_id
                                     == Identify::getMachineIdentificator())) {
+                        if (index == counter) {
+                            qDebug() << "ZNALEZIONO " << m_tree->getPath();
+                        }
                         m_serverConnection.pushFileToAlias(m_tree->getPath(),
                                 m_tree->getFileLocations()[j].m_size);
+                        counter++;
                         (*this).setState(ClientApplication::WAITING);
-                    } else if (command == "pull" || command == "read") {
+                    } else if ((command == "pull" || command == "read")
+                            && (m_tree->getFileLocations()[j].m_id
+                                    != Identify::getMachineIdentificator())) {
+                        if (index == counter) {
+                            qDebug() << "ZNALEZIONO " << m_tree->getPath();
+                        }
                         m_serverConnection.pullFileFrom(
                                 FileLocation(m_tree->getPath(),
-                                        Identify::getMachineIdentificator()));
+                                        m_tree->getFileLocations()[j].m_id));
+                        counter++;
+                        (*this).setState(ClientApplication::WAITING);
                     } else if (command == "choose") {
                         if (m_tree->getFileLocations()[j].m_id
                                 == Identify::getMachineIdentificator()) {
+                            if (index == counter) {
+                                qDebug() << "ZNALEZIONO " << m_tree->getPath();
+                            }
                             m_serverConnection.pushFileToAlias(
                                     m_tree->getPath(),
                                     m_tree->getFileLocations()[j].m_size);
+                            counter++;
                             (*this).setState(ClientApplication::WAITING);
                         } else {
                             m_serverConnection.pullFileFrom(
                                     FileLocation(m_tree->getPath(),
                                             Identify::getMachineIdentificator()));
+                            if (index == counter) {
+                                qDebug() << "ZNALEZIONO " << m_tree->getPath();
+                            }
+                            counter++;
                             (*this).setState(ClientApplication::WAITING);
                         }
                     }
 
                 }
-                counter++;
+                //counter++;
             }
         } else {
             (*this).moveOnTreeIndex(m_tree, indent + 1, counter, index,

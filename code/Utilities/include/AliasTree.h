@@ -94,6 +94,10 @@ public:
 
             return in;
         }
+        void setLocation(QString location2)
+        {
+            m_id = location2;
+        }
 
     };
 

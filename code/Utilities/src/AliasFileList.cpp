@@ -47,6 +47,12 @@ void AliasFileList::addFile(const QString &filePath, const QString &date,
         ++m_size; // No duplicates count
 }
 
+void AliasFileList::addFileWithId(const QString &filePath, const QString &date,
+           const quint32 &size, const QString s)
+{
+    if (m_fileTree.addFile(filePath, date, size,s)->getLocations().size() == 1)
+            ++m_size; // No duplicates count
+}
 void AliasFileList::merge(const AliasFileList &other)
 {
     mergeIt(other.m_fileTree.m_dirContent);

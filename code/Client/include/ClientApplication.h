@@ -21,6 +21,7 @@
 #include <boost/shared_ptr.hpp>
 #include <QString>
 #include <QObject>
+#include <iostream>
 #include "ServerConnection.h"
 #include "ClientView.h"
 #include "CommandParser.h"
@@ -43,59 +44,45 @@ class CommunicationProtocol;
 
 namespace Client {
 
-class ClientApplication : public QObject, public ServerConnectionListener,
+class ClientApplication : public QObject,
+        public ServerConnectionListener,
         public AliasCommunicationListener
 {
-Q_OBJECT;
+Q_OBJECT
+    ;
+
+signals:
+    void onDisconnectedSignal();
+    void onFileTransferSignal();
 
 public:
-/**
- * @brief Used to synchronize without interaction with user
- * @warning By now is public to make tests
- * @info invokes moveOnTreeAutoSynch()
- */
-bool synchWithOverWriting(const Utilities::AliasFileList & list);
-
-
-/**
- * @brief Used to invoke commands, when user passed an index
- * @warning By now is public to make tests
- * @info Invokes moveOnTreeIndex();
- */
-bool invokeCommandByIndex(const Utilities::AliasFileList & list, int index, QString command);
-
-
-void showList(const Utilities::AliasFileList &, bool);
-
-/**
- * @brief Enum that represents status of the application
- */
-enum State
-   {
-       IDLE = 0,
-       NOT_CONNECTED = 0,
-       CONNECTED = 1,
-       WAITING = 2,
-       WAITING_FOR_DISCONNECT = 3,
-       FILELIST = 4,
-       LOGGED = 5
-   };
-    Q_DECLARE_FLAGS(States, State)
 
     /**
-    * @brief Constructor
-    *
-    * @param[in] argc number of arguments
-    *
-    * @param[in] argv command line arguments
-    */
-    ClientApplication(int, char**);
+     * @brief Enum that represents status of the application
+     */
+    enum State
+    {
+        NOT_CONNECTED = 0,
+        CONNECTED = 1,
+        WAITING = 2,
+        WAITING_FOR_DISCONNECT = 3,
+        FILELIST = 4,
+        LOGGED = 5
+    };Q_DECLARE_FLAGS(States, State)
+
+    /**
+     * @brief Constructor
+     *
+     * @param[in] argc number of arguments
+     *
+     * @param[in] argv command line arguments
+     */
+    ClientApplication (int, char**);
 
     /**
      * @brief Destructor
      */
     virtual ~ClientApplication();
-
 
     /**
      * @brief Invoked by server when client connected to alias
@@ -147,7 +134,7 @@ enum State
      * @brief Invoked by server when File was found
      * @param[in] location Location of File (held in FileLocation object)
      */
-    virtual void onFileFound(const Utilities::FileLocation& location);
+    virtual void onFileFound(const Utilities::AliasFileList& location);
 
     /**
      * @brief Invoked by server when File was not found
@@ -215,6 +202,27 @@ enum State
      * @param[in] command Command typed by client
      */
     void getCommand(QString command);
+
+public slots:
+    /**
+     * @brief Used to synchronize without interaction with user
+     * @warning By now is public to make tests
+     * @details invokes moveOnTreeAutoSynch()
+     */
+    void synchWithOverWriting(const Utilities::AliasFileList & list);
+
+    /**
+     * @brief Used to invoke commands, when user passed an index
+     * @warning By now is public to make tests
+     * @details Invokes moveOnTreeIndex();
+     */
+    void invokeCommandByIndex(Utilities::AliasFileList & list, QString index,
+            QString command);
+
+    void showListOfConflicts(const Utilities::AliasFileList &);
+    void showListOfRemote(const Utilities::AliasFileList&);
+    void showListOfLocal(const Utilities::AliasFileList&);
+    void showList(const Utilities::AliasFileList&);
 
 private slots:
 
@@ -358,21 +366,24 @@ private:
      */
     bool invokeCommand(boost::shared_ptr<Commands> cmd);
 
-
     /**
      * @brief invoked by synchWithOverWriting()
      * @see synchWithOverWriting()
      */
     void moveOnTreeAutoSynch(boost::shared_ptr<AliasTree>, int indent, int & counter);
 
-
-
-
     /**
      * @brief Used to move on the tree, used by "ls" and "synch -d"
      * @warning Remember about counter++
      */
-    void moveOnTreeShowList(boost::shared_ptr<AliasTree>,int indent, int & counter, bool v);
+    void moveOnTreeShowListOfConflicts(boost::shared_ptr<AliasTree> tree,
+            int indent, int & counter);
+    void moveOnTreeShowListOfRemote(boost::shared_ptr<AliasTree> tree,
+            int indent, int & counter);
+    void moveOnTreeShowListOfLocal(boost::shared_ptr<AliasTree> tree,
+            int indent, int & counter);
+    void moveOnTreeShowList(boost::shared_ptr<AliasTree> tree,
+            int indent, int & counter);
 
     /**
      * @brief Used by push, pull and choose
@@ -432,7 +443,7 @@ private:
 
     /**
      * @brief Holds the current command
-     * @info Useful when onAliastList invoked
+     * @details Useful when onAliastList invoked
      */
     boost::shared_ptr<Commands> m_command;
 

@@ -30,7 +30,8 @@ Password::Password(const Password& password)
  */
 Password::Password(const QString& password)
 {
-    (*this).m_hashed_password = (password.toUtf8());
+    QByteArray myHash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha1);
+    (*this).m_hashed_password = myHash;
 }
 
 Password::Password(const QByteArray& password)
