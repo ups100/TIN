@@ -21,6 +21,7 @@
 #include <QTimer>
 #include <QEventLoop>
 #include <QtGlobal>
+#include <QDebug>
 
 namespace TIN_project {
 namespace Server {
@@ -101,21 +102,21 @@ void Alias::stop()
     }
 
     //disconnect clients
-    foreach(boost::shared_ptr<ClientConnection> connection, m_clients) {
-        connection->disconnectFromAliasSynch();
-    }
+    foreach(boost::shared_ptr<ClientConnection> connection, m_clients){
+    connection->disconnectFromAliasSynch();
+}
     m_clients.clear();
 
     //disconnects daemons
-    foreach(boost::shared_ptr<DaemonConnection> connection, m_daemons) {
-        connection->disconnectFromAliasSynch();
-    }
+    foreach(boost::shared_ptr<DaemonConnection> connection, m_daemons){
+    connection->disconnectFromAliasSynch();
+}
     m_daemons.clear();
 
     //stop flie transfers
-    foreach(boost::shared_ptr<FileTransferServer> connection, m_transfers) {
-        connection->disconnectFromAliasSynch();
-    }
+    foreach(boost::shared_ptr<FileTransferServer> connection, m_transfers){
+    connection->disconnectFromAliasSynch();
+}
     m_transfers.clear();
 
     QEventLoop loop;
@@ -128,12 +129,12 @@ void Alias::stop()
 
 void Alias::onConnectionClosed(ClientConnection* client)
 {
-
+    qDebug() << "Connection closed with client: ";
 }
 
 void Alias::onConnectionClosed(DaemonConnection* daemon)
 {
-
+    qDebug() << "Daemon exit.";
 }
 
 void Alias::onFileFound(DaemonConnection* daemon,
@@ -145,7 +146,12 @@ void Alias::onFileFound(DaemonConnection* daemon,
 void Alias::onFileList(DaemonConnection* daemon,
         const Utilities::AliasFileList& list)
 {
+    m_tmpAliasFileList->merge(list);
 
+    if (!--m_waitForDaemons) {
+        m_clients.first()->sendFileList(*m_tmpAliasFileList);
+        m_tmpAliasFileList.reset();
+    }
 }
 
 void Alias::onFileTransferStarted(FileTransferServer *transfer)
@@ -176,12 +182,18 @@ void Alias::onFindFile(ClientConnection* client, const QString& name)
 
 void Alias::onListAlias(ClientConnection* client)
 {
+    m_tmpAliasFileList = boost::shared_ptr<Utilities::AliasFileList>(
+            new Utilities::AliasFileList());
+    m_waitForDaemons = m_daemons.size();
 
+    foreach (boost::shared_ptr<DaemonConnection> dcon, m_daemons){
+    dcon->sendListYourFiles();
+}
 }
 
 void Alias::onNoSuchFile(DaemonConnection* daemon)
 {
-
+    qDebug() << "Somebody call No such File";
 }
 
 void Alias::onPullFileFrom(ClientConnection* client,

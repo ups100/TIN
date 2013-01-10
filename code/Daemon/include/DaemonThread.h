@@ -70,6 +70,17 @@ private:
      */
     QString& cutAbsolutePath(QString &str);
 
+    /**
+     * @brief Show connection status.
+     * @details If connection is established value true.
+     */
+    bool m_connectionOk;
+
+    /**
+     * @brief True if alias connected successful.
+     */
+    bool m_aliasConnected;
+
 };
 
 } //namespace Daemon

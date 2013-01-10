@@ -18,6 +18,7 @@
 #include "ServerConnectionListener.h"
 #include "AliasCommunicationListener.h"
 #include "Message.h"
+#include <iostream> // add by js
 
 namespace TIN_project {
 

@@ -26,6 +26,11 @@
 #include <QList>
 #include <QHostAddress>
 #include <QString>
+#include <QMutexLocker>
+#include <QTimer>
+
+#include "qtsinglecoreapplication.h"
+#include <signal.h>
 
 namespace TIN_project {
 namespace Daemon {
@@ -34,11 +39,11 @@ class DaemonApplication
 {
 public:
 
-    DaemonApplication();
     virtual ~DaemonApplication();
 
-    int start();
+    int start(int argc, char **argv);
 
+    void stopApplication();
     /**
      * @brief Dispatch received message
      * @param communicate Received communicate as QByteArray
@@ -65,6 +70,35 @@ public:
      */
     void removeCatalogueFromAlias(const QString &path, const QString &aliasId);
 
+    /**
+     * @brief Provide the instance of DaemonApplication object
+     * @details There could by only one such object - this method keep an eye on it.
+     * @return DaemonApplication class current instance.
+     */
+    static DaemonApplication& getInstance();
+    static DaemonApplication* makeInstance();
+
+    /**
+     * @brief Simple geter which is used in SIGKILL handler when SingleShot is sending
+     */
+    QtSingleCoreApplication* getSingleApplicationPointer();
+
+    /**
+     * @brief Static method which should by invoke before DaemonApplication::start()
+     * @details It provide a arguments to the QtSimpleCoreAppplication before it is create
+     * and this method install UNIX signal SIGKILL handler
+     */
+    static void initDaemon(int argc, char **argv);
+
+
+private:
+    /**
+     * @brief Private class constructors
+     * @details Use DaemonApplication::getInstance() method
+     */
+    DaemonApplication();
+    DaemonApplication(const DaemonApplication &);
+
 private:
 
     QList<DaemonThread*> m_daemonThreads;
@@ -74,6 +108,29 @@ private:
 
     /** Daemon threads configuration */
     DaemonConfiguration m_config;
+
+    /**
+     * @brief Singleton implementation.
+     */
+    static DaemonApplication *instance;
+
+    /**
+     * @brief Mutex which lock singletron's function
+     */
+    static QMutex m_mutex;
+
+    /**
+     * @brief This variable is used in start and stop method to show destructor to clean behind this object
+     */
+    bool m_isClean;
+
+    /**
+      * @brief Public pointer to object which provide event loop
+      */
+     QtSingleCoreApplication m_singleApplication;
+
+    static int argc;
+    static char **argv;
 };
 
 } //namespace Daemon

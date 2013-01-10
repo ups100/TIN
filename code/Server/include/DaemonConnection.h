@@ -82,6 +82,11 @@ public:
     void sendFindFile(const QString& fileName);
 
     /**
+     * @brief Sends information to daemon to list his files
+     */
+    void sendListYourFiles();
+
+    /**
      * @brief Sends information to daemon to receive file from some server
      *
      * @param[in] fileName name of file and reletive path
@@ -115,6 +120,12 @@ public:
             quint16 port);
 
 private slots:
+
+    /**
+     * @brief Helper slot used to implement sending messages from other thread.
+     */
+    void sendConnectedToAliasSlot();
+
     /**
      * @brief Helper slot used for disconnecting
      */
