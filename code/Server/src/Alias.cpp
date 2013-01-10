@@ -172,10 +172,13 @@ void Alias::onFileFound(DaemonConnection* daemon,
     if (!m_waitForDaemons) return;
 
     m_tmpAliasFileList->merge(location);
+    qDebug() << "inAlias::onFileFound getSize" << m_tmpAliasFileList->getSize();
 
     if (!--m_waitForDaemons) {
-        if (m_tmpAliasFileList->getSize() > 0)
+        if (m_tmpAliasFileList->getSize() > 0) {
+            qDebug() << "inAlias:onFileFound: Client is notify that file is found";
             m_clients.first()->sendFileFound(*m_tmpAliasFileList);
+        }
         else
             m_clients.first()->sendFileNotFound();
 
@@ -356,7 +359,6 @@ void Alias::removeClientSlot(ClientConnection *cc)
 void Alias::performLastAliasAction()
 {
     qDebug() << "Performing last action in Alias."
-             << "Attention - Unusual situation."
              << m_lastAliasAction;
 
     switch(m_lastAliasAction) {
