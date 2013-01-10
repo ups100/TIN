@@ -123,7 +123,7 @@ private slots:
      * @param[in] id identifier
      */
     void onConnectToAliasSlot(UnknownConnection* connection, QString aliasName,
-            TIN_project::Utilities::Password password, const Utilities::Identifier& id);
+            TIN_project::Utilities::Password password, TIN_project::Utilities::Identifier id);
 
     /**
      * @brief Helper slot to implements onAddDirectory() function.
@@ -137,7 +137,7 @@ private slots:
      * @param[in] id identifier
      */
     void onAddDirecotrySlot(UnknownConnection* connection, QString aliasName,
-            TIN_project::Utilities::Password password, const Utilities::Identifier& id);
+            TIN_project::Utilities::Password password, TIN_project::Utilities::Identifier id);
 
 private:
 

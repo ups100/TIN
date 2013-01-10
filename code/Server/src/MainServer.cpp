@@ -185,7 +185,7 @@ void MainServer::stopServer(int exitCode)
 }
 
 void MainServer::onConnectToAliasSlot(UnknownConnection *connection,
-        QString aliasName, TIN_project::Utilities::Password password, const TIN_project::Utilities::Identifier& id)
+        QString aliasName, TIN_project::Utilities::Password password, TIN_project::Utilities::Identifier id)
 {
     for (int i = 0; i < m_aliases.size(); ++i) {
         if (m_aliases[i]->getName() == aliasName) {
@@ -212,7 +212,7 @@ void MainServer::onConnectToAliasSlot(UnknownConnection *connection,
 }
 
 void MainServer::onAddDirecotrySlot(UnknownConnection* connection,
-        QString aliasName, TIN_project::Utilities::Password password, const TIN_project::Utilities::Identifier& id)
+        QString aliasName, TIN_project::Utilities::Password password, TIN_project::Utilities::Identifier id)
 {
     for (int i = 0; i < m_aliases.size(); ++i) {
         if (m_aliases[i]->getName() == aliasName) {
