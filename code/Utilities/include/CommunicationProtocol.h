@@ -331,6 +331,105 @@ public:
     };
 
     /**
+     * @brief Base class for address, port and size converting
+     */
+    class CommunicateNameAddressPortAndSize
+    {
+    public:
+        /**
+         * @brief Gets the name of something.
+         *
+         * @return name of something
+         */
+        inline const QString& getName() const
+        {
+            return m_name;
+        }
+
+        /**
+         * @brief Gets the address.
+         *
+         * @return IP address
+         */
+        inline const QHostAddress& getAddress() const
+        {
+            return m_address;
+        }
+
+        /**
+         * @brief Gets the port
+         *
+         * @return port
+         */
+        inline quint16 getPort() const
+        {
+            return m_port;
+        }
+
+        /**
+         * @brief Gets the port
+         *
+         * @return port
+         */
+        inline qint64 getSize() const
+        {
+            return m_size;
+        }
+
+    protected:
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] name of something
+         *
+         * @param[in] address address to be converted
+         *
+         * @param[in] port
+         *
+         * @param[in] size
+         */
+        CommunicateNameAddressPortAndSize(const QString& name, const QHostAddress& address,
+                quint16 port, qint64 size);
+
+        /**
+         * @brief Constructor
+         *
+         * @param[in] data to form an object
+         */
+        CommunicateNameAddressPortAndSize(const QByteArray& data);
+
+        /**
+         * @brief Converts an object to QByteArray
+         *
+         * @return Raw object data
+         */
+        QByteArray getQByteArray() const;
+
+    private:
+
+        /**
+         * @brief Name to be converted
+         */
+        QString m_name;
+
+        /**
+         * @brief Address to be converted
+         */
+        QHostAddress m_address;
+
+        /**
+         * @brief Port to be converted
+         */
+        quint16 m_port;
+
+        /**
+         * @brief Size to be converted
+         */
+        qint64 m_size;
+    };
+
+    /**
      * @brief Base class for QString and Password converting.
      */
     class CommunicateNameAndPassword
@@ -393,6 +492,82 @@ public:
          */
         Password m_password;
     };
+
+    /**
+         * @brief Base class for QString and Password converting.
+         */
+        class CommunicateNamePasswordAndId
+        {
+        public:
+
+            /**
+             * @brief Gets the name of something.
+             *
+             * @return name of something
+             */
+            inline const QString& getName() const
+            {
+                return m_name;
+            }
+
+            /**
+             * @brief Gets the password.
+             *
+             * @return password
+             */
+            inline const Password& getPassword() const
+            {
+                return m_password;
+            }
+
+            inline const Identifier& getId() const
+            {
+                return m_id;
+            }
+
+        protected:
+            /**
+             * @brief Constructor
+             *
+             * @param[in] name QString to be converted
+             *
+             * @param[in] password Password to be converted
+             *
+             * @param[in] id identity
+             */
+            CommunicateNamePasswordAndId(const QString& name,
+                    const Password& password, const Identifier& id);
+
+            /**
+             * @brief Constructor
+             *
+             * @param[in] data to form an object
+             */
+            CommunicateNamePasswordAndId(const QByteArray &data);
+
+            /**
+             * @brief Converts an object to QByteArray
+             *
+             * @return Raw object data
+             */
+            QByteArray getQByteArray();
+
+        private:
+            /**
+             * @brief Name to be converted
+             */
+            QString m_name;
+
+            /**
+             * @brief Password to be converted
+             */
+            Password m_password;
+
+            /**
+             * @brief Id to be converted
+             */
+            Identifier m_id;
+        };
 
     /**
      * @brief Base class for AliasFileList list converting.
@@ -633,7 +808,7 @@ public:
      * @brief Specialization of template class for #CONNECT_TO_ALIAS message
      */
     template<typename T> class Communicate<0, T> : public CommunicateBase,
-            public CommunicateNameAndPassword
+            public CommunicateNamePasswordAndId
     {
     public:
         /**
@@ -642,9 +817,11 @@ public:
          * @param[in] name alias name
          *
          * @param[in] password alias password
+         *
+         * @param[in] id identity
          */
-        Communicate(const QString& name, const Password& password)
-                : CommunicateNameAndPassword(name, password)
+        Communicate(const QString& name, const Password& password, const Identifier &id)
+                : CommunicateNamePasswordAndId(name, password, id)
         {
 
         }
@@ -655,14 +832,14 @@ public:
          * @param[in] data raw data to parse message.
          */
         Communicate(const QByteArray &data)
-                : CommunicateNameAndPassword(data)
+                : CommunicateNamePasswordAndId(data)
         {
 
         }
 
         virtual QByteArray toQByteArray()
         {
-            QByteArray buff = CommunicateNameAndPassword::getQByteArray();
+            QByteArray buff = CommunicateNamePasswordAndId::getQByteArray();
             return QByteArray()
                     + CommunicationProtocol::getCode(CONNECT_TO_ALIAS)
                     + CommunicationProtocol::getQByteArrayFromInt(buff.size())
@@ -757,7 +934,7 @@ public:
      * @brief Specialization of template class for #ADD_DIRECTORY message
      */
     template<typename T> class Communicate<31, T> : public CommunicateBase,
-            public CommunicateNameAndPassword
+            public CommunicateNamePasswordAndId
     {
     public:
         /**
@@ -766,9 +943,11 @@ public:
          * @param[in] name alias name
          *
          * @param[in] password alias password
+         *
+         * @param[in] id identifier
          */
-        Communicate(const QString& name, const Password& password)
-                : CommunicateNameAndPassword(name, password)
+        Communicate(const QString& name, const Password& password, const Identifier& id)
+                : CommunicateNamePasswordAndId(name, password, id)
         {
 
         }
@@ -779,14 +958,14 @@ public:
          * @param[in] data raw data to parse message.
          */
         Communicate(const QByteArray &data)
-                : CommunicateNameAndPassword(data)
+                : CommunicateNamePasswordAndId(data)
         {
 
         }
 
         virtual QByteArray toQByteArray()
         {
-            QByteArray buff = CommunicateNameAndPassword::getQByteArray();
+            QByteArray buff = CommunicateNamePasswordAndId::getQByteArray();
             return QByteArray() + CommunicationProtocol::getCode(ADD_DIRECTORY)
                     + CommunicationProtocol::getQByteArrayFromInt(buff.size())
                     + buff;
@@ -958,7 +1137,7 @@ public:
      */
     template<typename T>
     class Communicate<23, T> : public CommunicateBase,
-            public CommunicateNameAddressAndPort
+            public CommunicateNameAddressPortAndSize
     {
     public:
         /**
@@ -969,10 +1148,12 @@ public:
          * @param[in] address of server to receive file from
          *
          * @param[in] port of server to receive file from
+         *
+         * @param[in] size of file to be received
          */
         Communicate(const QString &name, const QHostAddress& address,
-                quint16 port)
-            :CommunicateNameAddressAndPort(name, address, port)
+                quint16 port, qint64 size)
+            :CommunicateNameAddressPortAndSize(name, address, port, size)
         {
 
         }
@@ -983,14 +1164,14 @@ public:
          * @param[in] data raw data to parse message.
          */
         Communicate(const QByteArray &data)
-                : CommunicateNameAddressAndPort(data)
+                : CommunicateNameAddressPortAndSize(data)
         {
 
         }
 
         virtual QByteArray toQByteArray()
         {
-            QByteArray buff = CommunicateNameAddressAndPort::getQByteArray();
+            QByteArray buff = CommunicateNameAddressPortAndSize::getQByteArray();
             return QByteArray() + CommunicationProtocol::getCode(RECIVE_FILE)
                     + CommunicationProtocol::getQByteArrayFromInt(buff.size())
                     + buff;

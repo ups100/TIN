@@ -153,7 +153,7 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
 {
     boost::shared_ptr<DaemonConfiguration::Config> config(
             new DaemonConfiguration::Config(ip.toString(), port, aliasId,
-                    password.getPassword(), path));
+                    password.getHash(), path));
 
 //    /*
 //     * Check overlap duplicate

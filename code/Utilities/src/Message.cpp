@@ -18,7 +18,6 @@
 #include "Message.h"
 #include <QDataStream>
 #include <QIODevice>
-
 namespace TIN_project {
 namespace Utilities {
 

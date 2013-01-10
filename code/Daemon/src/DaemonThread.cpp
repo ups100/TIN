@@ -20,6 +20,8 @@
 #include "DaemonApplication.h"
 #include "AliasFileList.h"
 #include "Password.h"
+#include "Identifier.h"
+
 #include <QDir>
 #include <QFile>
 #include <QBuffer>
@@ -100,8 +102,10 @@ void DaemonThread::onConnected()
                 << "Connection to server successful. Starting connection to alias... ";
         m_connectionOk = true;  // if everything OK
         // connecting to the Alias
+        //todo ADD id to connection!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        qDebug()<<"Dodac id do connectToAlias";
         m_ServerConnection->connectToAlias(m_config->m_aliasId,
-                Utilities::Password(m_config->m_password));
+                Utilities::Password(m_config->m_password), Utilities::Identifier());
     }
 
 }
@@ -204,7 +208,7 @@ void DaemonThread::onListFiles()
 }
 
 void DaemonThread::onReciveFile(const QString& fileName,
-        const QHostAddress& address, quint16 port)
+        const QHostAddress& address, quint16 port, qint64 size)
 {
 
 }

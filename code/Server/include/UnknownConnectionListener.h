@@ -22,6 +22,7 @@
 
 namespace TIN_project {
 namespace Utilities {
+class Identifier;
 class Password;
 }
 
@@ -60,27 +61,37 @@ public:
      * @brief Informs that message to connect new daemon to some alias has been received
      *
      * @param[in] connection identifier
+     *
      * @param[in] aliasName name of alias
+     *
      * @param[in] password to alias
+     *
+     * @param[in] id identity of daemon
      */
     virtual void onAddDirecotry(UnknownConnection *connection,
-            const QString &aliasName, const Utilities::Password &password) = 0;
+            const QString &aliasName, const Utilities::Password &password, const Utilities::Identifier& id) = 0;
 
     /**
      * @brief Informs that message to connect new client to some alias has been received
      *
      * @param[in] connection identifier
+     *
      * @param[in] aliasName name of alias
+     *
      * @param[in] password to alias
+     *
+     * @param[in] id identity of daemon
      */
     virtual void onConnectToAlias(UnknownConnection *connection,
-            const QString &aliasName, const Utilities::Password &password) = 0;
+            const QString &aliasName, const Utilities::Password &password, const Utilities::Identifier& id) = 0;
 
     /**
      * @brief Informs that message to create new alias has been received
      *
      * @param[in] connection identifier
+     *
      * @param[in] aliasName name of alias
+     *
      * @param[in] password to alias
      */
     virtual void onCreateAlias(UnknownConnection *connection,
@@ -90,7 +101,9 @@ public:
      * @brief Informs that message to remove alias has been received
      *
      * @param[in] connection identifier
+     *
      * @param[in] aliasName name of alias
+     *
      * @param[in] password to alias
      */
     virtual void onRemoveAlias(UnknownConnection *connection,

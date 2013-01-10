@@ -28,9 +28,10 @@ using Utilities::CommunicationProtocol;
 namespace Server {
 
 DaemonConnection::DaemonConnection(QTcpSocket *socket, QThread *targetThread,
-        DaemonConnectionListener *listener)
+        DaemonConnectionListener *listener, const Utilities::Identifier& id)
         : m_connectionListener(listener), m_socket(socket), m_isConnected(true),
-                m_currentMessageId(CHAR_MAX), m_sizeOk(false), m_messageSize(-1)
+                m_currentMessageId(CHAR_MAX), m_sizeOk(false), m_messageSize(-1),
+                m_identity(id)
 {
     moveToThread(targetThread);
     m_socket->moveToThread(targetThread);
@@ -117,11 +118,11 @@ void DaemonConnection::sendListYourFiles()
 }
 
 void DaemonConnection::sendReciveFile(const QString& fileName,
-        const QHostAddress& address, quint16 port)
+        const QHostAddress& address, quint16 port, qint64 size)
 {
     if (m_isConnected) {
         CommunicationProtocol::Communicate<CommunicationProtocol::RECIVE_FILE> message(
-                fileName, address, port);
+                fileName, address, port, size);
         sendAllFunction(message.toQByteArray());
     } else {
         qDebug() << "Trying to send but connection is not opened";
