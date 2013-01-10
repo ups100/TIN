@@ -167,8 +167,7 @@ void DaemonThread::onFindFile(const QString &fileName)
     }
 
     // Create list of alias files
-    Utilities::AliasFileList *newFiles = new Utilities::AliasFileList();
-    Utilities::AliasFileList &files = *newFiles;
+    Utilities::AliasFileList files;
 
     // Add found files to list with their data
     foreach (QString str, foundPaths){
