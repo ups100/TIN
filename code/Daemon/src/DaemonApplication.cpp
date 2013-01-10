@@ -182,6 +182,9 @@ void DaemonApplication::detachDaemonThread(DaemonThread *dt)
 {
     QMutexLocker lock(&m_mutex); // synchronization
 
+    if (m_daemonThreads.size() == 0)
+        return;
+
     QString aliasId(dt->getConfig()->m_aliasId);
     QString path(dt->getConfig()->m_cataloguePath);
 

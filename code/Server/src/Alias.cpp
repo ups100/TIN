@@ -310,6 +310,9 @@ void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
         return;
     }
 
+    // szukam pliku
+    // i puszuję do każdego demona który ten plik ma a sprawdzam który demon odpowiada klientowi i z niego robię sendera
+
     // Even I know that I can Push this file to anybody but:
     // How can I figure out from which daemon I should send this file?
     // I only know ClientConnection object which tells nothing about neither client nor daemon

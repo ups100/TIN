@@ -150,11 +150,11 @@ void DaemonThread::onFindFile(const QString &fileName)
     files.addFile(cutAbsolutePath(str), date, size);
 }
 
-// TODO kopasiak check / change communicates / method / param
-//    if (files.getSize())
-//        m_ServerConnection->sendFileFound(files);
-//    else
-//        m_ServerConnection->sendNoSuchFile();
+ //TODO kopasiak check / change communicates / method / param
+    if (files.getSize())
+        m_ServerConnection->sendFileFound(files);
+    else
+        m_ServerConnection->sendNoSuchFile();
 }
 
 void DaemonThread::onListFiles()
