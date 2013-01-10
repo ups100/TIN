@@ -114,6 +114,13 @@ void FileReciver::disconnectFromServer()
     m_socket = 0L;
 }
 
+QString FileReciver::getFileName()    // TODO check it
+{
+    QMutexLocker locker(&(this->m_mutex));
+
+    return m_file->fileName();
+}
+
 void FileReciver::establishConnectionSlot()
 {
     m_socket = new QTcpSocket();

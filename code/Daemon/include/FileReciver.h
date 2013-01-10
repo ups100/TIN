@@ -81,6 +81,13 @@ public:
      */
     void disconnectFromServer();
 
+    /**
+     * @brief Simple geter for file name.
+     * @note It is used by DaemonThread when an error with receiving occurred
+     * to recover old file.
+     */
+    QString getFileName();
+
 signals:
 
     /**

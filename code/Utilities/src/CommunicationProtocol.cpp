@@ -172,7 +172,7 @@ QByteArray CommunicationProtocol::CommunicateNameAddressPortAndSize::getQByteArr
     qToBigEndian( m_size, data2);
 
     QByteArray size;
-    size.append(reinterpret_cast<char*>(data), 8);
+    size.append(reinterpret_cast<char*>(data2), 8);
 
     return CommunicationProtocol::getQByteArrayFromInt(name.size()) + name
             + address + port + size;

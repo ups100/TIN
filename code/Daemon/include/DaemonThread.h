@@ -81,6 +81,11 @@ private:
     QString& cutAbsolutePath(QString &str);
 
     /**
+     *
+     */
+    const QString m_suffix;
+
+    /**
      * @brief Show connection status.
      * @details If connection is established value true.
      */

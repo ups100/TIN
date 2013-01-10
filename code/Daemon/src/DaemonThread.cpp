@@ -56,7 +56,8 @@ DaemonThread::~DaemonThread()
 
 DaemonThread::DaemonThread(
         boost::shared_ptr<DaemonConfiguration::Config> config)
-        : m_config(config), m_receiver(NULL), m_sender(NULL)
+        : m_config(config), m_receiver(NULL), m_sender(NULL),
+          m_suffix("orig")
 {
     m_ServerConnection = new ServerConnection(this);
     m_connectionOk = false;
@@ -222,13 +223,13 @@ void DaemonThread::onReciveFile(const QString& fileName,
     // if file exists then I change it name for having backup in case
     if (recFile.exists()) {
         QString orig(filePath);
-        orig += ".orig";
+        orig += m_suffix; //adding constant suffix to form backup file name
         recFile.rename(orig);
     }
 
     qDebug() << "receiver ma taki plik " << size;
     m_receiver = new FileReciver(this, new QFile(filePath), size);
-    qDebug() << m_receiver->connectToServer(address, port);
+    m_receiver->connectToServer(address, port);
 
 }
 
@@ -256,6 +257,12 @@ void DaemonThread::onSendFile(const QString& fileName,
 
     QFile sendFile(filePath);
 
+    //TODO consider taki przypadek
+    // blad wysylania (send) i poprawny odbior (receiver)
+    if (sendFile.exists() && sendFile.size() == 0) {
+        qDebug() << "Somebody wants to send empty file... " << filePath;
+    }
+
     //sendFile.open(QIODevice::ReadOnly); // don't do this
     if (sendFile.exists() )
            //&& (sendFile.permissions()==QFile::ReadOwner || sendFile.permissions()==QFile::ReadUser))
@@ -279,7 +286,7 @@ void DaemonThread::onTransferEnd(FileSender * sender)
 // this method comes from FileTransferListener class
 void DaemonThread::onTransferError(FileSender *sender)
 {
-    // TODO onTransferError
+    // TODO onTransferError - jak powiadomić Klienta o tym? Serwer to zrobi.
     qDebug() << "File sending with error. ";
     delete m_sender;
 }
@@ -287,14 +294,26 @@ void DaemonThread::onTransferError(FileSender *sender)
 void DaemonThread::onTransferEnd(FileReciver * reciver)
 {
     // TODO onTransferEnd Reciver
-    qDebug() << "File receiving completed. ";
+    QString filePath(reciver->getFileName());
+    qDebug() << "File receiving completed. " << reciver->getFileName();
+    QString fileBackup(filePath);
+    //adding suffics to get backupfile
+    fileBackup += m_suffix;
+    QFile file(fileBackup);
+    file.remove();  // on successful transmission backup is removing
     delete m_receiver;
 }
 
 void DaemonThread::onTransferError(FileReciver * receiver)
 {
     // TODO onTransferError
-    qDebug() << "File receiving with error. ";
+    QString filePath(receiver->getFileName());
+    qDebug() << "File receiving with error. " << filePath;
+    QString fileBackup(filePath);
+    //adding suffics to get backupfile
+    fileBackup += m_suffix;
+    QFile file(fileBackup);
+    file.rename(filePath);  // on unsuccessful transmission backup is recovered
     delete m_receiver;
 }
 
