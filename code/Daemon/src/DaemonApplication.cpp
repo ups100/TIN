@@ -49,7 +49,7 @@ DaemonApplication::DaemonApplication()
         : m_singleApplication(argc,argv), //argc,argv are static fields set by initDaemon() method
           m_isClean(true)
 {
-    connect(this, SIGNAL(onThreadClosedSingal(DaemonThread *)), this, SLOT(onThreadClosedSlot(DaemonThread *)));
+    qRegisterMetaType<DaemonThread*>("DaemonThread*");
     // to avoid communication with client when this is the second running proces of ./daemon application
     if (!m_singleApplication.isRunning())
         m_clientCommunication = new ClientCommunication(*this);
@@ -93,26 +93,6 @@ int DaemonApplication::start()
 
     // Run listener for local client
     m_clientCommunication->start();
-
-    if (true) {     // TODO delete this block
-        qDebug() << "Pierwszy testowy watek DaemonThread.";
-        /*boost::shared_ptr<DaemonConfiguration::Config> cnf(new DaemonConfiguration::Config());
-        QHostAddress addr(QHostAddress::LocalHost);
-        cnf->m_ip = addr.toString();
-        cnf->m_port = 8080;
-        cnf->m_aliasId = "a";
-        cnf->m_password = "abc";
-        m_config.addConfig(cnf);
-        DaemonThread *dt = new DaemonThread(cnf);*/
-
-        //addCatalogueToAlias(".","a", Utilities::Password(QString("abc")), QHostAddress::LocalHost, 8080);
-            //dt->start();  // TODO delete this line (look below)
-
-           //m_daemonThreads.append(dt);
-
-           qDebug() << "m_deamonThread: ";
-           qDebug() << m_daemonThreads.size();
-    }
 
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
         qDebug() << "Tworze watek DaemonThread";    // TODO delete this line
@@ -229,7 +209,9 @@ void DaemonApplication::onStartingError(DaemonThread *dt)
     qDebug() << "Error while DaemonThread tries connecting for alias: " << dt->getConfig()->m_aliasId;
     qDebug() << " with catalog" << dt->getConfig()->m_cataloguePath;
     // TODO usunięcie tego demona
-    emit onThreadClosedSingal(dt); // no nie wiem jeszcze co tam będzie się dziać - sprawdź najpierw tam wywoływaną metodę removeCatalogueFromAlias
+    // no nie wiem jeszcze co tam będzie się dziać - sprawdź najpierw tam wywoływaną metodę removeCatalogueFromAlias
+    QMetaObject::invokeMethod(this, "onThreadClosedSlot",
+            Qt::QueuedConnection, Q_ARG(DaemonThread*, dt));
 }
 
 void DaemonApplication::onClosed(DaemonThread *dt)
@@ -237,8 +219,8 @@ void DaemonApplication::onClosed(DaemonThread *dt)
     qDebug() << "Server closed connection with DaemonThread " << dt->getConfig()->m_aliasId
              << " with catalog: "<< dt->getConfig()->m_cataloguePath;
 
-    emit onThreadClosedSingal(dt);
-    //QTimer::singleShot(10, this, SLOT(onDaemonThreadClosedSlot())); // can't passing arguments by it
+    QMetaObject::invokeMethod(this, "onThreadClosedSlot",
+                Qt::QueuedConnection, Q_ARG(DaemonThread*, dt));
 }
 
 

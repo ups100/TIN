@@ -204,6 +204,11 @@ void Alias::onFindFile(ClientConnection* client, const QString& name)
 void Alias::onListAlias(ClientConnection* client)
 {
     qDebug() << "onListAlias not implemented";
+
+    if (m_daemons.isEmpty()) {
+        // TODO send to Client liste pusta
+    }
+
     m_tmpAliasFileList = boost::shared_ptr<Utilities::AliasFileList>(
             new Utilities::AliasFileList());
     m_waitForDaemons = m_daemons.size();

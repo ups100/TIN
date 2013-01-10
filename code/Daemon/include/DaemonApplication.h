@@ -119,10 +119,6 @@ private:
      */
     static DaemonApplication* makeInstance();
 
-signals:
-    /** @brief It is connected to onThreadClosedSlot(DaemonThread*) */
-    void onThreadClosedSingal(DaemonThread *dt);
-
 private slots:
     /** Do not use this slot. Use another one below. */
     void onDaemonThreadClosedSlot();
