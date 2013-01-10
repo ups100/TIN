@@ -91,10 +91,10 @@ public:
     virtual void onConnectionClosed(UnknownConnection *connection);
 
     virtual void onAddDirecotry(UnknownConnection *connection,
-            const QString &aliasName, const Utilities::Password &password);
+            const QString &aliasName, const Utilities::Password &password, const Utilities::Identifier& id);
 
     virtual void onConnectToAlias(UnknownConnection *connection,
-            const QString &aliasName, const Utilities::Password &password);
+            const QString &aliasName, const Utilities::Password &password, const Utilities::Identifier& id);
 
     virtual void onCreateAlias(UnknownConnection *connection,
             const QString &aliasName, const Utilities::Password &password);
@@ -115,21 +115,29 @@ private slots:
      * @brief Helper slot to implements onConnectToAlias() function.
      *
      * @param[in] connection identifier
+     *
      * @param[in] aliasName name of alias
+     *
      * @param[in] password to alias
+     *
+     * @param[in] id identifier
      */
     void onConnectToAliasSlot(UnknownConnection* connection, QString aliasName,
-            TIN_project::Utilities::Password password);
+            TIN_project::Utilities::Password password, const Utilities::Identifier& id);
 
     /**
      * @brief Helper slot to implements onAddDirectory() function.
      *
      * @param[in] connection identifier
+     *
      * @param[in] aliasName name of alias
+     *
      * @param[in] password to alias
+     *
+     * @param[in] id identifier
      */
     void onAddDirecotrySlot(UnknownConnection* connection, QString aliasName,
-            TIN_project::Utilities::Password password);
+            TIN_project::Utilities::Password password, const Utilities::Identifier& id);
 
 private:
 

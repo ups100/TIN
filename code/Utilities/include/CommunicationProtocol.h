@@ -494,6 +494,82 @@ public:
     };
 
     /**
+         * @brief Base class for QString and Password converting.
+         */
+        class CommunicateNamePasswordAndId
+        {
+        public:
+
+            /**
+             * @brief Gets the name of something.
+             *
+             * @return name of something
+             */
+            inline const QString& getName() const
+            {
+                return m_name;
+            }
+
+            /**
+             * @brief Gets the password.
+             *
+             * @return password
+             */
+            inline const Password& getPassword() const
+            {
+                return m_password;
+            }
+
+            inline const Identifier& getId() const
+            {
+                return m_id;
+            }
+
+        protected:
+            /**
+             * @brief Constructor
+             *
+             * @param[in] name QString to be converted
+             *
+             * @param[in] password Password to be converted
+             *
+             * @param[in] id identity
+             */
+            CommunicateNamePasswordAndId(const QString& name,
+                    const Password& password, const Identifier& id);
+
+            /**
+             * @brief Constructor
+             *
+             * @param[in] data to form an object
+             */
+            CommunicateNamePasswordAndId(const QByteArray &data);
+
+            /**
+             * @brief Converts an object to QByteArray
+             *
+             * @return Raw object data
+             */
+            QByteArray getQByteArray();
+
+        private:
+            /**
+             * @brief Name to be converted
+             */
+            QString m_name;
+
+            /**
+             * @brief Password to be converted
+             */
+            Password m_password;
+
+            /**
+             * @brief Id to be converted
+             */
+            Identifier m_id;
+        };
+
+    /**
      * @brief Base class for AliasFileList list converting.
      */
     class CommunicateAliasFileList
@@ -732,7 +808,7 @@ public:
      * @brief Specialization of template class for #CONNECT_TO_ALIAS message
      */
     template<typename T> class Communicate<0, T> : public CommunicateBase,
-            public CommunicateNameAndPassword
+            public CommunicateNamePasswordAndId
     {
     public:
         /**
@@ -741,9 +817,11 @@ public:
          * @param[in] name alias name
          *
          * @param[in] password alias password
+         *
+         * @param[in] id identity
          */
-        Communicate(const QString& name, const Password& password)
-                : CommunicateNameAndPassword(name, password)
+        Communicate(const QString& name, const Password& password, const Identifier &id)
+                : CommunicateNamePasswordAndId(name, password, id)
         {
 
         }
@@ -754,14 +832,14 @@ public:
          * @param[in] data raw data to parse message.
          */
         Communicate(const QByteArray &data)
-                : CommunicateNameAndPassword(data)
+                : CommunicateNamePasswordAndId(data)
         {
 
         }
 
         virtual QByteArray toQByteArray()
         {
-            QByteArray buff = CommunicateNameAndPassword::getQByteArray();
+            QByteArray buff = CommunicateNamePasswordAndId::getQByteArray();
             return QByteArray()
                     + CommunicationProtocol::getCode(CONNECT_TO_ALIAS)
                     + CommunicationProtocol::getQByteArrayFromInt(buff.size())
@@ -856,7 +934,7 @@ public:
      * @brief Specialization of template class for #ADD_DIRECTORY message
      */
     template<typename T> class Communicate<31, T> : public CommunicateBase,
-            public CommunicateNameAndPassword
+            public CommunicateNamePasswordAndId
     {
     public:
         /**
@@ -865,9 +943,11 @@ public:
          * @param[in] name alias name
          *
          * @param[in] password alias password
+         *
+         * @param[in] id identifier
          */
-        Communicate(const QString& name, const Password& password)
-                : CommunicateNameAndPassword(name, password)
+        Communicate(const QString& name, const Password& password, const Identifier& id)
+                : CommunicateNamePasswordAndId(name, password, id)
         {
 
         }
@@ -878,14 +958,14 @@ public:
          * @param[in] data raw data to parse message.
          */
         Communicate(const QByteArray &data)
-                : CommunicateNameAndPassword(data)
+                : CommunicateNamePasswordAndId(data)
         {
 
         }
 
         virtual QByteArray toQByteArray()
         {
-            QByteArray buff = CommunicateNameAndPassword::getQByteArray();
+            QByteArray buff = CommunicateNamePasswordAndId::getQByteArray();
             return QByteArray() + CommunicationProtocol::getCode(ADD_DIRECTORY)
                     + CommunicationProtocol::getQByteArrayFromInt(buff.size())
                     + buff;

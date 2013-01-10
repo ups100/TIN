@@ -28,9 +28,10 @@ using Utilities::CommunicationProtocol;
 namespace Server {
 
 DaemonConnection::DaemonConnection(QTcpSocket *socket, QThread *targetThread,
-        DaemonConnectionListener *listener)
+        DaemonConnectionListener *listener, const Utilities::Identifier& id)
         : m_connectionListener(listener), m_socket(socket), m_isConnected(true),
-                m_currentMessageId(CHAR_MAX), m_sizeOk(false), m_messageSize(-1)
+                m_currentMessageId(CHAR_MAX), m_sizeOk(false), m_messageSize(-1),
+                m_identity(id)
 {
     moveToThread(targetThread);
     m_socket->moveToThread(targetThread);

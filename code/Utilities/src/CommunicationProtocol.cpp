@@ -209,6 +209,39 @@ QByteArray CommunicationProtocol::CommunicateNameAndPassword::getQByteArray()
             + m_password.toQByteArray();
 }
 
+CommunicationProtocol::CommunicateNamePasswordAndId::CommunicateNamePasswordAndId(
+        const QString& name, const Password& password, const Identifier& id)
+        : m_name(name), m_password(password), m_id(id)
+{
+
+}
+
+CommunicationProtocol::CommunicateNamePasswordAndId::CommunicateNamePasswordAndId(
+        const QByteArray &data)
+{
+    if (data.size() < 5)
+        throw "wrong size of data";
+    qint32 size = CommunicationProtocol::getIntFromQByteArray(data);
+
+    QByteArray name = data.mid(4, size);
+    m_name.append(name);
+
+    qint32 passwordSize = CommunicationProtocol::getIntFromQByteArray(data.mid(4+size, 4));
+    QByteArray password = data.mid(4 +size + 4, passwordSize);
+    m_password = Password(password);
+
+    m_id = Identifier(data.right(data.size() - 4 - size - 4 - passwordSize));
+}
+
+QByteArray CommunicationProtocol::CommunicateNamePasswordAndId::getQByteArray()
+{
+    QByteArray name = m_name.toAscii();
+    QByteArray password = m_password.toQByteArray();
+    return CommunicationProtocol::getQByteArrayFromInt(name.size()) + name
+            + CommunicationProtocol::getQByteArrayFromInt(password.size()) + password
+            + m_id.toQByteArray();
+}
+
 CommunicationProtocol::CommunicateNameAndLong::CommunicateNameAndLong(
         const QString& name, qint64 length)
         : m_name(name), m_length(length)
