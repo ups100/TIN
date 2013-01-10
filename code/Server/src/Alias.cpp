@@ -37,7 +37,7 @@ Alias::Alias(const QString& name, Utilities::Password password)
 
 }
 
-void Alias::addClient(boost::shared_ptr<UnknownConnection> client)
+void Alias::addClient(boost::shared_ptr<UnknownConnection> client, const Utilities::Identifier& id)
 {
     if (!m_thread.isRunning()) {
         qDebug() << "Alias is not running";
@@ -45,7 +45,7 @@ void Alias::addClient(boost::shared_ptr<UnknownConnection> client)
     }
 
     ClientConnection *connection = new ClientConnection(
-            client->convertToOtherConnection(), &m_thread, this);
+            client->convertToOtherConnection(), &m_thread, this,id);
 
     boost::shared_ptr<ClientConnection> shared(connection);
     m_clients.append(shared);
@@ -53,7 +53,7 @@ void Alias::addClient(boost::shared_ptr<UnknownConnection> client)
     shared->sendConnectedToAlias();
 }
 
-void Alias::addDaemon(boost::shared_ptr<UnknownConnection> daemon)
+void Alias::addDaemon(boost::shared_ptr<UnknownConnection> daemon, const Utilities::Identifier& id)
 {
     if (!m_thread.isRunning()) {
         qDebug() << "Alias is not running";
@@ -61,7 +61,7 @@ void Alias::addDaemon(boost::shared_ptr<UnknownConnection> daemon)
     }
 
     DaemonConnection *connection = new DaemonConnection(
-            daemon->convertToOtherConnection(), &m_thread, this);
+            daemon->convertToOtherConnection(), &m_thread, this, id);
 
     boost::shared_ptr<DaemonConnection> shared(connection);
     m_daemons.append(shared);

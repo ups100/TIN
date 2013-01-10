@@ -18,6 +18,8 @@
 #if !defined(EA_6C6268DD_2EDB_44a9_98C4_B9F5505AFD3B__INCLUDED_)
 #define EA_6C6268DD_2EDB_44a9_98C4_B9F5505AFD3B__INCLUDED_
 
+#include "Identifier.h"
+
 #include <QHostAddress>
 #include <QString>
 #include <QTcpSocket>
@@ -28,6 +30,22 @@ namespace TIN_project {
 namespace Server {
 
 class DaemonConnectionListener;
+class ClientConnection;
+class DaemonConnection;
+
+/**
+ * @brief Compares if daemon belongs to client
+ *
+ * @param[in] daemon object to compare
+ *
+ * @param[in] client object to compare
+ *
+ * @return
+ * - true if this object and client are from that same machine and directory
+ * - false otherwise
+ */
+bool operator==(const DaemonConnection&daemon, const ClientConnection& client);
+
 
 /**
  * @brief Class which represents single connection witch daemon
@@ -38,6 +56,12 @@ class DaemonConnection : public QObject
 {
 Q_OBJECT
     ;
+
+/**
+ * @brief This is friend to ensure compare operator.
+ */
+friend bool operator==(const DaemonConnection& daemon, const ClientConnection& client);
+
 public:
     /**
      * @brief Constructor
@@ -47,9 +71,11 @@ public:
      * @param targetThread of alias to which client is connected
      *
      * @param listener to be notified about incoming messages
+     *
+     * @param[in] id identity of daemon
      */
     DaemonConnection(QTcpSocket *socket, QThread *targetThread,
-            DaemonConnectionListener *listener);
+            DaemonConnectionListener *listener, const Utilities::Identifier& id);
 
     /**
      * @brief Destructor
@@ -119,6 +145,17 @@ public:
     void sendSendFile(const QString& fileName, const QHostAddress& address,
             quint16 port);
 
+    /**
+     * @brief Compares if this daemon belongs to passed client
+     *
+     * @param[in] client object to compare
+     *
+     * @return
+     * - true if this object and client are from that same machine and directory
+     * - false otherwise
+     */
+    bool operator==(const ClientConnection& client);
+
 private slots:
 
     /**
@@ -185,6 +222,10 @@ private:
      */
     qint32 m_messageSize;
 
+    /**
+     * @brief Computer identification
+     */
+    Utilities::Identifier m_identity;
 };
 
 } //namespace server

@@ -20,6 +20,7 @@
 
 #include <QByteArray>
 #include <QString>
+#include <QMetaType>
 
 namespace TIN_project {
 namespace Utilities {
@@ -69,14 +70,14 @@ public:
      *
      * @return ID
      */
-    QString getId();
+    const QString& getId() const;
 
     /**
      * @brief Get path to catalogue
      *
      * @return Path to catalogue
      */
-    QString getPath();
+    const QString& getPath() const;
 
     /**
      * @brief Convert object to QByteArray
@@ -93,4 +94,6 @@ public:
 
 } //namespace Utilities
 } //namespace TIN_project
+
+Q_DECLARE_METATYPE(TIN_project::Utilities::Identifier);
 #endif // !defined(IDENTIFIER__INCLUDED_)

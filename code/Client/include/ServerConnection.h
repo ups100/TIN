@@ -33,6 +33,7 @@ namespace TIN_project {
 namespace Utilities {
 class Password;
 class FileLocation;
+class Identifier;
 }
 
 namespace Client {
@@ -107,9 +108,11 @@ public:
      * @param[in] aliasName name of alias
      *
      * @param[in] password password to alias
+     *
+     * @param[in] id identity of client machine
      */
     void connectToAlias(const QString& aliasName,
-            const Utilities::Password& password);
+            const Utilities::Password& password, const Utilities::Identifier& id);
 
     /**
      * @brief Establish connection to server.
