@@ -84,7 +84,7 @@ void DaemonConfiguration::loadConfiguration()
                                     .toString();
                 } else if (reader.name() == DAEMON_CONFIG_XML_PASSWORD) {
                     tmp->m_password = reader.attributes().value(
-                            QString(DAEMON_CONFIG_XML_PASSWORD_ATTR_PASSWORD)).toUtf8();
+                            QString(DAEMON_CONFIG_XML_PASSWORD_ATTR_PASSWORD)).toString().toAscii();
                             ;
                 } else if (reader.name() == DAEMON_CONFIG_XML_CATALOGUE) {
                     tmp->m_cataloguePath = reader.attributes().value(

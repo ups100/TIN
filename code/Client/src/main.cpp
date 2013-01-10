@@ -44,16 +44,16 @@ int main(int argc, char **argv)
     afl.addFileWithId(tmp6, "6", 12, "EAAC::3423:2323");
 
     int i = 1;
-    ClientApplication app(argc-3, argv);
+    ClientApplication app(argc, argv);
 
-    app.showList(afl);
+    //app.showList(afl);
     //app.showListOfLocal(afl);
     //app.showListOfRemote(afl);
     //app.showListOfConflicts(afl);
-    app.synchWithOverWriting(afl);
+   // app.synchWithOverWriting(afl);
     //app.showListOfConflicts(afl);
     //app.invokeCommandByIndex(afl, "1", "pull");
-    //app.start(QHostAddress(argv[1]), atoi(argv[2]),QString(argv[3]));
+    app.start(QHostAddress(argv[1]), atoi(argv[2]),QString(argv[3]));
 
     return 0;
 }
