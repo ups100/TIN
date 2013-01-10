@@ -42,8 +42,6 @@ DaemonThread::DaemonThread()
     m_connectionOk = false; //connection not established
     m_aliasConnected = false; //alias not connected
     m_readyToDestroy = false;
-    m_receiver = NULL;
-    m_sender = NULL;
 }
 
 DaemonThread::~DaemonThread()
@@ -56,8 +54,7 @@ DaemonThread::~DaemonThread()
 
 DaemonThread::DaemonThread(
         boost::shared_ptr<DaemonConfiguration::Config> config)
-        : m_config(config), m_receiver(NULL), m_sender(NULL),
-          m_suffix("orig")
+        : m_config(config), m_suffix("orig")
 {
     m_ServerConnection = new ServerConnection(this);
     m_connectionOk = false;
@@ -228,8 +225,8 @@ void DaemonThread::onReciveFile(const QString& fileName,
     }
 
     qDebug() << "receiver ma taki plik " << size;
-    m_receiver = new FileReciver(this, new QFile(filePath), size);
-    m_receiver->connectToServer(address, port);
+    m_receiver.append(new FileReciver(this, new QFile(filePath), size)) ;
+    m_receiver.last()->connectToServer(address, port);
 
 }
 
@@ -267,8 +264,8 @@ void DaemonThread::onSendFile(const QString& fileName,
     if (sendFile.exists() )
            //&& (sendFile.permissions()==QFile::ReadOwner || sendFile.permissions()==QFile::ReadUser))
     {
-       m_sender = new FileSender(this, new QFile(filePath));
-       m_sender->connectToServer(address, port);
+       m_sender.append(new FileSender(this, new QFile(filePath)));
+       m_sender.last()->connectToServer(address, port);
     }
     else
         qDebug() << "Request file has no read rights or it isn't exist. " << filePath;
@@ -280,41 +277,82 @@ void DaemonThread::onTransferEnd(FileSender * sender)
     //TODO onTransferEnd - never disconnect
     qDebug() << "File sending completed: ";
 
-    delete m_sender;
-
+    int i=0;
+    for (i=0; i<m_sender.size(); ++i) {
+        if (m_sender[i] == sender) {
+            break;
+        }
+    }
+    if (i != m_sender.size() ) {
+        QTimer::singleShot(0, m_sender[i], SLOT(deleteLater()));
+        m_sender.removeAt(i);
+    }
 }
 // this method comes from FileTransferListener class
 void DaemonThread::onTransferError(FileSender *sender)
 {
     // TODO onTransferError - jak powiadomić Klienta o tym? Serwer to zrobi.
     qDebug() << "File sending with error. ";
-    delete m_sender;
+
+    int i=0;
+    for (i=0; i<m_sender.size(); ++i) {
+        if (m_sender[i] == sender) {
+            break;
+        }
+    }
+    if (i != m_sender.size() ) {
+        QTimer::singleShot(0, m_sender[i], SLOT(deleteLater()));
+        m_sender.removeAt(i);
+    }
 }
 
 void DaemonThread::onTransferEnd(FileReciver * reciver)
 {
-    // TODO onTransferEnd Reciver
+    // TODO onTransferEnd Reciver - powiadamiać klienta?
     QString filePath(reciver->getFileName());
     qDebug() << "File receiving completed. " << reciver->getFileName();
     QString fileBackup(filePath);
     //adding suffics to get backupfile
     fileBackup += m_suffix;
     QFile file(fileBackup);
-    file.remove();  // on successful transmission backup is removing
-    delete m_receiver;
+    if (file.exists())
+        file.remove();  // on successful transmission backup is removing
+
+    // deleting FileReciver object
+    int i=0;
+    for (i=0; i<m_receiver.size(); ++i) {
+        if (m_receiver[i] == reciver) {
+            break;
+        }
+    }
+    if (i != m_receiver.size() ) {
+        QTimer::singleShot(0, m_receiver[i], SLOT(deleteLater()));
+        m_receiver.removeAt(i);
+    }
 }
 
 void DaemonThread::onTransferError(FileReciver * receiver)
 {
-    // TODO onTransferError
     QString filePath(receiver->getFileName());
     qDebug() << "File receiving with error. " << filePath;
     QString fileBackup(filePath);
     //adding suffics to get backupfile
     fileBackup += m_suffix;
     QFile file(fileBackup);
-    file.rename(filePath);  // on unsuccessful transmission backup is recovered
-    delete m_receiver;
+    if (file.exists())
+        file.rename(filePath);  // on unsuccessful transmission backup is recovered
+
+    // deleting FileReciver object
+     int i=0;
+     for (i=0; i<m_receiver.size(); ++i) {
+         if (m_receiver[i] == receiver) {
+             break;
+         }
+     }
+     if (i != m_receiver.size() ) {
+         QTimer::singleShot(0, m_receiver[i], SLOT(deleteLater()));
+         m_receiver.removeAt(i);
+     }
 }
 
 void DaemonThread::stopThread()

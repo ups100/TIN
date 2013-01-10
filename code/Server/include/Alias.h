@@ -159,6 +159,10 @@ private slots:
     void removeClientSlot(ClientConnection *cc);
 
 private:
+    /**
+     * @brief Disable copy constructor
+     */
+    Alias(const Alias &);
 
     /**
      * @brief Clients connected to this alias

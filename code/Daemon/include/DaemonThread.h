@@ -70,8 +70,8 @@ private:
     DaemonThread(DaemonThread&);
     boost::shared_ptr<DaemonConfiguration::Config> m_config;
     ServerConnection *m_ServerConnection;
-    FileReciver *m_receiver;
-    FileSender *m_sender;
+    QList<FileReciver *> m_receiver;
+    QList<FileSender *> m_sender;
 
     /**
      * @brief Cut absolute file path to relative to supported catalogue

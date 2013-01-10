@@ -37,7 +37,6 @@ Alias::Alias(const QString& name, Utilities::Password password)
         : m_name(name), m_password(password),
           m_waitForDaemons(0)
 {
-    // TODO and disable copy constructor
     m_lastAliasAction = none;
     qRegisterMetaType<ClientConnection*>("ClientConnection*");
     qRegisterMetaType<DaemonConnection*>("DaemonConnection*");
@@ -160,7 +159,6 @@ void Alias::onConnectionClosed(DaemonConnection* daemon)
     if (m_waitForDaemons == 0 && m_lastAliasAction != none)
         performLastAliasAction();
 
-    qDebug() << "Invoking Method in Alias on Daemon Closed";
     // remove closed Deamon
     QMetaObject::invokeMethod(this, "removeDaemonSlot",
                     Qt::QueuedConnection, Q_ARG(DaemonConnection*, daemon));
@@ -227,7 +225,7 @@ void Alias::onFindFile(ClientConnection* client, const QString& name)
     qDebug() << "Klient chce znalezc plik: " << name;
 
     if (m_daemons.isEmpty()) {
-        client->sendFileNotFound(); // może invokeMethod ? //TODO patrz też niżej
+        client->sendFileNotFound();
         return;
     }
 
@@ -248,7 +246,6 @@ void Alias::onListAlias(ClientConnection* client)
     qDebug() << "onListAlias - wylistuj alias " << m_name;
 
     if (m_daemons.isEmpty()) {
-        // TODO send to Client liste pusta // czy to nie powinno być invoke ?
         client->sendFileList(Utilities::AliasFileList());
         return;
     }
@@ -330,20 +327,26 @@ void Alias::onRemoveFromAlias(ClientConnection* client, const QString& fileName)
 
 void Alias::removeDaemonSlot(DaemonConnection *dc)
 {
-    qDebug() << "in Alias in removeDaemonSlot";
-    boost::shared_ptr<DaemonConnection> tmp(dc);
-    qDebug() << "in Alias after creating object";
-    m_daemons.removeAll(tmp);       // TODO czy to wywola destruktor ?
-    qDebug() << "in Alias after removing";
-    qDebug() << "Liczba deamonow to:" << m_daemons.size();
+    int i=0;
+    for (i=0; i<m_daemons.size(); ++i) {
+        if (m_daemons[i].get() == dc) {
+            break;
+        }
+    }
+    m_daemons.removeAt(i);
 }
 
 void Alias::removeClientSlot(ClientConnection *cc)
 {
     m_tmpAliasFileList.reset(); // deleting temporary
 
-    boost::shared_ptr<ClientConnection> tmp(cc);
-    m_clients.removeOne(tmp);       // TODO czy to wywola destruktor ?
+    int i=0;
+    for (i=0; i<m_clients.size(); ++i) {
+        if (m_clients[i].get() == cc) {
+            break;
+        }
+    }
+    m_clients.removeAt(i);
 }
 
 void Alias::performLastAliasAction()

@@ -50,7 +50,7 @@ FileSender::FileSender(FileTransferListener *listener, QFile *file,
 
 FileSender::~FileSender()
 {
-    if (m_state == UNCONNECTED) {
+    if (m_state != UNCONNECTED) {
         qDebug() << "Destroying transfer object but transfer still in progress";
         disconnectFromServer();
     }
