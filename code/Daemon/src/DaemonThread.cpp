@@ -21,10 +21,12 @@
 #include "AliasFileList.h"
 #include "Password.h"
 #include "Identifier.h"
+#include "ConfigFileName.h"
 
 #include <QDir>
 #include <QFile>
 #include <QBuffer>
+#include <QIODevice>
 #include <QXmlFormatter>
 #include <QRegExp>
 #include <QDirIterator>
@@ -76,6 +78,13 @@ void DaemonThread::onAliasConnected()
                 << "Error. Double AliasConnected information from server to DeamonThread";
     } else
         m_aliasConnected = true;
+
+    // Create temporary file
+    QFile file(
+            m_config->m_cataloguePath + QDir::separator()
+                    + Utilities::ConfigFileName::CONFIG_FILE_NAME);
+    file.open(QIODevice::WriteOnly);
+    file.close();
 }
 
 void DaemonThread::onAliasConnectionError()
@@ -84,6 +93,13 @@ void DaemonThread::onAliasConnectionError()
     qDebug() << m_config->m_aliasId;
 
     m_aliasConnected = false;
+
+    // Delete temporary file if exists
+    QFile file(
+            m_config->m_cataloguePath + QDir::separator()
+                    + Utilities::ConfigFileName::CONFIG_FILE_NAME);
+    if (file.exists())
+        file.remove();
 
     // TODO uzgodnic scenariusz wypadku niepołączenia się z Aliasem
     // proponuję zakończyć wtedy komunikację z serwerem, żeby potem się nie plątała niepotrzebnie
@@ -103,9 +119,10 @@ void DaemonThread::onConnected()
         m_connectionOk = true;  // if everything OK
         // connecting to the Alias
         //todo ADD id to connection!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        qDebug()<<"Dodac id do connectToAlias";
+        qDebug() << "Dodac id do connectToAlias";
         m_ServerConnection->connectToAlias(m_config->m_aliasId,
-                Utilities::Password(m_config->m_password), Utilities::Identifier());
+                Utilities::Password(m_config->m_password),
+                Utilities::Identifier());
     }
 
 }
@@ -115,6 +132,13 @@ void DaemonThread::onDisconnected()
     qDebug() << "Disconnect from server.";
     m_connectionOk = false;
     m_aliasConnected = false;
+
+    // Delete temporary file if exists
+    QFile file(
+            m_config->m_cataloguePath + QDir::separator()
+                    + Utilities::ConfigFileName::CONFIG_FILE_NAME);
+    if (file.exists())
+        file.remove();
 
     // TODO uzgodnic scenariusz braku polaczenia
 }
