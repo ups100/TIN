@@ -259,14 +259,18 @@ void DaemonThread::onReciveFile(const QString& fileName,
 void DaemonThread::onRemoveFile(const QString& fileName)
 {
     // TODO uncomment that when communication method 'll be exist
-//    QFile file(QString(m_config->m_cataloguePath) + QString(fileLocation->path));
-//    if (file.exists())
-//        if (file.remove()) {
-//            onFileRemoved();
-//            return;
-//        }
-//
-//    onFileNotRemoved();
+    QFile file(QString(m_config->m_cataloguePath) + QString(fileName));//fileLocation->path));
+
+    if (file.exists())
+        if (file.remove()) {
+            //onFileRemoved();
+            qDebug() << "DaemonThread delete file: " << fileName;
+            return;
+        } else
+            qDebug() << "Attention. DaemonThread CAN NOT delete file: " << fileName
+                     << " I suppose file rights are incorrect. ";
+
+    //onFileNotRemoved();
 }
 
 void DaemonThread::onSendFile(const QString& fileName,

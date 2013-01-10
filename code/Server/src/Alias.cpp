@@ -320,12 +320,13 @@ void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
 
 void Alias::onRemoveFromAlias(ClientConnection* client, const QString& fileName)
 {
-    qDebug() << "onRemoveFromAlias";
+    qDebug() << "onRemoveFromAlias" << fileName;
 
     // we don't wait for answer from them
     foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
         dc->sendRemoveFile(fileName);
     }
+    client->sendFileRemoved();
 }
 
 void Alias::removeDaemonSlot(DaemonConnection *dc)

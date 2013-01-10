@@ -212,6 +212,7 @@ private:
     enum AliasAction {
         onListAliasAction,
         onFindFileAction,
+        REMOVE_FILE,
         none
     };
 
