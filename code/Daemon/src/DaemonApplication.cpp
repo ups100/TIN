@@ -144,7 +144,7 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
 {
     boost::shared_ptr<DaemonConfiguration::Config> config(
             new DaemonConfiguration::Config(ip.toString(), port, aliasId,
-                    password.getPassword(), path));
+                    password.getHash(), path));
 
 //    /*
 //     * Check overlap duplicate
@@ -221,29 +221,6 @@ void DaemonApplication::onClosed(DaemonThread *dt)
 
     QMetaObject::invokeMethod(this, "onThreadClosedSlot",
                 Qt::QueuedConnection, Q_ARG(DaemonThread*, dt));
-}
-
-
-// Depreciated. Don't use anywhere
-void DaemonApplication::onDaemonThreadClosedSlot()
-{
-    qDebug() << "Depreciated method. Don't use it";
-    QMutexLocker lock(&m_mutex);
-
-    QList<DaemonThread*>::iterator it;
-
-    for (it = m_daemonThreads.begin(); it != m_daemonThreads.end(); ) {
-        if ( (*it)->isReadyToDestroy() ) {
-            m_config.removeConfig((*it)->getConfig()->m_aliasId, (*it)->getConfig()->m_cataloguePath);
-            it = m_daemonThreads.erase(it);
-        }
-    }
-
-    // Closing DaemonApplication when last DaemonThread closed
-    if (m_daemonThreads.isEmpty()) {
-        stopApplication();
-    }
-
 }
 
 void DaemonApplication::onThreadClosedSlot(DaemonThread *dt)

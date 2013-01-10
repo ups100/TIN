@@ -27,6 +27,7 @@ MainServer::MainServer(int argc, char **argv)
                 m_server(this)
 {
     qRegisterMetaType<Utilities::Password>();
+    qRegisterMetaType<Utilities::Identifier>();
     qRegisterMetaType<UnknownConnection*>("UnknownConnection*");
 }
 
@@ -67,21 +68,23 @@ void MainServer::onConnectionClosed(UnknownConnection *connection)
 }
 
 void MainServer::onAddDirecotry(UnknownConnection *connection,
-        const QString &aliasName, const Utilities::Password &password)
+        const QString &aliasName, const Utilities::Password &password, const Utilities::Identifier& id)
 {
     QMetaObject::invokeMethod(this, "onAddDirecotrySlot",
             Qt::QueuedConnection, Q_ARG(UnknownConnection*, connection),
             Q_ARG(QString, aliasName),
-            Q_ARG(TIN_project::Utilities::Password, password));
+            Q_ARG(TIN_project::Utilities::Password, password),
+            Q_ARG(TIN_project::Utilities::Identifier, id));
 }
 
 void MainServer::onConnectToAlias(UnknownConnection *connection,
-        const QString &aliasName, const Utilities::Password &password)
+        const QString &aliasName, const Utilities::Password &password, const Utilities::Identifier& id)
 {
     QMetaObject::invokeMethod(this, "onConnectToAliasSlot",
             Qt::QueuedConnection, Q_ARG(UnknownConnection*, connection),
             Q_ARG(QString, aliasName),
-            Q_ARG(TIN_project::Utilities::Password, password));
+            Q_ARG(TIN_project::Utilities::Password, password),
+            Q_ARG(TIN_project::Utilities::Identifier, id));
 }
 
 void MainServer::onCreateAlias(UnknownConnection *connection,
@@ -174,7 +177,7 @@ void MainServer::stopServer(int exitCode)
 }
 
 void MainServer::onConnectToAliasSlot(UnknownConnection *connection,
-        QString aliasName, TIN_project::Utilities::Password password)
+        QString aliasName, TIN_project::Utilities::Password password, TIN_project::Utilities::Identifier id)
 {
     for (int i = 0; i < m_aliases.size(); ++i) {
         if (m_aliases[i]->getName() == aliasName) {
@@ -189,7 +192,7 @@ void MainServer::onConnectToAliasSlot(UnknownConnection *connection,
                     }
                 }
 
-                m_aliases[i]->addClient(con);
+                m_aliases[i]->addClient(con, id);
             } else {
                 connection->sendNotConnectedToAlias();
             }
@@ -201,7 +204,7 @@ void MainServer::onConnectToAliasSlot(UnknownConnection *connection,
 }
 
 void MainServer::onAddDirecotrySlot(UnknownConnection* connection,
-        QString aliasName, TIN_project::Utilities::Password password)
+        QString aliasName, TIN_project::Utilities::Password password, TIN_project::Utilities::Identifier id)
 {
     for (int i = 0; i < m_aliases.size(); ++i) {
         if (m_aliases[i]->getName() == aliasName) {
@@ -216,7 +219,7 @@ void MainServer::onAddDirecotrySlot(UnknownConnection* connection,
                     }
                 }
 
-                m_aliases[i]->addDaemon(con);
+                m_aliases[i]->addDaemon(con, id);
             } else {
                 connection->sendNotConnectedToAlias();
             }

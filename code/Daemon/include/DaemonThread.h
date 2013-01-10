@@ -1,19 +1,19 @@
 /**
- * @file DaemonThread.h
- *
- * @date 04-01-2013
- *
- * @author Mikolaj Markiewicz <kajo100@gmail.com>
- *
- * @brief Implementation of the Class TIN_project::Daemon::DaemonThread
- *
- * @par Project
- * This is a part of project realized on Warsaw University of Technology
- * on TIN lectures. Project was created to simplify synchronization between catalogs,
- * that are stored on different hosts to let clients work on the same files anywhere they want.
- * Allows user to do operations such as searching, copying and distributing files
- * gathered under one alias.
- */
+* @file DaemonThread.h
+*
+* @date 04-01-2013
+*
+* @author Mikolaj Markiewicz <kajo100@gmail.com>
+*
+* @brief Implementation of the Class TIN_project::Daemon::DaemonThread
+*
+* @par Project
+* This is a part of project realized on Warsaw University of Technology
+* on TIN lectures. Project was created to simplify synchronization between catalogs,
+* that are stored on different hosts to let clients work on the same files anywhere they want.
+* Allows user to do operations such as searching, copying and distributing files
+* gathered under one alias.
+*/
 
 #if !defined(EA_864A61DB_9A5A_400d_A0D2_DCA5A718FEDA__INCLUDED_)
 #define EA_864A61DB_9A5A_400d_A0D2_DCA5A718FEDA__INCLUDED_
@@ -74,10 +74,10 @@ private:
     QList<FileSender *> m_sender;
 
     /**
-     * @brief Cut absolute file path to relative to supported catalogue
-     *
-     * @return String with cutted path
-     */
+* @brief Cut absolute file path to relative to supported catalogue
+*
+* @return String with cutted path
+*/
     QString& cutAbsolutePath(QString &str);
 
     /**
@@ -86,21 +86,21 @@ private:
     const QString m_suffix;
 
     /**
-     * @brief Show connection status.
-     * @details If connection is established value true.
-     */
+* @brief Show connection status.
+* @details If connection is established value true.
+*/
     bool m_connectionOk;
 
     /**
-     * @brief True if alias connected successful.
-     */
+* @brief True if alias connected successful.
+*/
     bool m_aliasConnected;
 
     /**
      * @brief Tells if this object is prepare to destroy by DaemonApplication;
      *  This is set by onDisconect method before calling DaemonApplication::onClosed
      */
-    bool m_readyToDestroy;
+    //bool m_readyToDestroy;
 
 };
 

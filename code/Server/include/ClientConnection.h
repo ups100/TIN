@@ -19,6 +19,8 @@
 #define EA_8025FA43_E1FD_4c29_94EA_DE5FDF7489E8__INCLUDED_
 
 #include "ClientConnectionListener.h"
+#include "Identifier.h"
+
 #include <QObject>
 #include <QTcpSocket>
 
@@ -30,6 +32,22 @@ class AliasFileList;
 }
 namespace Server {
 
+class DaemonConnection;
+class ClientConnection;
+
+/**
+ * @brief Compares if daemon belongs to client
+ *
+ * @param[in] daemon object to compare
+ *
+ * @param[in] client object to compare
+ *
+ * @return
+ * - true if this object and client are from that same machine and directory
+ * - false otherwise
+ */
+bool operator==(const DaemonConnection& daemon, const ClientConnection& client);
+
 /**
  * @brief Class which represents single connection witch client
  *
@@ -39,6 +57,12 @@ class ClientConnection : public QObject
 {
 Q_OBJECT
     ;
+
+/**
+ * @brief This is friend to ensure compare operator.
+ */
+friend bool operator==(const DaemonConnection& daemon, const ClientConnection& client);
+
 public:
     /**
      * @brief Constructor
@@ -48,9 +72,11 @@ public:
      * @param targetThread of alias to which client is connected
      *
      * @param listener to be notified about incoming messages
+     *
+     * @param[in] id identity of client
      */
     ClientConnection(QTcpSocket *socket, QThread *targetThread,
-            ClientConnectionListener *listener);
+            ClientConnectionListener *listener, const Utilities::Identifier& id);
 
     /**
      * @brief Destructor
@@ -124,6 +150,21 @@ public:
      */
     void sendNoSuchFile();
 
+    /**
+     * @brief Compares if passed daemon belongs to this client
+     *
+     * @param[in] daemon object to compare
+     *
+     * @return
+     * - true if this object and daemon are from that same machine and directory
+     * - false otherwise
+     */
+    inline bool operator==(const DaemonConnection& daemon);
+    inline bool operator==(const ClientConnection& other)
+    {
+        return ((m_identity.getId() == other.m_identity.getId())
+                && (m_identity.getPath() == other.m_identity.getPath()));
+    }
 private slots:
 
     /**
@@ -190,6 +231,10 @@ private:
      */
     qint32 m_messageSize;
 
+    /**
+     * @brief Computer identification
+     */
+    Utilities::Identifier m_identity;
 };
 
 } //namespace server

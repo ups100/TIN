@@ -19,6 +19,7 @@
 #include "FileLocation.h"
 #include "AliasFileList.h"
 #include "CommunicationProtocol.h"
+#include "DaemonConnection.h"
 
 #include <climits>
 #include <QTcpSocket>
@@ -32,9 +33,10 @@ using Utilities::CommunicationProtocol;
 namespace Server {
 
 ClientConnection::ClientConnection(QTcpSocket *socket, QThread *targetThread,
-        ClientConnectionListener *listener)
+        ClientConnectionListener *listener, const Utilities::Identifier& id)
         : m_connectionListener(listener), m_socket(socket), m_isConnected(true),
-                m_currentMessageId(CHAR_MAX), m_sizeOk(false), m_messageSize(-1)
+                m_currentMessageId(CHAR_MAX), m_sizeOk(false), m_messageSize(-1),
+                m_identity(id)
 {
     moveToThread(targetThread);
     m_socket->moveToThread(targetThread);
@@ -384,6 +386,13 @@ void ClientConnection::sendAllFunction(const QByteArray& array)
     } else {
         qDebug() << "Writing to not opened connection";
     }
+}
+
+
+bool operator==(const DaemonConnection& daemon, const ClientConnection& client)
+{
+    return ((daemon.m_identity.getId() == client.m_identity.getId())
+        && (daemon.m_identity.getPath() == client.m_identity.getPath()));
 }
 
 } //namespace server

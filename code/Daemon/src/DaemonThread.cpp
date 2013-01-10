@@ -20,9 +20,13 @@
 #include "DaemonApplication.h"
 #include "AliasFileList.h"
 #include "Password.h"
+#include "Identifier.h"
+#include "ConfigFileName.h"
+
 #include <QDir>
 #include <QFile>
 #include <QBuffer>
+#include <QIODevice>
 #include <QXmlFormatter>
 #include <QRegExp>
 #include <QDirIterator>
@@ -41,7 +45,6 @@ DaemonThread::DaemonThread()
     m_ServerConnection = new ServerConnection(this);
     m_connectionOk = false; //connection not established
     m_aliasConnected = false; //alias not connected
-    m_readyToDestroy = false;
 }
 
 DaemonThread::~DaemonThread()
@@ -62,7 +65,6 @@ DaemonThread::DaemonThread(
     m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip), m_config->m_port);
 
     // connecting to the Alias is in the onConnected() method
-    m_readyToDestroy = false;
 }
 
 void DaemonThread::onAliasConnected()
@@ -76,6 +78,12 @@ void DaemonThread::onAliasConnected()
 
     // tells DaemonApplication that connection with server is established
     DaemonApplication::getInstance().onStarted(this);
+    // Create temporary file
+    QFile file(
+            m_config->m_cataloguePath + QDir::separator()
+                    + Utilities::ConfigFileName::CONFIG_FILE_NAME);
+    file.open(QIODevice::WriteOnly);
+    file.close();
 }
 
 void DaemonThread::onAliasConnectionError()
@@ -83,24 +91,36 @@ void DaemonThread::onAliasConnectionError()
     qDebug() << "Unsuccessful connection to the Alias: " << m_config->m_aliasId;
 
     m_aliasConnected = false;
-    m_readyToDestroy = true;
 
     // it cause this->stopThread() and deleting this thread from DaemonApplication
     DaemonApplication::getInstance().onStartingError(this);
+
+    // Delete temporary file if exists
+    QFile file(
+            m_config->m_cataloguePath + QDir::separator()
+                    + Utilities::ConfigFileName::CONFIG_FILE_NAME);
+    if (file.exists())
+        file.remove();
 
 }
 
 void DaemonThread::onConnected()
 {
     if (m_connectionOk) {
-        qDebug() << "Incoming connection from server after previous connection was established. Double onConnected().";
+        qDebug()
+                << "Incoming connection from server after previous connection was established. Double onConnected().";
         m_connectionOk = false;
-    } else
-    {
-        qDebug() << "Connection to server successful. Starting connection to alias... ";
+    } else {
+        qDebug()
+                << "Connection to server successful. Starting connection to alias... ";
         m_connectionOk = true;  // if everything OK
         // connecting to the Alias
-        m_ServerConnection->connectToAlias(m_config->m_aliasId, Utilities::Password(m_config->m_password)); // TODO check if it is not a Hash
+
+        //todo ADD id to connection!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        qDebug() << "Dodac id do connectToAlias";
+        m_ServerConnection->connectToAlias(m_config->m_aliasId,
+                Utilities::Password(m_config->m_password),
+                Utilities::Identifier());
     }
 
 }
@@ -110,11 +130,16 @@ void DaemonThread::onDisconnected()
     qDebug() << m_config->m_cataloguePath << "gets disconnect from server.";
     //m_connectionOk = false;   // this sets onClose(this) // TODO think jeszcze raz
     //m_aliasConnected = false;
-    // this object may be delete by DaemonApplication so:
-    m_readyToDestroy = true;
 
     // cause normal procedure for ending DaemonThread include stopThread() and delete this
     DaemonApplication::getInstance().onClosed(this);
+
+    // Delete temporary file if exists
+    QFile file(
+            m_config->m_cataloguePath + QDir::separator()
+                    + Utilities::ConfigFileName::CONFIG_FILE_NAME);
+    if (file.exists())
+        file.remove();
 
 }
 
@@ -159,6 +184,7 @@ void DaemonThread::onFindFile(const QString &fileName)
 
 void DaemonThread::onListFiles()
 {
+    qDebug() << "DaemonThread start onList File";
     QDir dir(m_config->m_cataloguePath);
     if (!dir.exists())
         throw std::runtime_error("Path doesn't exit.");
@@ -233,14 +259,18 @@ void DaemonThread::onReciveFile(const QString& fileName,
 void DaemonThread::onRemoveFile(const QString& fileName)
 {
     // TODO uncomment that when communication method 'll be exist
-//    QFile file(QString(m_config->m_cataloguePath) + QString(fileLocation->path));
-//    if (file.exists())
-//        if (file.remove()) {
-//            onFileRemoved();
-//            return;
-//        }
-//
-//    onFileNotRemoved();
+    QFile file(QString(m_config->m_cataloguePath) + QString(fileName));//fileLocation->path));
+
+    if (file.exists())
+        if (file.remove()) {
+            //onFileRemoved();
+            qDebug() << "DaemonThread delete file: " << fileName;
+            return;
+        } else
+            qDebug() << "Attention. DaemonThread CAN NOT delete file: " << fileName
+                     << " I suppose file rights are incorrect. ";
+
+    //onFileNotRemoved();
 }
 
 void DaemonThread::onSendFile(const QString& fileName,
@@ -361,7 +391,7 @@ void DaemonThread::stopThread()
         // nevertheless disconnectFromServer() succeed or not, I select connection false
         m_connectionOk = false;
         m_aliasConnected = false;
-        m_readyToDestroy = true;
+//        m_readyToDestroy = true;
         m_ServerConnection->disconnectFromServer();
     }
 }
@@ -375,12 +405,6 @@ QString& DaemonThread::cutAbsolutePath(QString &str)
 {
     return str.replace(QRegExp(QString() + m_config->m_cataloguePath + "/?"),
             "/");
-}
-
-bool DaemonThread::isReadyToDestroy()
-{
-    // Rather don't use this method.
-    return m_readyToDestroy;
 }
 
 } //namespace Daemon

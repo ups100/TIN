@@ -22,6 +22,7 @@
 #include <QDataStream>
 #include <QByteArray>
 #include <QString>
+#include <qmetatype.h>
 
 namespace TIN_project {
 namespace Utilities {
@@ -70,6 +71,12 @@ public:
             const quint32 &size);
 
     /**
+     * Just for tests
+     */
+    void addFileWithId(const QString &filePath, const QString &date,
+            const quint32 &size, const QString s);
+
+    /**
      * @brief Merge two instances of AliasFileList into one
      *
      * @param other Another object
@@ -83,8 +90,13 @@ public:
      */
     quint32 getSize();
 
-    //TODO remove debug
-    void str();
+    /**
+     * @brief getter for the tree, used in ClientApplication
+     * @see ClientApplication::synchWithOverwriting();
+     */
+    const AliasTree& getTree() const;
+
+    void str(int&);
 
     /**
      * @brief Convert object to QByteArray
@@ -110,4 +122,5 @@ private:
 
 } //namespace Utilities
 } //namespace TIN_project
+Q_DECLARE_METATYPE(TIN_project::Utilities::AliasFileList);
 #endif // !defined(EA_A26F37CC_44D6_4f5b_915E_18BA44DC4E9A__INCLUDED_)

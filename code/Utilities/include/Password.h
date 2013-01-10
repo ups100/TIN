@@ -26,13 +26,15 @@ public:
 
     Password(const Password& password);
     Password(const QString& password);
-    Password(const QByteArray &data);
+    Password(const QByteArray& password);
     bool check(const QString& password) const;
+    bool check(const QByteArray& password) const;
     bool check(const Password& password) const;
     QByteArray toQByteArray() const;
+    QByteArray getHash() const;
     Password& operator=(const Password& other);
-    QString getPassword() const;
-
+private:
+    QByteArray m_hashed_password;
 };
 
 } //namespace Utilities

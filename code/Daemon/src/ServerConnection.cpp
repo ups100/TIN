@@ -20,6 +20,7 @@
 #include "FileLocation.h"
 #include "AliasFileList.h"
 #include "CommunicationProtocol.h"
+#include "Identifier.h"
 
 namespace TIN_project {
 
@@ -91,12 +92,12 @@ void ServerConnection::disconnectFromServer()
 }
 
 void ServerConnection::connectToAlias(const QString& aliasName,
-        const Utilities::Password& password)
+        const Utilities::Password& password, const Utilities::Identifier& id)
 {
     QMutexLocker locker(&this->m_mutex);
     if (m_isReadyState) {
         CommunicationProtocol::Communicate<CommunicationProtocol::ADD_DIRECTORY> message(
-                aliasName, password);
+                aliasName, password, id);
         emit sendData(new QByteArray(message.toQByteArray()));
     } else {
         qDebug() << "Trying to send but connection is not opened";

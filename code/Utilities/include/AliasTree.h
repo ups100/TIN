@@ -94,6 +94,10 @@ public:
 
             return in;
         }
+        void setLocation(QString location2)
+        {
+            m_id = location2;
+        }
 
     };
 
@@ -122,7 +126,10 @@ public:
      *
      * @param path Node path
      */
-    AliasTree(const QString &path);
+    AliasTree(const QString& path)
+            : m_path(path)
+    {
+    }
 
     /**
      * @brief C-tor
@@ -201,8 +208,32 @@ public:
     friend QDataStream& operator>>(QDataStream &in,
             boost::shared_ptr<AliasTree> &atree);
 
-    //TODO remove debug
-    void str(int indent);
+    /**
+     * @brief this works fine, don't touch it!
+     */
+    void str(int indent, int& counter);
+
+    /**
+     * @brief Getter for the DirContent, used in synchronization
+     * @see ClientApplication synchWithOverWriting
+     */
+    QList<boost::shared_ptr<AliasTree> > getMDirContent();
+
+    /**
+     * @brief Getter for the FileLocations
+     * @see ClientApplication synchWithOverWriting
+     */
+    QList<Location> getFileLocations()
+    {
+        return m_fileLocations;
+    }
+
+    /**
+     * @brief Getter for the path
+     * @see ClientApplication::synchWithOverwriting()
+     */
+    QString getPath();
+
 };
 
 } //namespace Utilities
