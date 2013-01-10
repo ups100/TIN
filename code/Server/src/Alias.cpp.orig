@@ -37,7 +37,7 @@ Alias::Alias(const QString& name, Utilities::Password password)
 
 }
 
-void Alias::addClient(boost::shared_ptr<UnknownConnection> client, const Utilities::Identifier& id)
+void Alias::addClient(boost::shared_ptr<UnknownConnection> client)
 {
     if (!m_thread.isRunning()) {
         qDebug() << "Alias is not running";
@@ -45,7 +45,7 @@ void Alias::addClient(boost::shared_ptr<UnknownConnection> client, const Utiliti
     }
 
     ClientConnection *connection = new ClientConnection(
-            client->convertToOtherConnection(), &m_thread, this,id);
+            client->convertToOtherConnection(), &m_thread, this);
 
     boost::shared_ptr<ClientConnection> shared(connection);
     m_clients.append(shared);
@@ -53,7 +53,7 @@ void Alias::addClient(boost::shared_ptr<UnknownConnection> client, const Utiliti
     shared->sendConnectedToAlias();
 }
 
-void Alias::addDaemon(boost::shared_ptr<UnknownConnection> daemon, const Utilities::Identifier& id)
+void Alias::addDaemon(boost::shared_ptr<UnknownConnection> daemon)
 {
     if (!m_thread.isRunning()) {
         qDebug() << "Alias is not running";
@@ -61,7 +61,7 @@ void Alias::addDaemon(boost::shared_ptr<UnknownConnection> daemon, const Utiliti
     }
 
     DaemonConnection *connection = new DaemonConnection(
-            daemon->convertToOtherConnection(), &m_thread, this, id);
+            daemon->convertToOtherConnection(), &m_thread, this);
 
     boost::shared_ptr<DaemonConnection> shared(connection);
     m_daemons.append(shared);
@@ -113,10 +113,17 @@ void Alias::stop()
 }
     m_daemons.clear();
 
+<<<<<<< HEAD
     //stop file transfers
+    foreach(boost::shared_ptr<FileTransferServer> connection, m_transfers) {
+        connection->disconnectFromAliasSynch();
+    }
+=======
+    //stop flie transfers
     foreach(boost::shared_ptr<FileTransferServer> connection, m_transfers){
     connection->disconnectFromAliasSynch();
 }
+>>>>>>> b2185e4f3054fa54c4afeba69e4907437295cede
     m_transfers.clear();
 
     QEventLoop loop;
@@ -138,7 +145,7 @@ void Alias::onConnectionClosed(DaemonConnection* daemon)
 }
 
 void Alias::onFileFound(DaemonConnection* daemon,
-        const Utilities::AliasFileList& location)
+        const Utilities::FileLocation& location)
 {
 
 }
@@ -154,15 +161,10 @@ void Alias::onFileList(DaemonConnection* daemon,
     }
 }
 
-void Alias::onFileTransferStarted(FileTransferServer *transfer)
-{
-
-}
-
 /**
  * Notify if transfer completed
  */
-void Alias::onFileTransferCompleted(FileTransferServer *transfer)
+void Alias::onFileTransferCompleted(FileTransferServer * transfer)
 {
 
 }
@@ -170,7 +172,7 @@ void Alias::onFileTransferCompleted(FileTransferServer *transfer)
 /**
  * Notify if an error occurred
  */
-void Alias::onFileTransferError(FileTransferServer *transfer)
+void Alias::onFileTransferError(FileTransferServer* transfer)
 {
 
 }

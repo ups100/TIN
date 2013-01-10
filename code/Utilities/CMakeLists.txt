@@ -3,7 +3,7 @@ MESSAGE( "Building Utilities libraries." )
 #directories with headers for this target
 INCLUDE_DIRECTORIES( 	${QT_INCLUDES}
 						${Boost_INCLUDE_DIRS}
-						${TIN_SOURCE_DIR}/Utilities/include 
+						${TIN_SOURCE_DIR}/Utilities/include
 )
 
 #if some class inherits QObject (has Q_OBJECT macro) add it's header file here
@@ -13,6 +13,7 @@ SET( UTILITIES_SRC
 		${TIN_SOURCE_DIR}/Utilities/src/Message.cpp
 		${TIN_SOURCE_DIR}/Utilities/src/Password.cpp
 		${TIN_SOURCE_DIR}/Utilities/src/InterprocessName.cpp
+		${TIN_SOURCE_DIR}/Utilities/src/ConfigFileName.cpp
 		${TIN_SOURCE_DIR}/Utilities/src/CommunicationProtocol.cpp
 		${TIN_SOURCE_DIR}/Utilities/src/FileTree.cpp
 		${TIN_SOURCE_DIR}/Utilities/src/Identify.cpp

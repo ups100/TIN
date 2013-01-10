@@ -70,6 +70,12 @@ public:
             const quint32 &size);
 
     /**
+     * Just for tests
+     */
+    void addFileWithId(const QString &filePath, const QString &date,
+            const quint32 &size, const QString s);
+
+    /**
      * @brief Merge two instances of AliasFileList into one
      *
      * @param other Another object
@@ -83,8 +89,13 @@ public:
      */
     quint32 getSize();
 
-    //TODO remove debug
-    void str();
+    /**
+     * @brief getter for the tree, used in ClientApplication
+     * @see ClientApplication::synchWithOverwriting();
+     */
+    const AliasTree& getTree() const;
+
+    void str(int&);
 
     /**
      * @brief Convert object to QByteArray

@@ -48,7 +48,7 @@ public:
         /** Alias name */
         QString m_aliasId;
         /** Password to alias */
-        QString m_password;
+        QByteArray m_password;
         /** Absolute path to catalogue */
         QString m_cataloguePath;
 
@@ -70,7 +70,7 @@ public:
          * @param cataloguePath
          */
         Config(const QString ip, const quint16 port, const QString aliasId,
-                const QString password, const QString cataloguePath)
+                const QByteArray password, const QString cataloguePath)
                 : m_ip(ip), m_port(port), m_aliasId(aliasId),
                         m_password(password), m_cataloguePath(cataloguePath)
         {
