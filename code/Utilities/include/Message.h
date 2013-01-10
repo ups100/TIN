@@ -61,6 +61,13 @@ public:
             const QHostAddress ip, const quint16 port);
 
     /**
+     * @brief C-tor, construct message without some data
+     * @param aliasId Alias id
+     * @param path Path to catalogue
+     */
+    Message(const QString aliasId, const QString path);
+
+    /**
      * @brief C-tor, creates message instance from given QByteArray
      * @param bytes QByteArray object made of serialized message
      */

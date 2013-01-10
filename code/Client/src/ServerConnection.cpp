@@ -21,6 +21,7 @@
 #include "ServerConnectionListener.h"
 #include "AliasCommunicationListener.h"
 #include "CommunicationProtocol.h"
+#include "Identifier.h"
 
 #include <QEventLoop>
 #include <QTimer>
@@ -62,13 +63,13 @@ ServerConnection::~ServerConnection()
 }
 
 void ServerConnection::connectToAlias(const QString& aliasName,
-        const Utilities::Password& password)
+        const Utilities::Password& password, const Utilities::Identifier& id)
 {
     QMutexLocker locker(&this->m_mutex);
     if (m_isReadyState) {
         CommunicationProtocol::Communicate<
                 CommunicationProtocol::CONNECT_TO_ALIAS> message(aliasName,
-                password);
+                password, id);
         emit sendData(new QByteArray(message.toQByteArray()));
     } else {
         qDebug() << "Trying to send but connection is not opened";

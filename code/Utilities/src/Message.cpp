@@ -18,7 +18,6 @@
 #include "Message.h"
 #include <QDataStream>
 #include <QIODevice>
-
 namespace TIN_project {
 namespace Utilities {
 
@@ -32,6 +31,12 @@ Message::Message(const QString aliasId, const Password password,
         const QString path, const QHostAddress ip, const quint16 port)
         : m_aliasId(aliasId), m_aliasPassword(password), m_cataloguePath(path),
                 m_serverIpAddress(ip), m_serverPort(port)
+{
+
+}
+
+Message::Message(const QString aliasId, const QString path)
+        : m_aliasId(aliasId), m_cataloguePath(path), m_serverPort(0)
 {
 
 }

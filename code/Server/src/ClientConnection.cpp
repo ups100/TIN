@@ -19,6 +19,7 @@
 #include "FileLocation.h"
 #include "AliasFileList.h"
 #include "CommunicationProtocol.h"
+#include "DaemonConnection.h"
 
 #include <climits>
 #include <QTcpSocket>
@@ -32,12 +33,20 @@ using Utilities::CommunicationProtocol;
 namespace Server {
 
 ClientConnection::ClientConnection(QTcpSocket *socket, QThread *targetThread,
-        ClientConnectionListener *listener)
+        ClientConnectionListener *listener, const Utilities::Identifier& id)
         : m_connectionListener(listener), m_socket(socket), m_isConnected(true),
-                m_currentMessageId(CHAR_MAX), m_sizeOk(false), m_messageSize(-1)
+                m_currentMessageId(CHAR_MAX), m_sizeOk(false), m_messageSize(-1),
+                m_identity(id)
 {
     moveToThread(targetThread);
     m_socket->moveToThread(targetThread);
+
+    connect(m_socket, SIGNAL(disconnected()), this,
+            SLOT(socketDisconnectedSlot()));
+    connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this,
+            SLOT(socketErrorSlot(
+                            QAbstractSocket::SocketError)));
+    connect(m_socket, SIGNAL(readyRead()), this, SLOT(socketReadyReadSlot()));
 }
 
 ClientConnection::~ClientConnection()
@@ -89,12 +98,7 @@ void ClientConnection::disconnectFromAliasSynch()
 
 void ClientConnection::sendConnectedToAlias()
 {
-    if (m_isConnected) {
-        CommunicationProtocol::Communicate<CommunicationProtocol::CONNECTED_TO_ALIAS> message;
-        sendAllFunction(message.toQByteArray());
-    } else {
-        qDebug() << "Trying to send but connection is not opened";
-    }
+    QTimer::singleShot(0, this, SLOT(sendConnectedToAliasSlot()));
 }
 
 void ClientConnection::sendFileFound(const Utilities::AliasFileList& location)
@@ -187,6 +191,17 @@ void ClientConnection::sendNoSuchFile()
 {
     if (m_isConnected) {
         CommunicationProtocol::Communicate<CommunicationProtocol::NO_SUCH_FILE> message;
+        sendAllFunction(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
+}
+
+void ClientConnection::sendConnectedToAliasSlot()
+{
+    if (m_isConnected) {
+        CommunicationProtocol::Communicate<
+                CommunicationProtocol::CONNECTED_TO_ALIAS> message;
         sendAllFunction(message.toQByteArray());
     } else {
         qDebug() << "Trying to send but connection is not opened";
@@ -371,6 +386,13 @@ void ClientConnection::sendAllFunction(const QByteArray& array)
     } else {
         qDebug() << "Writing to not opened connection";
     }
+}
+
+
+bool operator==(const DaemonConnection& daemon, const ClientConnection& client)
+{
+    return ((daemon.m_identity.getId() == client.m_identity.getId())
+        && (daemon.m_identity.getPath() == client.m_identity.getPath()));
 }
 
 } //namespace server

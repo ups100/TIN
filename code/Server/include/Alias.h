@@ -28,6 +28,7 @@
 #include "FileLocation.h"
 #include "AliasFileList.h"
 #include "UnknownConnection.h"
+#include "Identifier.h"
 
 #include <boost/shared_ptr.hpp>
 #include <QThread>
@@ -65,24 +66,28 @@ public:
      *
      * @param[in] client to be added to alias
      *
+     * @param[in] id identity of client
+     *
      * @note Remember to check password before using this method
      *
      * @warning Due to some thread issues, his function should not be executed
      * in context of alias thread.
      */
-    void addClient(boost::shared_ptr<UnknownConnection> client);
+    void addClient(boost::shared_ptr<UnknownConnection> client, const Utilities::Identifier& id);
 
     /**
      * @brief Adds daemon to this alias
      *
      * @param[in] daemon to be added to alias
      *
+     * @param[in] id identity of daemon
+     *
      * @note Remember to check password before using this method
      *
      * @warning Due to some thread issues, his function should not be executed
      * in context of alias thread.
      */
-    void addDaemon(boost::shared_ptr<UnknownConnection> daemon);
+    void addDaemon(boost::shared_ptr<UnknownConnection> daemon, const Utilities::Identifier& id);
 
     /**
      * @brief Check if passed password is that same password as set in constructor.
@@ -178,6 +183,16 @@ private:
      * @brief Additional thread
      */
     QThread m_thread;
+
+    /**
+     * @brief How many daemons left to wait for them
+     */
+    quint32 m_waitForDaemons;
+
+    /**
+     * @brief Temporary AliasFileList to merge from each daemon and send it all to client
+     */
+    boost::shared_ptr<Utilities::AliasFileList> m_tmpAliasFileList;
 
 };
 

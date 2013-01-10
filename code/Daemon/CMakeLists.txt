@@ -5,6 +5,7 @@ INCLUDE_DIRECTORIES( 	${QT_INCLUDES}
 						${Boost_INCLUDE_DIRS}
 						${TIN_SOURCE_DIR}/Daemon/include
 						${TIN_SOURCE_DIR}/Utilities/include 
+						${TIN_SOURCE_DIR}/qtsingleapplication/include 
 )
 
 #if some class inherits QObject (has Q_OBJECT macro) add it's header file here
@@ -32,4 +33,7 @@ TARGET_LINK_LIBRARIES(	daemon
 						${QT_QTNETWORK_LIBRARIES}
 						${Boost_LIBRARIES}
 						${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/libutilities.a
+						
+						#linking library for QtSingleCoreApplication
+						${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/libbuildlib.so
 )

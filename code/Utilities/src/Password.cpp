@@ -6,13 +6,14 @@
 ///////////////////////////////////////////////////////////
 
 #include "Password.h"
-
+#include <QCryptographicHash>
+#include <QDebug>
 namespace TIN_project {
 namespace Utilities {
 
 Password::Password()
 {
-
+    //Nothing to do here
 }
 
 Password::~Password()
@@ -22,50 +23,57 @@ Password::~Password()
 
 Password::Password(const Password& password)
 {
-
+    (*this) = password;
 }
 /**
  * Creates an object and set it's password
  */
 Password::Password(const QString& password)
 {
-
+    QByteArray myHash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha1);
+    (*this).m_hashed_password = myHash;
 }
 
-Password::Password(const QByteArray &data)
+Password::Password(const QByteArray& password)
 {
-
+    QByteArray myHash = QCryptographicHash::hash(password, QCryptographicHash::Sha1);
+    (*this).m_hashed_password = myHash;
 }
-
 /**
  * Check if password is correct
  */
 bool Password::check(const QString& password) const
 {
-
-    return true;
+    QByteArray myHash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha1);
+    return ((*this).m_hashed_password == myHash);
 }
 
 bool Password::check(const Password& password) const
 {
-
-    return true;
+    QByteArray myHash = password.toQByteArray();
+    return (myHash == (*this).m_hashed_password);
 }
 
+bool Password::check(const QByteArray& password) const
+{
+    return ((*this).m_hashed_password == password);
+}
 Password& Password::operator=(const Password& other)
 {
+    (*this).m_hashed_password = other.toQByteArray();
     return *this;
 }
 
 QByteArray Password::toQByteArray() const
 {
-    return QByteArray();
+    return (*this).m_hashed_password;
 }
 
-QString Password::getPassword() const
+QByteArray Password::getHash() const
 {
-    return QString();
+    return (*this).m_hashed_password;
 }
+
 
 } //namespace Utilities
 } //namespace TIN_project

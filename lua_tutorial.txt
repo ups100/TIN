@@ -1,0 +1,43 @@
+If you want to add your own plugin to Wireshark, you need to do plenty of things:
+
+
+1. Install Wireshark
+2. Let Wireshark be invoked by non-super users. To do this: put it into command line:
+sudo dpkg-reconfigure wireshark-common
+And press yes in the pop-up
+
+Then invoke each of this commands seperately:
+
+
+sudo apt-get install libcap2-bin wireshark
+sudo chgrp <your_name> /usr/bin/dumpcap
+sudo chmod 750 /usr/bin/dumpcap
+sudo setcap cap_net_raw,cap_net_admin+eip /usr/bin/dumpcap
+
+If there is a need for some packages, install them
+
+3.Check if Wireshark works without super user priviliges. If not, fix it :)
+Now, you need to check if your version of Wireshark supports LUA. To do that, open Wireshark and in Help->About Wireshark should be written somewhere (in the Compiled acapit) with Lua 5.1. If there is "without LUA" get Wireshark that supports it 
+
+4.Download LUA using command:
+wget http://www.lua.org/ftp/lua-5.2.0.tar.gz
+Then
+tar zxf lua-5.2.0.tar.gz
+Get into that catalog and type
+sudo make linux install
+
+There will probably be some problems with readline and ncursers lib so just install them
+
+5.Ok, everything should be right. Now get the TIN_project.lua file and put it anywhere you want
+
+6.Go to /etc/wireshark and open init.lua (with rights to write)
+
+7.On the very end put PATH to file with TIN_project.lua and command dofile that uses this PATH. Ony my computer it looks like this:
+TIN_project_SCRIPT_PATH="/home/marcin/"
+dofile(TIN_project_SCRIPT_PATH.."TIN_project.lua")
+
+Save changes
+
+8.If everything is right, wireshark should open without any errors (it will probably mean, that the path to the .lua file is wrong) and if you type "tin_project" in filters, it should be recognized as valid filter.
+
+That's it

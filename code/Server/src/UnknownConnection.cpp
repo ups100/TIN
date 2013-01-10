@@ -258,7 +258,7 @@ void UnknownConnection::socketReadyReadSlot()
 
                 if (m_unknownConnectionListener != 0L) {
                     m_unknownConnectionListener->onConnectToAlias(this,
-                            message.getName(), message.getPassword());
+                            message.getName(), message.getPassword(), message.getId());
                 }
             }
                 break;
@@ -348,7 +348,7 @@ void UnknownConnection::socketReadyReadSlot()
 
                 if (m_unknownConnectionListener != 0L) {
                     m_unknownConnectionListener->onAddDirecotry(this,
-                            message.getName(), message.getPassword());
+                            message.getName(), message.getPassword(), message.getId());
                 }
             }
                 break;

@@ -36,6 +36,7 @@ namespace Utilities {
 class FileLocation;
 class AliasFileList;
 class Password;
+class Identifier;
 }
 
 namespace Daemon {
@@ -104,9 +105,11 @@ public:
      * @param[in] aliasName name of alias
      *
      * @param[in] password password to alias
+     *
+     * @param[in] id identifier of daemon
      */
     void connectToAlias(const QString& aliasName,
-            const Utilities::Password& password);
+            const Utilities::Password& password, const Utilities::Identifier& id);
 
     /**
      * @brief Sends location of file

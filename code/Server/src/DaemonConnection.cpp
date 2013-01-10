@@ -28,12 +28,20 @@ using Utilities::CommunicationProtocol;
 namespace Server {
 
 DaemonConnection::DaemonConnection(QTcpSocket *socket, QThread *targetThread,
-        DaemonConnectionListener *listener)
+        DaemonConnectionListener *listener, const Utilities::Identifier& id)
         : m_connectionListener(listener), m_socket(socket), m_isConnected(true),
-                m_currentMessageId(CHAR_MAX), m_sizeOk(false), m_messageSize(-1)
+                m_currentMessageId(CHAR_MAX), m_sizeOk(false), m_messageSize(-1),
+                m_identity(id)
 {
     moveToThread(targetThread);
     m_socket->moveToThread(targetThread);
+
+    connect(m_socket, SIGNAL(disconnected()), this,
+            SLOT(socketDisconnectedSlot()));
+    connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this,
+            SLOT(socketErrorSlot(
+                            QAbstractSocket::SocketError)));
+    connect(m_socket, SIGNAL(readyRead()), this, SLOT(socketReadyReadSlot()));
 }
 
 DaemonConnection::~DaemonConnection()
@@ -85,13 +93,7 @@ void DaemonConnection::disconnectFromAliasSynch()
 
 void DaemonConnection::sendConnectedToAlias()
 {
-    if (m_isConnected) {
-        CommunicationProtocol::Communicate<
-                CommunicationProtocol::CONNECTED_TO_ALIAS> message;
-        sendAllFunction(message.toQByteArray());
-    } else {
-        qDebug() << "Trying to send but connection is not opened";
-    }
+    QTimer::singleShot(0, this, SLOT(sendConnectedToAliasSlot()));
 }
 
 void DaemonConnection::sendFindFile(const QString& fileName)
@@ -99,6 +101,16 @@ void DaemonConnection::sendFindFile(const QString& fileName)
     if (m_isConnected) {
         CommunicationProtocol::Communicate<CommunicationProtocol::FIND_YOUR_FILE> message(
                 fileName);
+        sendAllFunction(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
+}
+
+void DaemonConnection::sendListYourFiles()
+{
+    if (m_isConnected) {
+        CommunicationProtocol::Communicate<CommunicationProtocol::LIST_YOUR_FILES> message;
         sendAllFunction(message.toQByteArray());
     } else {
         qDebug() << "Trying to send but connection is not opened";
@@ -135,6 +147,17 @@ void DaemonConnection::sendSendFile(const QString& fileName,
         CommunicationProtocol::Communicate<CommunicationProtocol::SEND_FILE> message(
                 fileName, address, port);
         sendAllFunction(message.toQByteArray());
+    } else {
+        qDebug() << "Trying to send but connection is not opened";
+    }
+}
+
+void DaemonConnection::sendConnectedToAliasSlot()
+{
+    if (m_isConnected) {
+        CommunicationProtocol::Communicate<
+                CommunicationProtocol::CONNECTED_TO_ALIAS> message;
+        this->sendAllFunction(message.toQByteArray());
     } else {
         qDebug() << "Trying to send but connection is not opened";
     }
