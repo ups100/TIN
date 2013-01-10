@@ -23,16 +23,19 @@
 #include <QString>
 #include <boost/shared_ptr.hpp>
 #include <QThread>
+#include <QEventLoop>
 #include "FileTransferListener.h"
 #include "ServerConnectionListener.h"
 #include "ServerConnection.h"
 #include "DaemonConfiguration.h"
+#include "FileReciver.h"
+#include "FileSender.h"
 
 namespace TIN_project {
 namespace Daemon {
 
 class DaemonThread : public FileTransferListener,
-        public ServerConnectionListener, public QThread
+        public ServerConnectionListener
 {
 
 public:
@@ -47,21 +50,28 @@ public:
     virtual void onFindFile(const QString& fileName);
     virtual void onFileNotRemoved();
     virtual void onListFiles();
-    virtual void onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port);
+    virtual void onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port, qint64 size);
     virtual void onRemoveFile(const QString& fileName);
     virtual void onSendFile(const QString& fileName, const QHostAddress& address, quint16 port);
     virtual void onTransferEnd(FileSender * sender);
     virtual void onTransferError(FileSender *sender);
-    virtual void onTransferEnd(FileReciver * reciver);
+    virtual void onTransferEnd(FileReciver * receiver);
     virtual void onTransferError(FileReciver *receiver);
+    /** @brief Stop DeamonThread communication */
     void stopThread();
-    void run();
+    //void start(); // it could return status of starting DeamonThread only
 
     boost::shared_ptr<DaemonConfiguration::Config> getConfig();
+    /** @brief Tells if this object is ready to destroy **/
+    bool isReadyToDestroy();
 
 private:
+    DaemonThread(const DaemonThread&);
+    DaemonThread(DaemonThread&);
     boost::shared_ptr<DaemonConfiguration::Config> m_config;
     ServerConnection *m_ServerConnection;
+    QList<FileReciver *> m_receiver;
+    QList<FileSender *> m_sender;
 
     /**
 * @brief Cut absolute file path to relative to supported catalogue
@@ -69,6 +79,11 @@ private:
 * @return String with cutted path
 */
     QString& cutAbsolutePath(QString &str);
+
+    /**
+     *
+     */
+    const QString m_suffix;
 
     /**
 * @brief Show connection status.
@@ -80,6 +95,12 @@ private:
 * @brief True if alias connected successful.
 */
     bool m_aliasConnected;
+
+    /**
+     * @brief Tells if this object is prepare to destroy by DaemonApplication;
+     *  This is set by onDisconect method before calling DaemonApplication::onClosed
+     */
+    //bool m_readyToDestroy;
 
 };
 

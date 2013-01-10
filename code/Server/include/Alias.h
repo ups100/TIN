@@ -28,6 +28,7 @@
 #include "FileLocation.h"
 #include "AliasFileList.h"
 #include "UnknownConnection.h"
+#include "Identifier.h"
 
 #include <boost/shared_ptr.hpp>
 #include <QThread>
@@ -38,11 +39,12 @@ namespace Server {
 /**
  * Remember to disable copy constructor
  */
-class Alias : public FileTransferListener,
+class Alias : public QObject,
+        public FileTransferListener,
         public ClientConnectionListener,
         public DaemonConnectionListener
 {
-
+    Q_OBJECT;
 public:
     /**
      * @brief Constructor
@@ -65,24 +67,28 @@ public:
      *
      * @param[in] client to be added to alias
      *
+     * @param[in] id identity of client
+     *
      * @note Remember to check password before using this method
      *
      * @warning Due to some thread issues, his function should not be executed
      * in context of alias thread.
      */
-    void addClient(boost::shared_ptr<UnknownConnection> client);
+    void addClient(boost::shared_ptr<UnknownConnection> client, const Utilities::Identifier& id);
 
     /**
      * @brief Adds daemon to this alias
      *
      * @param[in] daemon to be added to alias
      *
+     * @param[in] id identity of daemon
+     *
      * @note Remember to check password before using this method
      *
      * @warning Due to some thread issues, his function should not be executed
      * in context of alias thread.
      */
-    void addDaemon(boost::shared_ptr<UnknownConnection> daemon);
+    void addDaemon(boost::shared_ptr<UnknownConnection> daemon, const Utilities::Identifier& id);
 
     /**
      * @brief Check if passed password is that same password as set in constructor.
@@ -147,7 +153,21 @@ public:
     virtual void onRemoveFromAlias(ClientConnection *client,
             const QString& fileName);
 
+    /**
+     * @brief Takes care of ending action when some unexpected
+     * situation occurs.
+     */
+    void performLastAliasAction();
+
+private slots:
+    void removeDaemonSlot(DaemonConnection *dc);
+    void removeClientSlot(ClientConnection *cc);
+
 private:
+    /**
+     * @brief Disable copy constructor
+     */
+    Alias(const Alias &);
 
     /**
      * @brief Clients connected to this alias
@@ -188,6 +208,15 @@ private:
      * @brief Temporary AliasFileList to merge from each daemon and send it all to client
      */
     boost::shared_ptr<Utilities::AliasFileList> m_tmpAliasFileList;
+
+    enum AliasAction {
+        onListAliasAction,
+        onFindFileAction,
+        REMOVE_FILE,
+        none
+    };
+
+    enum AliasAction m_lastAliasAction;
 
 };
 

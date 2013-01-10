@@ -285,7 +285,7 @@ private slots:
      * @see onAliasListed()
      * @param[in] list AliasFileList object that held information about files in alias
      */
-    void onAliasListedSlot(const Utilities::AliasFileList& list);
+    void onAliasListedSlot(TIN_project::Utilities::AliasFileList list);
 
     /**
      * @brief Helper slot for onConnected()

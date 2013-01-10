@@ -46,24 +46,34 @@ DaemonApplication* DaemonApplication::makeInstance()
 }
 
 DaemonApplication::DaemonApplication()
-        : m_clientCommunication(*this), m_isClean(true),
-                m_singleApplication(argc, argv) //argc,argv are static fields set by initDaemon() method
+        : m_singleApplication(argc,argv), //argc,argv are static fields set by initDaemon() method
+          m_isClean(true)
 {
-
+    qRegisterMetaType<DaemonThread*>("DaemonThread*");
+    // to avoid communication with client when this is the second running proces of ./daemon application
+    if (!m_singleApplication.isRunning())
+        m_clientCommunication = new ClientCommunication(*this);
 }
 
 void DaemonApplication::stopApplication()
 {
-    m_clientCommunication.terminate();
-    m_clientCommunication.wait();
+    qDebug() << "stopApplication() method";
+    m_clientCommunication->terminate();
+    m_clientCommunication->wait();
 
     foreach (DaemonThread *dt, m_daemonThreads){
-    dt->stopThread();
-    delete dt;
-}
+        qDebug() << "Stopping... " << dt->getConfig()->m_cataloguePath;
+        dt->stopThread();
+        delete dt;
+    }
+    // remove all element from the list
+    m_daemonThreads.clear();
 
 // Above we clean all things so object is clean:
     m_isClean = true;
+
+    // End event loop so DaemonApplication is ended at all
+    QTimer::singleShot(0, &m_singleApplication, SLOT(quit()));
 }
 
 DaemonApplication::~DaemonApplication()
@@ -73,10 +83,8 @@ DaemonApplication::~DaemonApplication()
         stopApplication();
 }
 
-int DaemonApplication::start(int argc, char **argv)
+int DaemonApplication::start()
 {
-    //QtSingleCoreApplication application(argc, argv);
-
     // Check if it is first instance of application
     if (m_singleApplication.isRunning()) {
         qDebug() << "Another instance of daemon is now running";
@@ -84,33 +92,16 @@ int DaemonApplication::start(int argc, char **argv)
     }
 
     // Run listener for local client
-    m_clientCommunication.start();
-
-//    if (true) {     // TODO delete this block
-//        qDebug() << "Pierwszy testowy watek DaemonThread.";
-//        boost::shared_ptr<DaemonConfiguration::Config> cnf(new DaemonConfiguration::Config());
-//        QHostAddress addr(QHostAddress::LocalHost);
-//        cnf->m_ip = addr.toString();
-//        cnf->m_port = 8080;
-//        cnf->m_aliasId = "a";
-//        cnf->m_password = "abc";
-//        DaemonThread *dt = new DaemonThread(cnf);
-//            //dt->start();  // TODO delete this line (look below)
-//            m_daemonThreads.append(dt);
-//    }
+    m_clientCommunication->start();
 
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
-    qDebug() << "Tworze watek DaemonThread";    // TODO delete this line
-    DaemonThread *dt = new DaemonThread(cnf);
-    //dt->start();  //unnecessary because constructor above do everything
-    // TODO ewentualnie funkcję start można wykorzystać do tego żeby zwracała status DeamonThread
-    // i np jesli połączenie się nie powiodło to tutaj moglibyśmy coś zrobić
-    m_daemonThreads.append(dt);
-}
+        qDebug() << "Tworze watek DaemonThread" << cnf->m_cataloguePath;    // TODO delete this line
+        DaemonThread *dt = new DaemonThread(cnf);
+        m_daemonThreads.append(dt);
+    }
 
-// Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
+    // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
     m_isClean = false;
-    qDebug() << "start petli zdarzen";
     return m_singleApplication.exec();
 }
 
@@ -173,15 +164,74 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
 void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         const QString &aliasId)
 {
+    //QMutexLocker lock(&m_mutex); // synchronization // TODO
+
     if (m_config.removeConfig(aliasId, path)) {
         foreach (DaemonThread* thread, m_daemonThreads){
         if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path) {
             thread->stopThread(); // TODO check if no thread etc
-            m_config.removeConfig(aliasId, path);
+            delete thread;
+            m_daemonThreads.removeOne(thread); // disconnect this from the list
             break;
         }
     }
 }
+}
+
+void DaemonApplication::detachDaemonThread(DaemonThread *dt)
+{
+    QMutexLocker lock(&m_mutex); // synchronization
+
+    if (m_daemonThreads.size() == 0)
+        return;
+
+    QString aliasId(dt->getConfig()->m_aliasId);
+    QString path(dt->getConfig()->m_cataloguePath);
+
+    foreach (DaemonThread *thread, m_daemonThreads) {
+        if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path ) {
+            thread->stopThread();
+            delete thread;
+            m_daemonThreads.removeOne(thread); // disconnect this from the list
+            break;
+        }
+    }
+}
+
+void DaemonApplication::onStarted(DaemonThread *dt)
+{
+    qDebug() << "DaemonThread started successful for alias: " << dt->getConfig()->m_aliasId
+             << " with catalog" << dt->getConfig()->m_cataloguePath;
+}
+
+void DaemonApplication::onStartingError(DaemonThread *dt)
+{
+    qDebug() << "Error while DaemonThread tries connecting for alias: " << dt->getConfig()->m_aliasId
+            << " with catalog" << dt->getConfig()->m_cataloguePath;
+
+    // even if error occurs I don't remove this DeamonThread from config file
+    QMetaObject::invokeMethod(this, "onThreadClosedSlot",
+            Qt::QueuedConnection, Q_ARG(DaemonThread*, dt));
+}
+
+void DaemonApplication::onClosed(DaemonThread *dt)
+{
+    qDebug() << "Server closed connection with DaemonThread " << dt->getConfig()->m_aliasId
+             << " with catalog: "<< dt->getConfig()->m_cataloguePath;
+
+    QMetaObject::invokeMethod(this, "onThreadClosedSlot",
+                Qt::QueuedConnection, Q_ARG(DaemonThread*, dt));
+}
+
+void DaemonApplication::onThreadClosedSlot(DaemonThread *dt)
+{
+    //removeCatalogueFromAlias(dt->getConfig()->m_cataloguePath ,dt->getConfig()->m_aliasId);
+    detachDaemonThread(dt);
+
+    // Closing DaemonApplication when last DaemonThread closed
+     if (m_daemonThreads.isEmpty()) {
+         stopApplication();
+     }
 }
 
 QtSingleCoreApplication* DaemonApplication::getSingleApplicationPointer()
@@ -196,9 +246,7 @@ void signal_handler(int sig)
     DaemonApplication::getInstance().stopApplication();
 
     // stop DaemonApplication's event loop
-    QTimer::singleShot(0,
-            (DaemonApplication::getInstance().getSingleApplicationPointer()),
-            SLOT(quit()));
+    //QTimer::singleShot(0, (DaemonApplication::getInstance().getSingleApplicationPointer()), SLOT(quit()));
 }
 
 void DaemonApplication::initDaemon(int argc, char **argv)

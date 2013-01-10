@@ -1,5 +1,5 @@
 /**
- * @file ClientConnectionListener.h
+ * @file DaemonConnectionListener.h
  *
  * @date 31-12-2012
  *

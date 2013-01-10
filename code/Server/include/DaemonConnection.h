@@ -18,6 +18,8 @@
 #if !defined(EA_6C6268DD_2EDB_44a9_98C4_B9F5505AFD3B__INCLUDED_)
 #define EA_6C6268DD_2EDB_44a9_98C4_B9F5505AFD3B__INCLUDED_
 
+#include "Identifier.h"
+
 #include <QHostAddress>
 #include <QString>
 #include <QTcpSocket>
@@ -28,6 +30,22 @@ namespace TIN_project {
 namespace Server {
 
 class DaemonConnectionListener;
+class ClientConnection;
+class DaemonConnection;
+
+/**
+ * @brief Compares if daemon belongs to client
+ *
+ * @param[in] daemon object to compare
+ *
+ * @param[in] client object to compare
+ *
+ * @return
+ * - true if this object and client are from that same machine and directory
+ * - false otherwise
+ */
+bool operator==(const DaemonConnection&daemon, const ClientConnection& client);
+
 
 /**
  * @brief Class which represents single connection witch daemon
@@ -38,6 +56,12 @@ class DaemonConnection : public QObject
 {
 Q_OBJECT
     ;
+
+/**
+ * @brief This is friend to ensure compare operator.
+ */
+friend bool operator==(const DaemonConnection& daemon, const ClientConnection& client);
+
 public:
     /**
      * @brief Constructor
@@ -47,9 +71,11 @@ public:
      * @param targetThread of alias to which client is connected
      *
      * @param listener to be notified about incoming messages
+     *
+     * @param[in] id identity of daemon
      */
     DaemonConnection(QTcpSocket *socket, QThread *targetThread,
-            DaemonConnectionListener *listener);
+            DaemonConnectionListener *listener, const Utilities::Identifier& id);
 
     /**
      * @brief Destructor
@@ -77,7 +103,7 @@ public:
     /**
      * @brief Sends information to daemon to look for some file
      *
-     * @param fileName name of file to look for
+     * @param[in] fileName name of file to look for
      */
     void sendFindFile(const QString& fileName);
 
@@ -89,33 +115,46 @@ public:
     /**
      * @brief Sends information to daemon to receive file from some server
      *
-     * @param fileName name of file and reletive path
+     * @param[in] fileName name of file and reletive path
      *
-     * @param address of server
+     * @param[in] address of server
      *
-     * @param port of server
+     * @param[in] port of server
+     *
+     * @param[in] size of file to be received
      */
     void sendReciveFile(const QString& fileName, const QHostAddress& address,
-            quint16 port);
+            quint16 port, qint64 size);
 
     /**
      * @brief Sends information to daemon to remove file
      *
-     * @param fileName name of file and reletive path
+     * @param[in] fileName name of file and reletive path
      */
     void sendRemoveFile(const QString& fileName);
 
     /**
      * @brief Sends information to daemon to send file to some server
      *
-     * @param fileName name of file and reletive path
+     * @param[in] fileName name of file and reletive path
      *
-     * @param address of server
+     * @param[in] address of server
      *
-     * @param port of server
+     * @param[in] port of server
      */
     void sendSendFile(const QString& fileName, const QHostAddress& address,
             quint16 port);
+
+    /**
+     * @brief Compares if this daemon belongs to passed client
+     *
+     * @param[in] client object to compare
+     *
+     * @return
+     * - true if this object and client are from that same machine and directory
+     * - false otherwise
+     */
+    bool operator==(const ClientConnection& client);
 
 private slots:
 
@@ -183,6 +222,10 @@ private:
      */
     qint32 m_messageSize;
 
+    /**
+     * @brief Computer identification
+     */
+    Utilities::Identifier m_identity;
 };
 
 } //namespace server

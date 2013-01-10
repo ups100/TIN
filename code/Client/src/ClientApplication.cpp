@@ -22,6 +22,7 @@ ClientApplication::ClientApplication(int argc, char **argv)
                 m_address(QHostAddress("0.0.0.0")), m_port(quint16(0))
 
 {
+    qRegisterMetaType<Utilities::AliasFileList>();
 
 }
 
@@ -58,7 +59,7 @@ void ClientApplication::onAliasDeletionError()
 void ClientApplication::onAliasListed(const Utilities::AliasFileList& list)
 {
     QMetaObject::invokeMethod(this, "onAliasListedSlot", Qt::AutoConnection,
-            Q_ARG(const AliasFileList&, list));
+            Q_ARG(TIN_project::Utilities::AliasFileList, list));
         }
 
 void ClientApplication::onConnected()
@@ -76,7 +77,7 @@ void ClientApplication::onDisconnected()
 void ClientApplication::onFileFound(const Utilities::AliasFileList& location)
 {
     QMetaObject::invokeMethod(this, "onAliasListedSlot", Qt::AutoConnection,
-            Q_ARG(const AliasFileList&, location));
+            Q_ARG(TIN_project::Utilities::AliasFileList, location));
         }
 
 void ClientApplication::onFileNotFound()
@@ -153,7 +154,7 @@ void ClientApplication::onAliasDeletionErrorSlot()
     QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 }
 
-void ClientApplication::onAliasListedSlot(const Utilities::AliasFileList& list)
+void ClientApplication::onAliasListedSlot(TIN_project::Utilities::AliasFileList list)
 {
     (*this).m_list = list;
 
@@ -319,7 +320,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         (*this).m_alias = cmd->getArg();
         (*this).m_password = cmd->getPassword();
         (*this).setState(ClientApplication::WAITING);
-        m_serverConnection.connectToAlias(cmd->getArg(), cmd->getPassword());
+        m_serverConnection.connectToAlias(cmd->getArg(), cmd->getPassword(),(*this).m_path);
     } else if (cmd->getCommand() == "create") {
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.createAlias(cmd->getArg(), cmd->getPassword());

@@ -70,6 +70,7 @@ public:
      * @param receiver transfer identification
      */
     virtual void onTransferError(FileReciver *receiver) = 0;
+
 };
 
 } //namespace Daemon

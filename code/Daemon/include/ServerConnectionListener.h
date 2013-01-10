@@ -87,8 +87,10 @@ public:
      * @param[in] address of server to receive file
      *
      * @param[in] port of server to receive file
+     *
+     * @param[in] size of file
      */
-    virtual void onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port) = 0;
+    virtual void onReciveFile(const QString& fileName, const QHostAddress& address, quint16 port, qint64 size) = 0;
 
     /**
      * @brief Informs that server asked to remove some file from catalog

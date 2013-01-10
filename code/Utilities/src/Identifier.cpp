@@ -46,12 +46,12 @@ Identifier::~Identifier()
 
 }
 
-QString Identifier::getId()
+const QString& Identifier::getId() const
 {
     return m_id;
 }
 
-QString Identifier::getPath()
+const QString& Identifier::getPath() const
 {
     return m_path;
 }
