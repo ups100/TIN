@@ -20,10 +20,19 @@ Password::~Password()
 
 }
 
+Password::Password(const Password& password)
+{
+
+}
 /**
  * Creates an object and set it's password
  */
 Password::Password(const QString& password)
+{
+
+}
+
+Password::Password(const QByteArray &data)
 {
 
 }
@@ -34,13 +43,29 @@ Password::Password(const QString& password)
 bool Password::check(const QString& password) const
 {
 
-    return false;
+    return true;
 }
 
 bool Password::check(const Password& password) const
 {
 
-    return false;
+    return true;
 }
+
+Password& Password::operator=(const Password& other)
+{
+    return *this;
+}
+
+QByteArray Password::toQByteArray() const
+{
+    return QByteArray();
+}
+
+QString Password::getPassword() const
+{
+    return QString();
+}
+
 } //namespace Utilities
 } //namespace TIN_project

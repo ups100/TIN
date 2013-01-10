@@ -9,6 +9,7 @@
 #define EA_91C787C3_94C4_4da7_BA4C_9508DA439345__INCLUDED_
 
 #include <QString>
+#include <QMetaType>
 
 namespace TIN_project {
 namespace Utilities {
@@ -23,11 +24,20 @@ public:
     Password();
     virtual ~Password();
 
+    Password(const Password& password);
     Password(const QString& password);
+    Password(const QByteArray &data);
     bool check(const QString& password) const;
     bool check(const Password& password) const;
+    QByteArray toQByteArray() const;
+    Password& operator=(const Password& other);
+    QString getPassword() const;
+
 };
 
 } //namespace Utilities
 } //namespace TIN_project
+
+Q_DECLARE_METATYPE(TIN_project::Utilities::Password);
+
 #endif // !defined(EA_91C787C3_94C4_4da7_BA4C_9508DA439345__INCLUDED_)

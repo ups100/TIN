@@ -17,6 +17,8 @@
 #include "DaemonCommunication.h"
 #include "ServerConnectionListener.h"
 #include "AliasCommunicationListener.h"
+#include "Message.h"
+#include <iostream> // add by js
 
 namespace TIN_project {
 
@@ -41,12 +43,10 @@ public:
     virtual void onAliasCreationError();
     virtual void onAliasDeleted();
     virtual void onAliasDeletionError();
-    virtual void onAliasListed(
-            boost::shared_ptr<Utilities::AliasFileList> list);
+    virtual void onAliasListed(const Utilities::AliasFileList& list);
     virtual void onConnected();
     virtual void onDisconnected();
-    virtual void onFileFound(
-            boost::shared_ptr<Utilities::FileLocation> location);
+    virtual void onFileFound(const Utilities::AliasFileList& location);
     virtual void onFileNotFound();
     virtual void onFileRemoved();
     virtual void onFileRemovingError();
@@ -55,6 +55,7 @@ public:
     virtual void onFileTransferStarted();
     void setView(boost::shared_ptr<ClientView> view);
     void start();
+    void talkToDaemon(Utilities::Message message);
 
 private:
     CommandParser m_commandParser;

@@ -7,7 +7,7 @@ project (TIN)
 FIND_PACKAGE( Boost REQUIRED )
 
 #look for qt library (required for this project)
-FIND_PACKAGE( Qt4 REQUIRED )
+FIND_PACKAGE( Qt4 COMPONENTS QtNetwork QtXmlPatterns REQUIRED )
 
 #look for doxygen to make documentation
 find_package(Doxygen REQUIRED)
