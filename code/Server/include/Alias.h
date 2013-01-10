@@ -148,6 +148,16 @@ public:
     virtual void onRemoveFromAlias(ClientConnection *client,
             const QString& fileName);
 
+    /**
+     * @brief Takes care of ending action when some unexpected
+     * situation occurs.
+     */
+    void performLastAliasAction();
+
+private slots:
+    void removeDaemonSlot(DaemonConnection *dc);
+    void removeClientSlot(ClientConnection *cc);
+
 private:
 
     /**
@@ -189,6 +199,14 @@ private:
      * @brief Temporary AliasFileList to merge from each daemon and send it all to client
      */
     boost::shared_ptr<Utilities::AliasFileList> m_tmpAliasFileList;
+
+    enum AliasAction {
+        onListAliasAction,
+        onFindFileAction,
+        none
+    };
+
+    enum AliasAction m_lastAliasAction;
 
 };
 

@@ -95,12 +95,9 @@ int DaemonApplication::start()
     m_clientCommunication->start();
 
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
-        qDebug() << "Tworze watek DaemonThread";    // TODO delete this line
-    DaemonThread *dt = new DaemonThread(cnf);
-    //dt->start();  //unnecessary because constructor above do everything
-    // TODO ewentualnie funkcję start można wykorzystać do tego żeby zwracała status DeamonThread -- TODO nie, bo to robi DaemonThreadListener
-    // i np jesli połączenie się nie powiodło to tutaj moglibyśmy coś zrobić
-    m_daemonThreads.append(dt);
+        qDebug() << "Tworze watek DaemonThread" << cnf->m_cataloguePath;    // TODO delete this line
+        DaemonThread *dt = new DaemonThread(cnf);
+        m_daemonThreads.append(dt);
     }
 
     // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
@@ -200,16 +197,16 @@ void DaemonApplication::detachDaemonThread(DaemonThread *dt)
 
 void DaemonApplication::onStarted(DaemonThread *dt)
 {
-    qDebug() << "DaemonThread started successful for alias: " << dt->getConfig()->m_aliasId;
-    qDebug() << " with catalog" << dt->getConfig()->m_cataloguePath;
+    qDebug() << "DaemonThread started successful for alias: " << dt->getConfig()->m_aliasId
+             << " with catalog" << dt->getConfig()->m_cataloguePath;
 }
 
 void DaemonApplication::onStartingError(DaemonThread *dt)
 {
-    qDebug() << "Error while DaemonThread tries connecting for alias: " << dt->getConfig()->m_aliasId;
-    qDebug() << " with catalog" << dt->getConfig()->m_cataloguePath;
-    // TODO usunięcie tego demona
-    // no nie wiem jeszcze co tam będzie się dziać - sprawdź najpierw tam wywoływaną metodę removeCatalogueFromAlias
+    qDebug() << "Error while DaemonThread tries connecting for alias: " << dt->getConfig()->m_aliasId
+            << " with catalog" << dt->getConfig()->m_cataloguePath;
+
+    // even if error occurs I don't remove this DeamonThread from config file
     QMetaObject::invokeMethod(this, "onThreadClosedSlot",
             Qt::QueuedConnection, Q_ARG(DaemonThread*, dt));
 }
