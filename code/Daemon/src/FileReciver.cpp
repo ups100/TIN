@@ -32,7 +32,7 @@ namespace Daemon {
 
 FileReciver::~FileReciver()
 {
-    if (m_state == UNCONNECTED) {
+    if (m_state != UNCONNECTED) {
         qDebug() << "Destroying transfer object but transfer still in progress";
         disconnectFromServer();
     }
@@ -112,6 +112,13 @@ void FileReciver::disconnectFromServer()
     m_state = UNCONNECTED;
     delete m_socket;
     m_socket = 0L;
+}
+
+QString FileReciver::getFileName()    // TODO check it
+{
+    QMutexLocker locker(&(this->m_mutex));
+
+    return m_file->fileName();
 }
 
 void FileReciver::establishConnectionSlot()

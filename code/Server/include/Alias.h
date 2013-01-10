@@ -39,11 +39,12 @@ namespace Server {
 /**
  * Remember to disable copy constructor
  */
-class Alias : public FileTransferListener,
+class Alias : public QObject,
+        public FileTransferListener,
         public ClientConnectionListener,
         public DaemonConnectionListener
 {
-
+    Q_OBJECT;
 public:
     /**
      * @brief Constructor
@@ -152,7 +153,21 @@ public:
     virtual void onRemoveFromAlias(ClientConnection *client,
             const QString& fileName);
 
+    /**
+     * @brief Takes care of ending action when some unexpected
+     * situation occurs.
+     */
+    void performLastAliasAction();
+
+private slots:
+    void removeDaemonSlot(DaemonConnection *dc);
+    void removeClientSlot(ClientConnection *cc);
+
 private:
+    /**
+     * @brief Disable copy constructor
+     */
+    Alias(const Alias &);
 
     /**
      * @brief Clients connected to this alias
@@ -193,6 +208,14 @@ private:
      * @brief Temporary AliasFileList to merge from each daemon and send it all to client
      */
     boost::shared_ptr<Utilities::AliasFileList> m_tmpAliasFileList;
+
+    enum AliasAction {
+        onListAliasAction,
+        onFindFileAction,
+        none
+    };
+
+    enum AliasAction m_lastAliasAction;
 
 };
 

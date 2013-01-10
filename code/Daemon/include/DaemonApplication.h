@@ -29,20 +29,25 @@
 #include <QMutexLocker>
 #include <QTimer>
 
+#include "DaemonThreadListener.h"
 #include "qtsinglecoreapplication.h"
 #include <signal.h>
 
 namespace TIN_project {
 namespace Daemon {
 
-class DaemonApplication
+class DaemonApplication: public QObject, public DaemonThreadListener
 {
+    Q_OBJECT;
 public:
 
     virtual ~DaemonApplication();
 
-    int start(int argc, char **argv);
-
+    int start();
+    /**
+     * @brief Call this method instead of ~DaemonApplication
+     * @details This close application at all.
+     */
     void stopApplication();
     /**
      * @brief Dispatch received message
@@ -71,12 +76,19 @@ public:
     void removeCatalogueFromAlias(const QString &path, const QString &aliasId);
 
     /**
+     * @brief Similar to removeCatalogueFromAlias but this method don't use DaemonThread info from config.
+     * @brief This method take pointer and disconnect, remove and unlink from m_daemonThreads lists.
+     * @details It is call when application is ended (then all DeamonThreads are detached one by another.
+     */
+    void detachDaemonThread(DaemonThread *dt);
+
+    /**
      * @brief Provide the instance of DaemonApplication object
      * @details There could by only one such object - this method keep an eye on it.
      * @return DaemonApplication class current instance.
      */
     static DaemonApplication& getInstance();
-    static DaemonApplication* makeInstance();
+
 
     /**
      * @brief Simple geter which is used in SIGKILL handler when SingleShot is sending
@@ -90,21 +102,32 @@ public:
      */
     static void initDaemon(int argc, char **argv);
 
+    virtual void onStarted(DaemonThread *dt);
+    virtual void onStartingError(DaemonThread *dt);
+    virtual void onClosed(DaemonThread *dt);
 
 private:
     /**
-     * @brief Private class constructors
+     * @brief Private class constructors - because of Singleton
      * @details Use DaemonApplication::getInstance() method
      */
     DaemonApplication();
     DaemonApplication(const DaemonApplication &);
+    /**
+     * @brief Makes first instance of object this class.
+     * @details It should be call only from getInstance
+     */
+    static DaemonApplication* makeInstance();
+
+private slots:
+    void onThreadClosedSlot(DaemonThread *dt);
 
 private:
 
     QList<DaemonThread*> m_daemonThreads;
 
     /** Client communication thread filed */
-    ClientCommunication m_clientCommunication;
+    ClientCommunication *m_clientCommunication;
 
     /** Daemon threads configuration */
     DaemonConfiguration m_config;
