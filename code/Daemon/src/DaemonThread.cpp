@@ -150,6 +150,8 @@ void DaemonThread::onFileNotRemoved()
 
 void DaemonThread::onFindFile(const QString &fileName)
 {
+    qDebug() << "in DaemonThread catalog "<< m_config->m_cataloguePath<<" onFindFIle: search " << fileName;
+
     QDirIterator it(m_config->m_cataloguePath, QDirIterator::Subdirectories);
     QList<QString> foundPaths;
     QRegExp regex(QRegExp::escape(fileName));
@@ -165,21 +167,28 @@ void DaemonThread::onFindFile(const QString &fileName)
     }
 
     // Create list of alias files
-    Utilities::AliasFileList files;
+    Utilities::AliasFileList *newFiles = new Utilities::AliasFileList();
+    Utilities::AliasFileList &files = *newFiles;
 
     // Add found files to list with their data
     foreach (QString str, foundPaths){
+        qDebug() << "DaemonThread find " << str;
     QString date = QString::number(QFileInfo(str).lastModified().toMSecsSinceEpoch());
     quint32 size = QFileInfo(str).size();
 
     files.addFile(cutAbsolutePath(str), date, size);
 }
+    qDebug() <<"In" << m_config->m_cataloguePath <<"Finding complete. How many: " << files.getSize();
 
  //TODO kopasiak check / change communicates / method / param
-    if (files.getSize())
-        m_ServerConnection->sendFileFound(files);
-    else
+    if (files.getSize()) {
+        qDebug() << "DT "<< m_config->m_cataloguePath <<" sending client that FileFound";
+        m_ServerConnection->sendFileFound(files);   // it sometimes do "naruszenie ochrony pamięci"
+    }
+    else {
+        qDebug() << "DT"<< m_config->m_cataloguePath<<" sending client that File NOT Found";
         m_ServerConnection->sendNoSuchFile();
+    }
 }
 
 void DaemonThread::onListFiles()

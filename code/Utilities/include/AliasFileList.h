@@ -89,6 +89,7 @@ public:
      * @return Amount of files inside
      */
     quint32 getSize();
+    quint32 getSize() const;
 
     /**
      * @brief getter for the tree, used in ClientApplication

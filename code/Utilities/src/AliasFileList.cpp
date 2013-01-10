@@ -55,6 +55,7 @@ void AliasFileList::addFileWithId(const QString &filePath, const QString &date,
 }
 void AliasFileList::merge(const AliasFileList &other)
 {
+    m_size += other.getSize();  // change m_size
     mergeIt(other.m_fileTree.m_dirContent);
 }
 
@@ -72,6 +73,11 @@ void AliasFileList::mergeIt(const QList<boost::shared_ptr<AliasTree> > &atree)
 }
 
 quint32 AliasFileList::getSize()
+{
+    return m_size;
+}
+
+quint32 AliasFileList::getSize() const
 {
     return m_size;
 }
