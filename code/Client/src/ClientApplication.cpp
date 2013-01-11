@@ -183,7 +183,6 @@ void ClientApplication::onConnectedSlot()
 {
     m_view->showMessage("Connected");
     (*this).setState(ClientApplication::CONNECTED);
-    qDebug() << "O TU O";
     QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 }
 
@@ -330,6 +329,8 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
                 (*this).m_path);
     } else if (cmd->getCommand() == "create") {
         (*this).setState(ClientApplication::WAITING);
+        (*this).m_alias = cmd->getArg();
+        (*this).m_password = cmd->getPassword();
         m_serverConnection.createAlias(cmd->getArg(), cmd->getPassword());
     } else if (cmd->getCommand() == "add") {
         (*this).setState(ClientApplication::WAITING);
@@ -337,6 +338,12 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
                 Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
                 Utilities::Message(m_alias, m_password, cmd->getArg(),
                         m_address, m_port));
+        qDebug()<<m_alias;
+        qDebug()<<m_password.toQByteArray();
+        qDebug()<<cmd->getArg();
+        qDebug()<<m_address;
+        qDebug()<<m_port;
+        qDebug()<<message.toQByteArray().size();
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d")) {
         (*this).setState(ClientApplication::WAITING);
@@ -379,8 +386,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         (*this).setState(ClientApplication::WAITING);
         (*this).invokeCommandByIndex((*this).m_list, cmd->getArg(),
                 cmd->getCommand());
-    }
-    else if (cmd->getCommand() == "change")
+    } else if (cmd->getCommand() == "change")
         (*this).changeRootPath(cmd->getArg());
     return true;
 }
