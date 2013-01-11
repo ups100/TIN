@@ -77,7 +77,7 @@ public:
      *
      * @param[in] argv command line arguments
      */
-ClientApplication    (int, char**);
+ClientApplication    (int argc, char** argv);
 
     /**
      * @brief Destructor
@@ -116,9 +116,9 @@ ClientApplication    (int, char**);
 
     /**
      * @brief Invoked by server when wants to send AliasFileList object
-     * @param[in] list AliasFileList object with information about files in alias
+     * @param[in] location AliasFileList object with information about files in alias
      */
-    virtual void onAliasListed(const Utilities::AliasFileList& list);
+    virtual void onAliasListed(TIN_project::Utilities::AliasFileList location);
 
     /**
      * @brief Invoked by server when connected
@@ -134,7 +134,7 @@ ClientApplication    (int, char**);
      * @brief Invoked by server when File was found
      * @param[in] location Location of File (held in FileLocation object)
      */
-    virtual void onFileFound(const Utilities::AliasFileList& location);
+    virtual void onFileFound(TIN_project::Utilities::AliasFileList location);
 
     /**
      * @brief Invoked by server when File was not found
@@ -238,6 +238,11 @@ public slots:
     void showListOfLocal(const Utilities::AliasFileList&);
 
     /**
+     * @brief Used after command "find"
+     */
+    void showListOfFoundFiles(const Utilities::AliasFileList&);
+
+    /**
      * @brief Used to show list of all files in alias
      */
     void showList(const Utilities::AliasFileList&);
@@ -285,7 +290,7 @@ private slots:
      * @see onAliasListed()
      * @param[in] list AliasFileList object that held information about files in alias
      */
-    void onAliasListedSlot(const Utilities::AliasFileList& list);
+    void onAliasListedSlot(TIN_project::Utilities::AliasFileList list);
 
     /**
      * @brief Helper slot for onConnected()
@@ -304,7 +309,7 @@ private slots:
      * @see onFileFound()
      * @param[in] location Location of file in alias
      */
-    void onFileFoundSlot(const Utilities::AliasFileList& location);
+    void onFileFoundSlot(TIN_project::Utilities::AliasFileList location);
 
     /**
      * @brief Helper slot for onFileNotFound()
@@ -378,6 +383,10 @@ private:
     bool checkIfConfigFileExists() const;
 
     /**
+     * @brief Changes the root
+     */
+    void changeRootPath(QString);
+    /**
      * @brief Invokes command if everything is correct
      * @param[in] cmd Command to be invoked
      * @return True if everything went wrong
@@ -402,6 +411,8 @@ private:
             int indent, int & counter);
     void moveOnTreeShowList(boost::shared_ptr<AliasTree> tree,
             int indent, int & counter);
+
+    void moveOnTreeShowFoundFiles(boost::shared_ptr<AliasTree> tree, int indent, int & counter);
 
     /**
      * @brief Used by push, pull and choose
