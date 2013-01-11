@@ -56,6 +56,10 @@ Commands::Commands(QString command, QString arg1, Argument::Types f)
             m_parameter = arg1;
             break;
 
+            //CHANGE
+        case Argument::ABS_PATH:
+            m_argument = Argument(arg1,f);
+            break;
         default:
             qDebug()
                     << "Something went wrong: Commands(QString, QString, Argument::Types"
