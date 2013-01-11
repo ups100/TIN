@@ -119,7 +119,7 @@ void DaemonThread::onConnected()
         // connecting to the Alias
 
         //todo made ?
-        qDebug() << "Dodac id do connectToAlias";
+//        qDebug() << "Dodac id do connectToAlias";
         m_ServerConnection->connectToAlias(m_config->m_aliasId,
                 Utilities::Password(m_config->m_password),
                 Utilities::Identifier(
