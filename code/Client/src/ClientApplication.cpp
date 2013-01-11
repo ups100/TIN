@@ -183,6 +183,7 @@ void ClientApplication::onConnectedSlot()
 {
     m_view->showMessage("Connected");
     (*this).setState(ClientApplication::CONNECTED);
+    qDebug() << "O TU O";
     QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 }
 
@@ -309,9 +310,11 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
 
     m_command = cmd;
     qDebug() << m_state;
+
     if (cmd->getCommand() == "exit") {
         (*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
         m_serverConnection.disconnectFromServer();
+
     } else if (cmd->getCommand() == "disconnect") {
         (*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
         m_serverConnection.disconnectFromServer();
@@ -321,73 +324,102 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         loop.exec();
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.connectToServer((*this).m_address, (*this).m_port);
+
     } else if (cmd->getCommand() == "log") {
         (*this).m_alias = cmd->getArg();
         (*this).m_password = cmd->getPassword();
+        //Utilities::CommunicationProtocol::Communicate<
+        //    Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+        //    Utilities::Message(m_alias, m_password, m_path, m_address,
+        //             m_port));
+        //m_DaemonCommunication.talkToDaemon(message.toQByteArray());
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.connectToAlias(cmd->getArg(), cmd->getPassword(),
                 (*this).m_path);
+
     } else if (cmd->getCommand() == "create") {
-        (*this).setState(ClientApplication::WAITING);
+
         (*this).m_alias = cmd->getArg();
         (*this).m_password = cmd->getPassword();
-        m_serverConnection.createAlias(cmd->getArg(), cmd->getPassword());
-    } else if (cmd->getCommand() == "add") {
+        //Utilities::CommunicationProtocol::Communicate<
+          //      Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+            //    Utilities::Message(m_alias, m_password, m_path, m_address,
+              //          m_port));
+        //m_DaemonCommunication.talkToDaemon(message.toQByteArray());
         (*this).setState(ClientApplication::WAITING);
+        m_serverConnection.createAlias(cmd->getArg(), cmd->getPassword());
+
+    } else if (cmd->getCommand() == "add") {
+        //(*this).setState(ClientApplication::WAITING);
         Utilities::CommunicationProtocol::Communicate<
                 Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
                 Utilities::Message(m_alias, m_password, cmd->getArg(),
                         m_address, m_port));
-        qDebug()<<m_alias;
-        qDebug()<<m_password.toQByteArray();
-        qDebug()<<cmd->getArg();
-        qDebug()<<m_address;
-        qDebug()<<m_port;
-        qDebug()<<message.toQByteArray().size();
+        QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
+
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d")) {
         (*this).setState(ClientApplication::WAITING);
         Utilities::CommunicationProtocol::Communicate<
                 Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
                 Utilities::Message(m_alias, cmd->getArg()));
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
+
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a")) {
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.removeAlias(cmd->getArg(), cmd->getPassword());
+
     } else if ((cmd->getCommand() == "rm")) {
         (*this).setState(ClientApplication::WAITING);
         qDebug() << "POLECENIE TO " << cmd->getArg();
         (*this).m_serverConnection.removeFileFromAlias(cmd->getArg());
+
     } else if ((cmd->getCommand() == "find")) {
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.findFileInAlias(cmd->getArg());
+
     } else if (cmd->getCommand() == "read") {
         (*this).setState(ClientApplication::WAITING);
         (*this).invokeCommandByIndex((*this).m_list, cmd->getArg(),
                 cmd->getCommand());
+
     } else if (cmd->getCommand() == "push") {
         (*this).setState(ClientApplication::WAITING);
         (*this).invokeCommandByIndex((*this).m_list, cmd->getArg(),
                 cmd->getCommand());
+
     } else if (cmd->getCommand() == "ls") {
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.listAlias();
+
     } else if ((cmd->getCommand() == "synch") && (cmd->getParameter() == "o")) {
         m_serverConnection.listAlias();
         (*this).setState(ClientApplication::WAITING);
+
     } else if ((cmd->getCommand() == "synch") && (cmd->getParameter() == "d")) {
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.listAlias();
+
     } else if ((cmd->getCommand() == "choose")) {
         (*this).setState(ClientApplication::WAITING);
         (*this).invokeCommandByIndex((*this).m_list, cmd->getArg(),
                 cmd->getCommand());
+
     } else if ((cmd->getCommand() == "pull")) {
         (*this).setState(ClientApplication::WAITING);
         (*this).invokeCommandByIndex((*this).m_list, cmd->getArg(),
                 cmd->getCommand());
-    } else if (cmd->getCommand() == "change")
+
+    } else if (cmd->getCommand() == "change") {
         (*this).changeRootPath(cmd->getArg());
+        qDebug() << "SCIEZKA TO TERAZ" << m_path;
+        Utilities::CommunicationProtocol::Communicate<
+                Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+                Utilities::Message(m_alias, m_password, m_path, m_address,
+                        m_port));
+        QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+        m_DaemonCommunication.talkToDaemon(message.toQByteArray());
+    }
     return true;
 }
 
@@ -400,10 +432,11 @@ int ClientApplication::start(const QHostAddress& address, quint16 port,
     }
     qDebug() << "Client application started" << endl;
     /** Server should be working to set state to waiting */
-    (*this).setState(ClientApplication::WAITING);
+    //(*this).setState(ClientApplication::WAITING);
     m_address = address;
     m_port = port;
     m_path = path;
+    (*this).setState(ClientApplication::WAITING);
     m_serverConnection.connectToServer(address, port);
     m_application.exec();
 
