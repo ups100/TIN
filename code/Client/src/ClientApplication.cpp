@@ -342,9 +342,9 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         (*this).m_alias = cmd->getArg();
         (*this).m_password = cmd->getPassword();
         //Utilities::CommunicationProtocol::Communicate<
-          //      Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
-            //    Utilities::Message(m_alias, m_password, m_path, m_address,
-              //          m_port));
+        //      Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+        //    Utilities::Message(m_alias, m_password, m_path, m_address,
+        //          m_port));
         //m_DaemonCommunication.talkToDaemon(message.toQByteArray());
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.createAlias(cmd->getArg(), cmd->getPassword());
@@ -430,6 +430,10 @@ int ClientApplication::start(const QHostAddress& address, quint16 port,
         qDebug() << "Another client application is running" << endl;
         return -1;
     }
+
+    // Pass empty message to start Daemon if not running
+    m_DaemonCommunication.talkToDaemon(QByteArray("00000"));
+
     qDebug() << "Client application started" << endl;
     /** Server should be working to set state to waiting */
     //(*this).setState(ClientApplication::WAITING);

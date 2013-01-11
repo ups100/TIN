@@ -18,6 +18,7 @@
 #include "MainServer.h"
 #include "Password.h"
 #include <QTimer>
+#include <QDebug>
 
 namespace TIN_project {
 namespace Server {
@@ -68,24 +69,26 @@ void MainServer::onConnectionClosed(UnknownConnection *connection)
 }
 
 void MainServer::onAddDirecotry(UnknownConnection *connection,
-        const QString &aliasName, const Utilities::Password &password, const Utilities::Identifier& id)
+        const QString &aliasName, const Utilities::Password &password,
+        const Utilities::Identifier& id)
 {
-    QMetaObject::invokeMethod(this, "onAddDirecotrySlot",
-            Qt::QueuedConnection, Q_ARG(UnknownConnection*, connection),
+    QMetaObject::invokeMethod(this, "onAddDirecotrySlot", Qt::QueuedConnection,
+            Q_ARG(UnknownConnection*, connection),
             Q_ARG(QString, aliasName),
             Q_ARG(TIN_project::Utilities::Password, password),
             Q_ARG(TIN_project::Utilities::Identifier, id));
-}
+        }
 
 void MainServer::onConnectToAlias(UnknownConnection *connection,
-        const QString &aliasName, const Utilities::Password &password, const Utilities::Identifier& id)
+        const QString &aliasName, const Utilities::Password &password,
+        const Utilities::Identifier& id)
 {
     QMetaObject::invokeMethod(this, "onConnectToAliasSlot",
             Qt::QueuedConnection, Q_ARG(UnknownConnection*, connection),
             Q_ARG(QString, aliasName),
             Q_ARG(TIN_project::Utilities::Password, password),
             Q_ARG(TIN_project::Utilities::Identifier, id));
-}
+        }
 
 void MainServer::onCreateAlias(UnknownConnection *connection,
         const QString &aliasName, const Utilities::Password &password)
@@ -146,6 +149,27 @@ int MainServer::start(const QHostAddress& address, quint16 port)
     qDebug() << "Server started at " << m_server.serverAddress().toString()
             << ":" << m_server.serverPort();
 
+// Config 4 testing: // TODO remove that
+//    <?xml version="1.0" encoding="UTF-8"?>
+//    <threads>
+//        <thread>
+//            <address ip="127.0.0.1" port="8080"/>
+//            <alias id="TEST"/>
+//            <password password="40bd001563085fc35165329ea1ff5c5ecbdbbeef"/>
+//            <catalogue path="/home/kajo/workspace/tin/testDir1"/>
+//        </thread>
+//        <thread>
+//            <address ip="127.0.0.1" port="8080"/>
+//            <alias id="TEST"/>
+//            <password password="40bd001563085fc35165329ea1ff5c5ecbdbbeef"/>
+//            <catalogue path="/home/kajo/workspace/tin/testDir2"/>
+//        </thread>
+//    </threads>
+//    Alias *alias = new Alias("TEST", Utilities::Password(QString("123")));
+//    alias->start();
+//    boost::shared_ptr<Alias> ptr(alias);
+//    m_aliases.append(ptr);
+
     return m_application.exec();
 }
 
@@ -177,7 +201,8 @@ void MainServer::stopServer(int exitCode)
 }
 
 void MainServer::onConnectToAliasSlot(UnknownConnection *connection,
-        QString aliasName, TIN_project::Utilities::Password password, TIN_project::Utilities::Identifier id)
+        QString aliasName, TIN_project::Utilities::Password password,
+        TIN_project::Utilities::Identifier id)
 {
     for (int i = 0; i < m_aliases.size(); ++i) {
         if (m_aliases[i]->getName() == aliasName) {
@@ -204,7 +229,8 @@ void MainServer::onConnectToAliasSlot(UnknownConnection *connection,
 }
 
 void MainServer::onAddDirecotrySlot(UnknownConnection* connection,
-        QString aliasName, TIN_project::Utilities::Password password, TIN_project::Utilities::Identifier id)
+        QString aliasName, TIN_project::Utilities::Password password,
+        TIN_project::Utilities::Identifier id)
 {
     for (int i = 0; i < m_aliases.size(); ++i) {
         if (m_aliases[i]->getName() == aliasName) {
