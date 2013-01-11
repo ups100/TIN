@@ -58,7 +58,7 @@ public:
      * @param list contention of alias
      */
     virtual void onAliasListed(
-            const Utilities::AliasFileList& list) = 0;
+            TIN_project::Utilities::AliasFileList location) = 0;
 
     /**
      * @brief Informs that searched file has been found.
@@ -66,7 +66,7 @@ public:
      * @param location location of found file
      */
     virtual void onFileFound(
-            const Utilities::AliasFileList& location) = 0;
+            TIN_project::Utilities::AliasFileList location) = 0;
 
     /**
      * @brief Informs that searched file has not been found.
