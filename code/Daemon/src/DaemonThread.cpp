@@ -22,6 +22,7 @@
 #include "Password.h"
 #include "Identifier.h"
 #include "ConfigFileName.h"
+#include "Identify.h"
 
 #include <QDir>
 #include <QFile>
@@ -62,7 +63,8 @@ DaemonThread::DaemonThread(
     m_ServerConnection = new ServerConnection(this);
     m_connectionOk = false;
     m_aliasConnected = false;
-    m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip), m_config->m_port);
+    m_ServerConnection->connectToServer(QHostAddress(m_config->m_ip),
+            m_config->m_port);
 
     // connecting to the Alias is in the onConnected() method
 }
@@ -116,11 +118,13 @@ void DaemonThread::onConnected()
         m_connectionOk = true;  // if everything OK
         // connecting to the Alias
 
-        //todo ADD id to connection!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //todo made ?
         qDebug() << "Dodac id do connectToAlias";
         m_ServerConnection->connectToAlias(m_config->m_aliasId,
                 Utilities::Password(m_config->m_password),
-                Utilities::Identifier());
+                Utilities::Identifier(
+                        Utilities::Identify::getMachineIdentificator(),
+                        m_config->m_cataloguePath));
     }
 
 }
@@ -150,7 +154,8 @@ void DaemonThread::onFileNotRemoved()
 
 void DaemonThread::onFindFile(const QString &fileName)
 {
-    qDebug() << "in DaemonThread catalog "<< m_config->m_cataloguePath<<" onFindFIle: search " << fileName;
+    qDebug() << "in DaemonThread catalog " << m_config->m_cataloguePath
+            << " onFindFIle: search " << fileName;
 
     QDirIterator it(m_config->m_cataloguePath, QDirIterator::Subdirectories);
     QList<QString> foundPaths;
@@ -171,21 +176,23 @@ void DaemonThread::onFindFile(const QString &fileName)
 
     // Add found files to list with their data
     foreach (QString str, foundPaths){
-        qDebug() << "DaemonThread find " << str;
+    qDebug() << "DaemonThread find " << str;
     QString date = QString::number(QFileInfo(str).lastModified().toMSecsSinceEpoch());
     quint32 size = QFileInfo(str).size();
 
     files.addFile(cutAbsolutePath(str), date, size);
 }
-    qDebug() <<"In" << m_config->m_cataloguePath <<"Finding complete. How many: " << files.getSize();
+    qDebug() << "In" << m_config->m_cataloguePath
+            << "Finding complete. How many: " << files.getSize();
 
- //TODO kopasiak check / change communicates / method / param
+    //TODO kopasiak check / change communicates / method / param
     if (files.getSize()) {
-        qDebug() << "DT "<< m_config->m_cataloguePath <<" sending client that FileFound";
-        m_ServerConnection->sendFileFound(files);   // it sometimes do "naruszenie ochrony pamięci"
-    }
-    else {
-        qDebug() << "DT"<< m_config->m_cataloguePath<<" sending client that File NOT Found";
+        qDebug() << "DT " << m_config->m_cataloguePath
+                << " sending client that FileFound";
+        m_ServerConnection->sendFileFound(files); // it sometimes do "naruszenie ochrony pamięci"
+    } else {
+        qDebug() << "DT" << m_config->m_cataloguePath
+                << " sending client that File NOT Found";
         m_ServerConnection->sendNoSuchFile();
     }
 }
@@ -259,7 +266,7 @@ void DaemonThread::onReciveFile(const QString& fileName,
     }
 
     qDebug() << "receiver ma taki plik " << size;
-    m_receiver.append(new FileReciver(this, new QFile(filePath), size)) ;
+    m_receiver.append(new FileReciver(this, new QFile(filePath), size));
     m_receiver.last()->connectToServer(address, port);
 
 }
@@ -267,7 +274,7 @@ void DaemonThread::onReciveFile(const QString& fileName,
 void DaemonThread::onRemoveFile(const QString& fileName)
 {
     // TODO uncomment that when communication method 'll be exist
-    QFile file(QString(m_config->m_cataloguePath) + QString(fileName));//fileLocation->path));
+    QFile file(QString(m_config->m_cataloguePath) + QString(fileName)); //fileLocation->path));
 
     if (file.exists())
         if (file.remove()) {
@@ -275,8 +282,8 @@ void DaemonThread::onRemoveFile(const QString& fileName)
             qDebug() << "DaemonThread delete file: " << fileName;
             return;
         } else
-            qDebug() << "Attention. DaemonThread CAN NOT delete file: " << fileName
-                     << " I suppose file rights are incorrect. ";
+            qDebug() << "Attention. DaemonThread CAN NOT delete file: "
+                    << fileName << " I suppose file rights are incorrect. ";
 
     //onFileNotRemoved();
 }
@@ -299,14 +306,14 @@ void DaemonThread::onSendFile(const QString& fileName,
     }
 
     //sendFile.open(QIODevice::ReadOnly); // don't do this
-    if (sendFile.exists() )
-           //&& (sendFile.permissions()==QFile::ReadOwner || sendFile.permissions()==QFile::ReadUser))
+    if (sendFile.exists())
+    //&& (sendFile.permissions()==QFile::ReadOwner || sendFile.permissions()==QFile::ReadUser))
     {
-       m_sender.append(new FileSender(this, new QFile(filePath)));
-       m_sender.last()->connectToServer(address, port);
-    }
-    else
-        qDebug() << "Request file has no read rights or it isn't exist. " << filePath;
+        m_sender.append(new FileSender(this, new QFile(filePath)));
+        m_sender.last()->connectToServer(address, port);
+    } else
+        qDebug() << "Request file has no read rights or it isn't exist. "
+                << filePath;
 }
 
 // this method comes from FileTransferListener class
@@ -315,13 +322,13 @@ void DaemonThread::onTransferEnd(FileSender * sender)
     //TODO onTransferEnd - never disconnect
     qDebug() << "File sending completed: ";
 
-    int i=0;
-    for (i=0; i<m_sender.size(); ++i) {
+    int i = 0;
+    for (i = 0; i < m_sender.size(); ++i) {
         if (m_sender[i] == sender) {
             break;
         }
     }
-    if (i != m_sender.size() ) {
+    if (i != m_sender.size()) {
         QTimer::singleShot(0, m_sender[i], SLOT(deleteLater()));
         m_sender.removeAt(i);
     }
@@ -332,13 +339,13 @@ void DaemonThread::onTransferError(FileSender *sender)
     // TODO onTransferError - jak powiadomić Klienta o tym? Serwer to zrobi.
     qDebug() << "File sending with error. ";
 
-    int i=0;
-    for (i=0; i<m_sender.size(); ++i) {
+    int i = 0;
+    for (i = 0; i < m_sender.size(); ++i) {
         if (m_sender[i] == sender) {
             break;
         }
     }
-    if (i != m_sender.size() ) {
+    if (i != m_sender.size()) {
         QTimer::singleShot(0, m_sender[i], SLOT(deleteLater()));
         m_sender.removeAt(i);
     }
@@ -357,13 +364,13 @@ void DaemonThread::onTransferEnd(FileReciver * reciver)
         file.remove();  // on successful transmission backup is removing
 
     // deleting FileReciver object
-    int i=0;
-    for (i=0; i<m_receiver.size(); ++i) {
+    int i = 0;
+    for (i = 0; i < m_receiver.size(); ++i) {
         if (m_receiver[i] == reciver) {
             break;
         }
     }
-    if (i != m_receiver.size() ) {
+    if (i != m_receiver.size()) {
         QTimer::singleShot(0, m_receiver[i], SLOT(deleteLater()));
         m_receiver.removeAt(i);
     }
@@ -378,19 +385,19 @@ void DaemonThread::onTransferError(FileReciver * receiver)
     fileBackup += m_suffix;
     QFile file(fileBackup);
     if (file.exists())
-        file.rename(filePath);  // on unsuccessful transmission backup is recovered
+        file.rename(filePath); // on unsuccessful transmission backup is recovered
 
     // deleting FileReciver object
-     int i=0;
-     for (i=0; i<m_receiver.size(); ++i) {
-         if (m_receiver[i] == receiver) {
-             break;
-         }
-     }
-     if (i != m_receiver.size() ) {
-         QTimer::singleShot(0, m_receiver[i], SLOT(deleteLater()));
-         m_receiver.removeAt(i);
-     }
+    int i = 0;
+    for (i = 0; i < m_receiver.size(); ++i) {
+        if (m_receiver[i] == receiver) {
+            break;
+        }
+    }
+    if (i != m_receiver.size()) {
+        QTimer::singleShot(0, m_receiver[i], SLOT(deleteLater()));
+        m_receiver.removeAt(i);
+    }
 }
 
 void DaemonThread::stopThread()

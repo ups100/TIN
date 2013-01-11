@@ -47,7 +47,7 @@ DaemonConfiguration::DaemonConfiguration()
 
 DaemonConfiguration::~DaemonConfiguration()
 {
-    // saveConfiguration(); // TODO Kajo - I propose to delete it
+
 }
 
 void DaemonConfiguration::loadConfiguration()
@@ -83,9 +83,13 @@ void DaemonConfiguration::loadConfiguration()
                                     QString(DAEMON_CONFIG_XML_ALIAS_ATTR_ID))
                                     .toString();
                 } else if (reader.name() == DAEMON_CONFIG_XML_PASSWORD) {
-                    tmp->m_password = reader.attributes().value(
-                            QString(DAEMON_CONFIG_XML_PASSWORD_ATTR_PASSWORD)).toString().toAscii();
-                            ;
+                    QString str = reader.attributes().value(
+                            QString(DAEMON_CONFIG_XML_PASSWORD_ATTR_PASSWORD))
+                            .toString();
+                    QByteArray qbyt;
+                    qbyt.append(str);
+
+                    tmp->m_password = QByteArray::fromHex(qbyt);
                 } else if (reader.name() == DAEMON_CONFIG_XML_CATALOGUE) {
                     tmp->m_cataloguePath = reader.attributes().value(
                             QString(DAEMON_CONFIG_XML_CATALOGUE_ATTR_PATH))
@@ -106,7 +110,7 @@ void DaemonConfiguration::loadConfiguration()
 
 void DaemonConfiguration::saveConfiguration()
 {
-    qDebug()<<"SAveuje "<<m_configs.size();
+    qDebug() << "SAveuje " << m_configs.size();
     QFile file(DAEMON_CONFIG_FILEPATH);
     file.open(QIODevice::WriteOnly);
 
@@ -134,7 +138,7 @@ void DaemonConfiguration::saveConfiguration()
 
     xmlWriter.writeStartElement(DAEMON_CONFIG_XML_PASSWORD);
     xmlWriter.writeAttribute(DAEMON_CONFIG_XML_PASSWORD_ATTR_PASSWORD,
-            (*it).m_password);
+            (*it).m_password.toHex());
     xmlWriter.writeEndElement();
 
     xmlWriter.writeStartElement(DAEMON_CONFIG_XML_CATALOGUE);
