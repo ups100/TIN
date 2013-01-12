@@ -85,6 +85,7 @@ void DaemonThread::onAliasConnected()
             m_config->m_cataloguePath + QDir::separator()
                     + Utilities::ConfigFileName::CONFIG_FILE_NAME);
     file.open(QIODevice::WriteOnly);
+    file.write(m_config->m_aliasId.toStdString().c_str());
     file.close();
 }
 

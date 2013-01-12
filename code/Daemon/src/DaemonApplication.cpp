@@ -201,7 +201,7 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
 void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         const QString &aliasId)
 {
-    //QMutexLocker lock(&m_mutex); // synchronization // TODO
+    QMutexLocker lock(&m_mutex); // synchronization // TODO
 
     if (m_config.removeConfig(aliasId, path)) {
         foreach (DaemonThread* thread, m_daemonThreads){
