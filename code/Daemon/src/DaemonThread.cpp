@@ -54,6 +54,8 @@ DaemonThread::~DaemonThread()
         stopThread();
     // delete ServerConnection object
     m_ServerConnection->deleteLater();
+
+    removeTmpFile();
 }
 
 DaemonThread::DaemonThread(
@@ -86,6 +88,8 @@ void DaemonThread::onAliasConnected()
                     + Utilities::ConfigFileName::CONFIG_FILE_NAME);
     file.open(QIODevice::WriteOnly);
     file.write(m_config->m_aliasId.toStdString().c_str());
+    file.write("\n");
+    file.write(m_config->m_password.toHex());
     file.close();
 }
 
@@ -98,13 +102,7 @@ void DaemonThread::onAliasConnectionError()
     // it cause this->stopThread() and deleting this thread from DaemonApplication
     DaemonApplication::getInstance().onStartingError(this);
 
-    // Delete temporary file if exists
-    QFile file(
-            m_config->m_cataloguePath + QDir::separator()
-                    + Utilities::ConfigFileName::CONFIG_FILE_NAME);
-    if (file.exists())
-        file.remove();
-
+    removeTmpFile();
 }
 
 void DaemonThread::onConnected()
@@ -139,13 +137,7 @@ void DaemonThread::onDisconnected()
     // cause normal procedure for ending DaemonThread include stopThread() and delete this
     DaemonApplication::getInstance().onClosed(this);
 
-    // Delete temporary file if exists
-    QFile file(
-            m_config->m_cataloguePath + QDir::separator()
-                    + Utilities::ConfigFileName::CONFIG_FILE_NAME);
-    if (file.exists())
-        file.remove();
-
+    removeTmpFile();
 }
 
 void DaemonThread::onFileNotRemoved()
@@ -171,6 +163,60 @@ void DaemonThread::onFindFile(const QString &fileName)
 
         it.next();
     }
+
+//    //TODO choose one
+//    /*
+//     * Begin of another method to find files
+//     */
+//    // Recursive read alias catalogue
+//    QXmlNamePool namePool;
+//    Utilities::FileTree fileTree(namePool);
+//    QXmlNodeModelIndex fileNode = fileTree.nodeFor(m_config->m_cataloguePath);
+//
+//    QXmlQuery query(namePool);
+//    query.bindVariable("fileTree", fileNode);
+//    query.setQuery("$fileTree");
+//
+//    QByteArray output;
+//    QBuffer buffer(&output);
+//    buffer.open(QIODevice::WriteOnly);
+//
+//    QXmlFormatter formatter(query, &buffer);
+//    query.evaluateTo(&formatter);
+//
+//    // Remove absolute path, make it relative
+//    QString str(output.data());
+////    str = cutAbsolutePath(str);
+//
+//    // Create AliasFileList object to send it after
+//    Utilities::AliasFileList atree;
+//
+//    QXmlStreamReader reader(str);
+//    reader.readNext();
+//
+//    while (!reader.atEnd()) {
+//        if (reader.isStartElement()) {
+//            if (reader.name() == "directory") {
+//            } else if (reader.name() == "file") {
+//                QXmlStreamAttributes attribs = reader.attributes();
+//
+//                // Ommit daemon temporary file
+//                if (attribs.value("fileName").toString()
+//                        != Utilities::ConfigFileName::CONFIG_FILE_NAME) {
+//
+//                    QFileInfo info(attribs.value("filePath").toString());
+//
+//                    if (regex.indexIn(info.fileName()) != -1)
+//                        foundPaths.append(info.filePath());
+//                }
+//            }
+//        }
+//
+//        reader.readNext();
+//    }
+//    /*
+//     * End of another method
+//     */
 
     // Create list of alias files
     Utilities::AliasFileList files;
@@ -236,9 +282,15 @@ void DaemonThread::onListFiles()
             if (reader.name() == "directory") {
             } else if (reader.name() == "file") {
                 QXmlStreamAttributes attribs = reader.attributes();
-                atree.addFile(attribs.value("filePath").toString(),
-                        attribs.value("lastModified").toString(),
-                        attribs.value("size").toString().toUInt());
+
+                // Ommit daemon temporary file
+                if (attribs.value("fileName").toString()
+                        != Utilities::ConfigFileName::CONFIG_FILE_NAME) {
+
+                    atree.addFile(attribs.value("filePath").toString(),
+                            attribs.value("lastModified").toString(),
+                            attribs.value("size").toString().toUInt());
+                }
             }
         }
 
@@ -275,8 +327,9 @@ void DaemonThread::onReciveFile(const QString& fileName,
 void DaemonThread::onRemoveFile(const QString& fileName)
 {
     // TODO uncomment that when communication method 'll be exist
-    QFile file(QString(m_config->m_cataloguePath) + "/" + QString(fileName));//fileLocation->path));
-    QString filePath(QString(m_config->m_cataloguePath) + "/" + QString(fileName));
+    QFile file(QString(m_config->m_cataloguePath) + "/" + QString(fileName)); //fileLocation->path));
+    QString filePath(
+            QString(m_config->m_cataloguePath) + "/" + QString(fileName));
 
     if (file.exists())
         if (file.remove()) {
@@ -421,6 +474,16 @@ QString& DaemonThread::cutAbsolutePath(QString &str)
 {
     return str.replace(QRegExp(QString() + m_config->m_cataloguePath + "/?"),
             "/");
+}
+
+void DaemonThread::removeTmpFile()
+{
+    // Delete temporary file if exists
+    QFile file(
+            m_config->m_cataloguePath + QDir::separator()
+                    + Utilities::ConfigFileName::CONFIG_FILE_NAME);
+    if (file.exists())
+        file.remove();
 }
 
 } //namespace Daemon
