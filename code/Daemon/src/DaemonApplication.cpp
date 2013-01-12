@@ -238,10 +238,11 @@ void DaemonApplication::onThreadClosedSlot(DaemonThread *dt)
 {
     //removeCatalogueFromAlias(dt->getConfig()->m_cataloguePath ,dt->getConfig()->m_aliasId);
     detachDaemonThread(dt);
-
+    qDebug()<<"TO SIE POWINNO POKAZAC";
     // Closing DaemonApplication when last DaemonThread closed
     if (m_daemonThreads.isEmpty()) {
-        stopApplication();
+        qDebug()<<"TO SIE POWINNO POKAZAC TEZ";
+        //stopApplication();
     }
 }
 

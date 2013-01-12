@@ -92,28 +92,28 @@ shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
     }
 
     else if ((tmpCommand == commandList[ADD])) {
-        if ((tmpParameters.size() == 0) && (tmpArguments.size() == 1))
+
+        if ((tmpParameters.size() == 0) && (tmpArguments.size() == 3))
             return shared_ptr<Commands>(
-                    new Commands(tmpCommand, tmpArguments[0],
-                            Argument::REL_PATH));
+                    new Commands(tmpCommand, tmpArguments[0], tmpArguments[1],
+                            tmpArguments[2], Argument::ALIAS));
         else
             return shared_ptr<Commands>(new Commands());
     }
 
     else if ((tmpCommand == commandList[REMOVE])) {
-        if ((tmpParameters.size() == 1) && (tmpParameters[0] == "d")
-                && (tmpArguments.size() == 1))
+        if ((tmpParameters.size() == 0) && (tmpArguments.size() == 3))
             return shared_ptr<Commands>(
-                    new Commands(tmpCommand, tmpParameters[0], tmpArguments[0],
-                            Argument::REL_PATH));
+                    new Commands(tmpCommand, tmpArguments[0], tmpArguments[1],
+                            tmpArguments[2], Argument::REL_PATH));
         else if ((tmpParameters.size() == 1) && (tmpParameters[0] == "a")
                 && (tmpArguments.size() == 2))
             return shared_ptr<Commands>(
                     new Commands(tmpCommand, tmpParameters[0], tmpArguments[0],
                             tmpArguments[1], Argument::ALIAS));
-        else if ((tmpParameters.size() == 0) && (tmpArguments.size() == 1))
+        else if ((tmpParameters.size() == 1) && (tmpArguments.size() == 1))
             return shared_ptr<Commands>(
-                    new Commands(tmpCommand, tmpArguments[0],
+                    new Commands(tmpCommand, tmpParameters[0], tmpArguments[0],
                             Argument::REL_PATH));
         else
             return shared_ptr<Commands>(new Commands());
