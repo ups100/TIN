@@ -21,6 +21,7 @@
 #include "AliasFileList.h"
 #include "CommunicationProtocol.h"
 #include "Identifier.h"
+#include "DaemonApplication.h"
 
 namespace TIN_project {
 
@@ -56,8 +57,8 @@ ServerConnection::~ServerConnection()
         QTimer::singleShot(0, this, SLOT(disconnectSlot()));
     }
 
+    m_additionalThread.wait();
     m_mutex.unlock();
-
 }
 
 void ServerConnection::connectToServer(const QHostAddress& address,
@@ -207,6 +208,9 @@ void ServerConnection::socketErrorSlot(QAbstractSocket::SocketError socketError)
     if (socketError != QAbstractSocket::RemoteHostClosedError) {
         qDebug() << "Socket error " << socketError;
     }
+
+    DaemonApplication::getInstance().removeAfterServerConnectionFails(static_cast<DaemonThread*>(m_serverListener)); // TODO i'm not sure about that, cause it's caused by connection to server error
+
 }
 
 void ServerConnection::socketDisconnectedSlot()
