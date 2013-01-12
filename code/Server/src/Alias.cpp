@@ -484,7 +484,7 @@ void Alias::onPullFileFrom(ClientConnection* client,
 
     qDebug() << "rozmiar pliku do wysylki" << location.getSize();   // TODO remove this line
 
-/// Waiting for all Daemon acknowledge. Next instruction are in onFindFile or onNoSuchFile
+//NOT// Waiting for all Daemon acknowledge. Next instruction are in onFindFile or onNoSuchFile
 }
 
 void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
@@ -731,7 +731,7 @@ void Alias::performRemoveFile()
 
     if (m_removeFind == true) {
         foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
-            qDebug() << "inAlias: wysylam zadanie usuniecia pliku";
+            qDebug() << "inAlias: wysylam zadanie usuniecia pliku" << m_removeName;
             dc->sendRemoveFile(m_removeName);
         }
     }//if end
