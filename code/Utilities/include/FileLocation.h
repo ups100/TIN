@@ -71,6 +71,7 @@ public:
      * @return Path to file
      */
     QString getPath();
+    QString getPath() const;
 
     /**
      * @brief Get file size
@@ -78,6 +79,7 @@ public:
      * @return Size of file
      */
     quint32 getSize();
+    quint32 getSize() const;
 
     /**
      * @brief Get file owner ID
@@ -85,6 +87,7 @@ public:
      * @return ID of the owner
      */
     Identifier getOwnerIdentifier();
+    Identifier getOwnerIdentifier() const;
 
     /**
      * @brief Convert object to QByteArray

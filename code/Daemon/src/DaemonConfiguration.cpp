@@ -26,6 +26,8 @@
 namespace TIN_project {
 namespace Daemon {
 
+QMutex DaemonConfiguration::m_mutex;
+
 const char* DaemonConfiguration::DAEMON_CONFIG_FILEPATH = "config_daemon.xml"; // TODO from ${variable} set in installation ?
 const char* DaemonConfiguration::DAEMON_CONFIG_XML_THREADS = "threads";
 const char* DaemonConfiguration::DAEMON_CONFIG_XML_THREAD = "thread";
@@ -110,6 +112,8 @@ void DaemonConfiguration::loadConfiguration()
 
 void DaemonConfiguration::saveConfiguration()
 {
+    QMutexLocker lock(&m_mutex);
+
     qDebug() << "SAveuje " << m_configs.size();
     QFile file(DAEMON_CONFIG_FILEPATH);
     file.open(QIODevice::WriteOnly);

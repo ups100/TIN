@@ -106,6 +106,12 @@ public:
     virtual void onStartingError(DaemonThread *dt);
     virtual void onClosed(DaemonThread *dt);
 
+    /**
+     * @brief called when server connection doesn't happen, just remove given thread from list
+     * @param dt Daemon to remove (eg. this)
+     */
+    void removeAfterServerConnectionFails(DaemonThread *dt);
+
 private:
     /**
      * @brief Private class constructors - because of Singleton

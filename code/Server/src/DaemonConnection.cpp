@@ -152,6 +152,17 @@ void DaemonConnection::sendSendFile(const QString& fileName,
     }
 }
 
+// added geters
+Utilities::Identifier DaemonConnection::getIdentifier()
+{
+    return m_identity;
+}
+
+Utilities::Identifier DaemonConnection::getIdentifier() const
+{
+    return m_identity;
+}
+
 void DaemonConnection::sendConnectedToAliasSlot()
 {
     if (m_isConnected) {

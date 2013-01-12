@@ -24,6 +24,7 @@
 #include "FileLocation.h"
 #include <QDebug>
 #include <QFile>
+#include <QRegExp>
 
 namespace TIN_project {
 namespace Server {
@@ -34,10 +35,10 @@ Alias::~Alias()
 }
 
 Alias::Alias(const QString& name, Utilities::Password password)
-        : m_name(name), m_password(password),
-          m_waitForDaemons(0)
+        : m_name(name), m_password(password), m_senderDaemon(NULL),
+          m_removeFind(false)
 {
-    m_lastAliasAction = none;
+    m_currentAction = NONE;
     qRegisterMetaType<ClientConnection*>("ClientConnection*");
     qRegisterMetaType<DaemonConnection*>("DaemonConnection*");
 
@@ -133,12 +134,14 @@ void Alias::stop()
     loop.exec();
 }
 
-void Alias::onConnectionClosed(ClientConnection* client)
+void Alias::onConnectionClosed(ClientConnection* client) // TODO w ogole
 {
     qDebug() << "Connection closed with client: ";
 
     //in this case all client transaction is closed
-    m_waitForDaemons = 0;
+    //m_waitForDaemons = 0; // to sluzylo do nie podejmowania dalszych akcji
+    // (nawet jak jakis Daemon zglosil ze znalzal plik itp - bo przeciez Klient moze wyleciec
+    // w kazdej chwili) Trzeba wymyslec jakis zastepczy sposob na to.
     //m_tmpAliasFileList is reseting in invokeMethod above
 
     // removes closed Client
@@ -146,18 +149,47 @@ void Alias::onConnectionClosed(ClientConnection* client)
                 Qt::QueuedConnection, Q_ARG(ClientConnection*, client));
 }
 
-void Alias::onConnectionClosed(DaemonConnection* daemon)
+void Alias::onConnectionClosed(DaemonConnection* daemon) //TODO dodajPush
 {
     qDebug() << "Daemon exit.";
 
-    // one daemon left so we don't wait for messages from it
-    // for example when onListAlias
-    if (m_waitForDaemons > 0)
-        --m_waitForDaemons;
+    //common actions in all states:
+    // count - usually should be 1, or 0, never greater
+    int count = m_actionDaemon.count(daemon);
+    //in case when daemon disconnected after send all required data:
+    if (count == 0) return;
+    if (count == 1)
+        m_actionDaemon.removeOne(daemon);
+    // for safety checking:
+    if (count > 1)
+        qDebug() << "Alias::noSuchFIle Daemons cloning. Call help.";
 
-    // if this was a last daemon try to performAction
-    if (m_waitForDaemons == 0 && m_lastAliasAction != none)
-        performLastAliasAction();
+    // different actions for states
+    switch (m_currentAction) {
+        case NONE:
+            return;
+        case PULL_TRANSFER:
+            // if it is last daemon I waiting
+            if (m_actionDaemon.size() == 0)
+                QTimer::singleShot(0, this, SLOT(performPullActionSlot()));
+            return;
+        case FIND_FILE:
+            if (m_actionDaemon.size() == 0)
+                QTimer::singleShot(0, this, SLOT(performFindFileSlot()));
+            break;
+        case REMOVE_FILE:
+            if (m_actionDaemon.size() == 0)
+                QTimer::singleShot(0, this, SLOT(performRemoveFileSlot()));
+            break;
+        case LIST_ALIAS:
+            if (m_actionDaemon.size() == 0) {
+                m_clients.first()->sendFileList(*m_tmpAliasFileList);
+                m_tmpAliasFileList.reset();
+                m_actionDaemon.clear();
+                m_currentAction = NONE;
+            }
+            break;
+    }
 
     // remove closed Deamon
     QMetaObject::invokeMethod(this, "removeDaemonSlot",
@@ -165,80 +197,163 @@ void Alias::onConnectionClosed(DaemonConnection* daemon)
 }
 
 void Alias::onFileFound(DaemonConnection* daemon,
-        const Utilities::AliasFileList& location)
+        const Utilities::AliasFileList& location)   //TODO dodajPush
 {
-    qDebug() << "Client search for file and Daemon found file ";
+    //qDebug() << "Client search for file and Daemon found file ";
     // if some goes wrong, for example client was unexpectedly disconnected
-    if (!m_waitForDaemons) return;
+    if (m_daemons.size() == 0 || m_actionDaemon.size() == 0) {
+        qDebug() << "Ups. There is no daemon in alias.";
+        return;
+    }
 
-    m_tmpAliasFileList->merge(location);
-    qDebug() << "inAlias::onFileFound getSize" << m_tmpAliasFileList->getSize();
+    int count=0; // count daemon occurs below
 
-    if (!--m_waitForDaemons) {
-        if (m_tmpAliasFileList->getSize() > 0) {
-            qDebug() << "inAlias:onFileFound: Client is notify that file is found";
-            m_clients.first()->sendFileFound(*m_tmpAliasFileList);
-        }
-        else
-            m_clients.first()->sendFileNotFound();
+    switch (m_currentAction) {
+        case NONE:
+            return;
+        case LIST_ALIAS:
+            qDebug() << "onFileFound: state List_Alias - wrong state";
+            return;
+        case PULL_TRANSFER:
+            qDebug() << "inAlias::onFileFound /transfer/ daemon have"
+            << m_tmpAliasFileList->getSize() << " files.";
 
-        m_tmpAliasFileList.reset();
-        m_lastAliasAction = none;
-     }
+            // Count number of object in the list
+            count = m_actionDaemon.count(daemon);
+
+            // for safety checking the correctness of counts
+            if (count > 1 || count <= 0) {
+                qDebug() << "Alias::noSuchFIle ERROR daemon multiplication or zeros. Call help.";
+                return;
+            }
+
+            // if above is correct - Check if this is that daemon who provide file which should be pull
+            if (daemon->getIdentifier().getId() == m_location.first()->getOwnerIdentifier().getId()) {
+                // in this line m_senderDaemon should be NULL
+                if (m_senderDaemon != NULL)
+                    qDebug() << "Alias::onFIleFound Error m_sender NOT NULL Call help.";
+
+                // remember daemonConnection pointer to create connection in future
+                m_senderDaemon = daemon;
+            }
+
+            // line below says that this daemon just send me his answer
+            // so I don't wait for him any more
+            m_actionDaemon.removeOne(daemon);
+
+            // if it was last daemon which should give me answer
+            if (m_actionDaemon.size() == 0)
+                performPullAction();
+
+            return; // return from case PULL_TRANSFER
+        case FIND_FILE:
+            m_tmpAliasFileList->merge(location);
+            qDebug() << "inAlias::onFileFound getSize" << m_tmpAliasFileList->getSize();
+            //daemon send his answer so it can be removed from waiting queue
+            m_actionDaemon.removeOne(daemon);
+
+            if (m_actionDaemon.size() == 0)
+                performFindFile();
+
+            break;
+        case REMOVE_FILE:
+            m_actionDaemon.removeOne(daemon);
+            // it cause that client should see the information FileRemoved
+            m_removeFind = true;
+            if (m_actionDaemon.size() == 0)
+                performRemoveFile();
+            break;
+
+    }//switch end
+
+
 }
 
 void Alias::onFileList(DaemonConnection* daemon,
         const Utilities::AliasFileList& list)
 {
+    if (m_currentAction != LIST_ALIAS) {
+        qDebug() << "Wrong state. Should be List_alias";
+    }
+    qDebug() << "Daemon give his file list which size is: "<< list.getSize();
     // if some goes wrong, for example client was unexpectedly disconnected
-    if (!m_waitForDaemons) return;
-    qDebug() << "onFileList - daemon daje liste plikow ";
+    //if (!m_waitForDaemons) return;
+
     m_tmpAliasFileList->merge(list);
 
-    if (!--m_waitForDaemons) {
+    // mark that this daemon gives his list
+    m_actionDaemon.removeOne(daemon);
+
+    if (m_actionDaemon.size() == 0) {// this block is copied into onConnectionClosed
+        qDebug() << "All alias listing is send to Client. Number of element "
+                 << m_tmpAliasFileList->getSize();
         m_clients.first()->sendFileList(*m_tmpAliasFileList);
         m_tmpAliasFileList.reset();
-        m_lastAliasAction = none;
+        m_actionDaemon.clear();
+        m_currentAction = NONE;
     }
 }
 
-void Alias::onFileTransferStarted(FileTransferServer *transfer)
+void Alias::onFileTransferStarted(FileTransferServer *transfer) //TODO dodaj Push
 {
     qDebug() << "FileTransferStarted not implemented";
+
+    // Client should know about it:
+    m_notifyClient.first()->sendFileTransferStarted();
 }
 
 /**
  * Notify if transfer completed
  */
-void Alias::onFileTransferCompleted(FileTransferServer *transfer)
+void Alias::onFileTransferCompleted(FileTransferServer *transfer)// TODO dodajPUSh
 {
-    qDebug() << "FileTransferCompleted not implemented";
+    qDebug() << "FileTransferCompleted";
+
+    // Client should know about it:
+    m_notifyClient.first()->sendFileTransferFinished();
+
+    if (m_currentAction == PULL_TRANSFER)
+        afterPullAction();
 }
 
 /**
  * Notify if an error occurred
  */
-void Alias::onFileTransferError(FileTransferServer *transfer)
+void Alias::onFileTransferError(FileTransferServer *transfer)//TODO doajPush
 {
     qDebug() << "FileTransferError ";
+
+    // Client should know about it:
+    m_notifyClient.first()->sendFileTransferError();
+
+
+    if (m_currentAction == PULL_TRANSFER)
+        afterPullAction();
 }
 
 void Alias::onFindFile(ClientConnection* client, const QString& name)
 {
     qDebug() << "Klient chce znalezc plik: " << name;
 
+    if (m_currentAction != NONE) {
+        qDebug() << "Wrong state. Should be None" << m_currentAction;
+        return;
+    }
+
     if (m_daemons.isEmpty()) {
         client->sendFileNotFound();
         return;
     }
 
-    m_lastAliasAction = onFindFileAction;
+    m_currentAction = FIND_FILE;
 
     m_tmpAliasFileList = boost::shared_ptr<Utilities::AliasFileList>(
             new Utilities::AliasFileList());
-    m_waitForDaemons = m_daemons.size();
+
+    //m_waitForDaemons = m_daemons.size();
 
     foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
+        m_actionDaemon.append(dc.get());
         dc->sendFindFile(name);
     }
 
@@ -246,6 +361,9 @@ void Alias::onFindFile(ClientConnection* client, const QString& name)
 
 void Alias::onListAlias(ClientConnection* client)
 {
+    if (m_currentAction != NONE) {
+        qDebug() << "IN onListAlias. Wrong state. Should be none" << m_currentAction;
+    }
     qDebug() << "onListAlias - wylistuj alias " << m_name;
 
     if (m_daemons.isEmpty()) {
@@ -253,47 +371,140 @@ void Alias::onListAlias(ClientConnection* client)
         return;
     }
 
-    m_lastAliasAction = onListAliasAction;
+    m_currentAction = LIST_ALIAS;
 
     m_tmpAliasFileList = boost::shared_ptr<Utilities::AliasFileList>(
             new Utilities::AliasFileList());
-    m_waitForDaemons = m_daemons.size();
+    //m_waitForDaemons = m_daemons.size();
 
-    foreach (boost::shared_ptr<DaemonConnection> dcon, m_daemons){
-    dcon->sendListYourFiles();
-}
+    foreach (boost::shared_ptr<DaemonConnection> dcon, m_daemons) {
+        m_actionDaemon.append(dcon.get());
+        dcon->sendListYourFiles();
+    }
+
 }
 
-void Alias::onNoSuchFile(DaemonConnection* daemon)
+void Alias::onNoSuchFile(DaemonConnection* daemon)//TODO dodaj pUsh
 {
-    qDebug() << "Client call FindFile, but daemon doesn't have it";
+    //qDebug() << "Client call FindFile, but daemon doesn't have it";
 
-    if (m_waitForDaemons > 0)
-            --m_waitForDaemons;
+    qDebug() << "onNoSuchFile: state:" << m_currentAction;
 
-    // what if it was last Daemon ?
-    if (m_waitForDaemons == 0)
-        performLastAliasAction();
+    if (m_currentAction == NONE) {
+        qDebug() << "onNoSuchFile: state NONE is wrong state for this method";
+        return;
+    }
+
+    // Here is some common features
+    // which should by executed always in this function
+    int count = m_actionDaemon.count(daemon);
+    if (count == 1)
+        m_actionDaemon.removeOne(daemon);
+        // albo gdyby jednak powyższa linijka wywoływała destruktor klasy to:
+        // m_actionDaemon.takeAt(m_actionDaemon.indexOf(daemon));
+    // for safety checking:
+    if (count > 1 || count < 0)
+        qDebug() << "Alias::noSuchFIle ERROR errror. Call help.";
+
+    // different behavior
+    switch(m_currentAction) {
+        case NONE:
+            return;
+        case LIST_ALIAS:
+            qDebug()<<"onNoSuchFile: state ListAlias - wrong state";
+            return;
+        case PULL_TRANSFER:
+            // if it was last daemon which should give me answer
+            if (m_actionDaemon.size() == 0)
+                performPullAction();
+            return;
+        case FIND_FILE:
+            if (m_actionDaemon.size() == 0)
+                performFindFile();
+            break;
+        case REMOVE_FILE:
+            if (m_actionDaemon.size() == 0)
+                performRemoveFile();
+            break;
+    }//switch end
+
 }
 
 void Alias::onPullFileFrom(ClientConnection* client,
-        const Utilities::FileLocation& location)    // TODO
+        const Utilities::FileLocation& location)    // TODO generalnie powinno dzialac
 {
-    boost::shared_ptr<FileTransferServer> fts(new FileTransferServer(this,2,QFile("/home/major/aaa/abc").size()));
-    m_transfers.append(fts);
+    if (m_currentAction != NONE)
+        qDebug() << "We shouldn't be in this state";
 
-    if(fts->startFileServer(QHostAddress::LocalHost)==false)
-        qDebug() << "in Alias: FileTransferServer don't start properly while Pull";
+    const QString fileName(location.getPath());
 
-    qDebug() << "rozmiar pliku do wysylki" << QFile("/home/major/aaa/abc").size();
-    m_daemons[1]->sendSendFile("abc",QHostAddress::LocalHost,fts->getPort());
-    m_daemons[0]->sendReciveFile("abc",QHostAddress::LocalHost,fts->getPort(),QFile("/home/major/aaa/abc").size());
+    // remember here a location object for future use
+    m_location.append(new Utilities::FileLocation(location));
+
+    // remember who should be notify about Pull action
+    m_notifyClient.append(client);
+
+    // PREPARING TO PULL FILE
+
+    // for safety checking:
+    if (m_senderDaemon != NULL) {
+        qDebug() << "Alias::onPullFile: m_senderDaemon is not NULL";
+    }
+
+    // so everything above goes right :
+    m_currentAction = PULL_TRANSFER;
+
+    // remember sender Identifier - this is need here in onFileFound method
+    //m_senderDaemonIdentifier = location.getOwnerIdentifier();
+
+    // send a request to all Daemon to check if they have pulling file
+    foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
+        // remember who is reciver
+        if ( *client == *dc) {
+            m_receiverDaemon.push_front(dc.get());
+            continue;   // don't append this daemon to m_actionDaemons List
+        }
+        //all daemon without that corresponding to client are searched
+        m_actionDaemon.append(dc.get()); // I point that I wait for this daemon action completed
+        dc->sendFindFile(fileName);
+     }
+
+    qDebug() << "rozmiar pliku do wysylki" << location.getSize();   // TODO remove this line
+
+/// Waiting for all Daemon acknowledge. Next instruction are in onFindFile or onNoSuchFile
 }
 
 void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
         quint64 size)
 {
     qDebug() << "onPushFileAlias not implemented";
+
+    //////////////////////////////////
+
+    // tells if we find a sender daemon in the loop above
+    bool senderIsChoosed = false;
+
+    // i search for daemon which corresponds the client
+    foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
+        if ( *client == *dc ) {
+            senderIsChoosed = true;
+            break;
+            //dc->sendSendFile(fileName,fts->getAddress(), fts->getPort()); // nienienienie tutaj :)
+        }
+    }
+    // if there is no thread which corresponds to the client
+    if (senderIsChoosed == false ) {
+        qDebug() << "inAlias: Can not find sender Daemon before transf. ";// << fileName; // bo to bylo skopiowane
+        client->sendFileTransferError();
+        return;
+    }
+
+
+
+
+
+
+    ///////////////////
 
     if (m_daemons.size() == 0) {
         qDebug() << "in Alias: Push but no daemons online";   // TODO rozkmina aby powiadomić clienta
@@ -324,13 +535,29 @@ void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
 
 void Alias::onRemoveFromAlias(ClientConnection* client, const QString& fileName)
 {
+    if (m_currentAction != NONE) {
+        qDebug() << "Wrong state. Should by None";
+        return;
+    }
     qDebug() << "onRemoveFromAlias" << fileName;
 
-    // we don't wait for answer from them
+    // line below tells initially that there is no file to delete
+    m_removeFind = false;
+
+    // save the fileName which should be removed
+    m_removeName = fileName;
+
+    QString searchName(fileName);
+    qDebug() << "szukam: " << searchName.replace(QRegExp(QString() + fileName + "?/"), "");
+
+    // we wait for their answers
     foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
-        dc->sendRemoveFile(fileName);
+        m_actionDaemon.append(dc.get());
+        dc->sendFindFile(searchName);
     }
-    client->sendFileRemoved();
+    // deleting is executed in performRemoveFile()
+
+    m_currentAction = REMOVE_FILE;
 }
 
 void Alias::removeDaemonSlot(DaemonConnection *dc)
@@ -357,13 +584,144 @@ void Alias::removeClientSlot(ClientConnection *cc)
     m_clients.removeAt(i);
 }
 
+void Alias::performPullActionSlot()
+{
+    performPullAction();
+}
+
+void Alias::performFindFileSlot()
+{
+    performFindFile();
+}
+
+void Alias::performRemoveFileSlot()
+{
+    performRemoveFile();
+}
+
+void Alias::performPullAction()
+{
+    qDebug() << "Alias: performPullAction ";
+
+    if (m_currentAction != PULL_TRANSFER) {
+        qDebug() << "We shouldn't be in this state / Pull_transfer need";
+    }
+
+    if (m_senderDaemon == NULL) {
+        qDebug() << "Alias: Nobody wants sending a file to you";
+        m_notifyClient.first()->sendFileTransferError();
+        return; // TODO wyczysc dane w tym przypadku
+    }
+
+    // preparing data
+    QString fileName(m_location.first()->getPath());
+    int fileSize = m_location.first()->getSize();
+
+    // PULL FILE EXECUTION STARTED // between ONLY 2 daemons:
+    boost::shared_ptr<FileTransferServer> fts(new FileTransferServer(this,2,fileSize));
+    m_transfers.append(fts);
+
+    if(fts->startFileServer()==false) {
+        qDebug() << "in Alias: FileTransferServer don't start properly while Pull";
+        m_notifyClient.first()->sendFileTransferError();
+        fts->deleteLater();
+        m_currentAction = NONE;
+        return;
+    }
+
+    // proper send action started
+    m_senderDaemon->sendSendFile(fileName, fts->getAddress(), fts->getPort());
+    m_actionDaemon.first()->sendReciveFile(fileName, fts->getAddress(), fts->getPort(), fileSize);
+
+    // don't change state here - it will be done in afterPullAction() method
+}
+
+void Alias::afterPullAction()
+{
+    if (m_currentAction != PULL_TRANSFER) {
+        qDebug() << "Wrong state. Should be Pull_transfer";
+        return;
+    }
+
+    m_currentAction = NONE;
+    // if pull is ended - nothing to notifing
+    m_notifyClient.clear();
+
+    if (m_location.size() != 1)
+        qDebug() << "Alias:afterPullAction: m_location multiply. Error";
+
+    if (m_location.size() > 0 )
+        delete m_location.first();
+    m_location.clear();
+
+    // some cleaning
+    m_actionDaemon.clear();
+    m_receiverDaemon.clear();
+    m_senderDaemon = NULL;
+
+    // TODO choice
+    m_transfers.first()->deleteLater();
+    //QTimer::singleShot(0, m_transfers.first().get(), SLOT(deleteLater()));
+}
+
+void Alias::performFindFile()
+{
+    if (m_currentAction != FIND_FILE) {
+        qDebug() << "Wrong state, should be Find_File";
+    }
+
+    if (m_tmpAliasFileList->getSize() > 0) {
+        qDebug() << "Client is notify that file is found";
+        m_clients.first()->sendFileFound(*m_tmpAliasFileList);
+    }
+    else {
+        qDebug() << "Client is notify that file is NOT found";
+        m_clients.first()->sendFileNotFound();
+    }
+
+    m_tmpAliasFileList.reset();
+    m_actionDaemon.clear();
+
+    m_currentAction = NONE;
+}
+
+void Alias::performRemoveFile()
+{
+    if (m_currentAction != REMOVE_FILE) {
+        qDebug() << "Wrong state, should be Remove_file";
+    }
+
+    if (m_removeFind == true) {
+        foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
+            qDebug() << "inAlias: wysylam zadanie usuniecia pliku";
+            dc->sendRemoveFile(m_removeName);
+        }
+    }//if end
+
+    //client notify
+    if (m_removeFind == true) {
+        qDebug() << "Client is notify that file is removed.";
+        m_clients.first()->sendFileRemoved();
+    }
+    else {
+        qDebug() << "Client is notify that file is NOT removed";
+        m_clients.first()->sendFileNotRemoved();
+    }
+
+    // some cleaning features
+    m_removeFind = false;
+    m_actionDaemon.clear();
+
+    m_currentAction = NONE;
+}
+/*
 void Alias::performLastAliasAction()
 {
     qDebug() << "Performing last action in Alias."
              << m_lastAliasAction;
 
     switch(m_lastAliasAction) {
-        case none:
+        case NONE:
             return;
             break;
         case onFindFileAction:
@@ -379,8 +737,8 @@ void Alias::performLastAliasAction()
      }
 
     m_tmpAliasFileList.reset();
-    m_lastAliasAction = none;
-}
+    m_lastAliasAction = NONE;
+}*/
 
 } //namespace server
 } //namespace TIN_project
