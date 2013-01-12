@@ -333,14 +333,15 @@ void Alias::onFileTransferError(FileTransferServer *transfer)//TODO doajPush
 
 void Alias::onFindFile(ClientConnection* client, const QString& name)
 {
-    qDebug() << "Klient chce znalezc plik: " << name;
-
     if (m_currentAction != NONE) {
         qDebug() << "Wrong state. Should be None" << m_currentAction;
         return;
     }
+    qDebug() << "Client searching file: " << name;
 
     if (m_daemons.isEmpty()) {
+        qDebug() << "Send File NOT found to Client "
+                 << "because in alias:" << m_name << "is no daemon";
         client->sendFileNotFound();
         return;
     }
@@ -364,9 +365,11 @@ void Alias::onListAlias(ClientConnection* client)
     if (m_currentAction != NONE) {
         qDebug() << "IN onListAlias. Wrong state. Should be none" << m_currentAction;
     }
-    qDebug() << "onListAlias - wylistuj alias " << m_name;
+    qDebug() << "onListAlias - begin " << m_name;
 
     if (m_daemons.isEmpty()) {
+        qDebug() << "Send empty file list to Client"
+                 << "because in this Alias" << m_name << "is no daemon";
         client->sendFileList(Utilities::AliasFileList());
         return;
     }
@@ -433,8 +436,18 @@ void Alias::onNoSuchFile(DaemonConnection* daemon)//TODO dodaj pUsh
 void Alias::onPullFileFrom(ClientConnection* client,
         const Utilities::FileLocation& location)    // TODO generalnie powinno dzialac
 {
-    if (m_currentAction != NONE)
-        qDebug() << "We shouldn't be in this state";
+    if (m_currentAction != NONE) {
+        qDebug() << "Wrong state. Should by none." << m_currentAction;
+        return;
+    }
+    qDebug() << "From" << m_name << "Pull file:" << location.getPath();
+
+    if (m_daemons.isEmpty()) {
+        qDebug() << "Send File Transfer Error to Client "
+                 << "because in alias:" << m_name << "is no daemon";
+        client->sendFileTransferError();
+        return;
+    }
 
     const QString fileName(location.getPath());
 
@@ -477,7 +490,23 @@ void Alias::onPullFileFrom(ClientConnection* client,
 void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
         quint64 size)
 {
-    qDebug() << "onPushFileAlias not implemented";
+    if (m_currentAction != NONE) {
+        qDebug() << "Wrong state. Should by none." << m_currentAction;
+        return;
+    }
+    qDebug() << "Pushing a file" << path << "to alias: // NOT implemented yet" << m_name;
+
+    if (m_daemons.isEmpty()) {
+        qDebug() << "Send File Transfer Error to Client "
+                 << "because in alias:" << m_name << "is no daemon";
+        client->sendFileTransferError();
+        return;
+    }
+
+    m_currentAction = NONE;
+    client->sendFileTransferError();
+    return;
+
 
     //////////////////////////////////
 
@@ -536,10 +565,18 @@ void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
 void Alias::onRemoveFromAlias(ClientConnection* client, const QString& fileName)
 {
     if (m_currentAction != NONE) {
-        qDebug() << "Wrong state. Should by None";
+        qDebug() << "Wrong state. Should by None" << m_currentAction;
         return;
     }
     qDebug() << "onRemoveFromAlias" << fileName;
+
+    if (m_daemons.isEmpty()) {
+        qDebug() << "Send File NOT removed to Client "
+                 << "because in alias:" << m_name << "is no daemon";
+        client->sendFileNotRemoved();
+        return;
+    }
+    m_currentAction = REMOVE_FILE;
 
     // line below tells initially that there is no file to delete
     m_removeFind = false;
@@ -549,6 +586,7 @@ void Alias::onRemoveFromAlias(ClientConnection* client, const QString& fileName)
 
     QString searchName(fileName);
     qDebug() << "szukam: " << searchName.replace(QRegExp(QString() + fileName + "?/"), "");
+
 
     // we wait for their answers
     foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
