@@ -166,13 +166,13 @@ void DaemonThread::onFindFile(const QString &fileName)
 
     QRegExp dotAndSlash("^(\./)");
     if (dotAndSlash.indexIn(fileName) != -1) {
-        qDebug() << "Find only in root alias level - bacause type ./ in"
+        qDebug() << "Search only root alias level - because type ./ in"
                 << fileName;
         // tells qDirIterator do not go deeper into catalog structure
         searchFlag = QDirIterator::NoIteratorFlags;
         // remove symbol ./ from begin of file name
         fileNameCorrect.replace(0,2,"");
-        qDebug() << "now we searched for: " << fileNameCorrect;
+        qDebug() << "now we searched for: " << fileNameCorrect;     //TODO delete only this line
     } else {
         // normally checking also subdirectories
         searchFlag = QDirIterator::Subdirectories;
@@ -196,8 +196,9 @@ void DaemonThread::onFindFile(const QString &fileName)
             QDirIterator iter(searchPath, searchFlag);
             while (iter.hasNext()) {
                 QFileInfo inform = iter.fileInfo();
-                if (inform.isFile())
+                if (inform.isFile()) {
                     foundPaths.append(inform.filePath());
+                }
                 iter.next();
             }
         }
@@ -211,10 +212,12 @@ void DaemonThread::onFindFile(const QString &fileName)
 
         while (it.hasNext()) {
             QFileInfo info = it.fileInfo();
+            //qDebug() << info.filePath();        //TODO delete this
 
-            if (info.isFile())
+            if (info.isFile()) {
                 if (regex.indexIn(info.fileName()) != -1)
                     foundPaths.append(info.filePath());
+            }
 
             it.next();
         } // while end
@@ -249,7 +252,7 @@ void DaemonThread::onFindFile(const QString &fileName)
 
 void DaemonThread::onListFiles()
 {
-    qDebug() << "DaemonThread start onList File";
+    qDebug() << "DaemonThread onList File";
     QDir dir(m_config->m_cataloguePath);
     if (!dir.exists())
         throw std::runtime_error("Path doesn't exit.");
@@ -326,6 +329,8 @@ void DaemonThread::onRemoveFile(const QString& fileName)
     // TODO uncomment that when communication method 'll be exist
     QFile file(QString(m_config->m_cataloguePath) + "/" + QString(fileName));//fileLocation->path));
     QString filePath(QString(m_config->m_cataloguePath) + "/" + QString(fileName));
+    qDebug() << "DT "<< m_config->m_cataloguePath
+             << "trying to remove file: " << fileName;
 
     if (file.exists())
         if (file.remove()) {
