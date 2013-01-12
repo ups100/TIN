@@ -61,6 +61,7 @@ void ClientView::reconnectNotifier()
 {
     disconnect(m_notifier,SIGNAL(activated(int)), this, SLOT(emptyRead()));
     connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
+    qDebug("$>");
 }
 
 void ClientView::showList(AliasFileList& list)
