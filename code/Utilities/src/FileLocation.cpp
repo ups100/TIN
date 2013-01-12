@@ -49,12 +49,27 @@ QString FileLocation::getPath()
     return m_path;
 }
 
+QString FileLocation::getPath() const
+{
+    return m_path;
+}
+
 quint32 FileLocation::getSize()
 {
     return m_size;
 }
 
+quint32 FileLocation::getSize() const
+{
+    return m_size;
+}
+
 Identifier FileLocation::getOwnerIdentifier()
+{
+    return m_ownerIdentifier;
+}
+
+Identifier FileLocation::getOwnerIdentifier() const
 {
     return m_ownerIdentifier;
 }
