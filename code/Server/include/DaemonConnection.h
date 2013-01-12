@@ -146,6 +146,15 @@ public:
             quint16 port);
 
     /**
+     * @brief Geters for Identifier object.
+     *
+     * @note It was need in Alias::onPullFile and then in Alias::onFileFind to figure out
+     * the file which client want pull
+     */
+    Utilities::Identifier getIdentifier();
+    Utilities::Identifier getIdentifier() const;
+
+    /**
      * @brief Compares if this daemon belongs to passed client
      *
      * @param[in] client object to compare

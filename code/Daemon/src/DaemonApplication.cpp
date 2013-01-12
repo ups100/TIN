@@ -102,11 +102,11 @@ int DaemonApplication::start()
 
 // Config creatror 4 testing // TODO remove that
 //    addCatalogueToAlias("/home/kajo/workspace/tin/testDir1", "TEST",
-//                    Utilities::Password(QString("123")), QHostAddress("127.0.0.1"),
-//                    8080);
+//            Utilities::Password(QString("123")), QHostAddress("127.0.0.1"),
+//            8080);
 //    addCatalogueToAlias("/home/kajo/workspace/tin/testDir2", "TEST",
-//                    Utilities::Password(QString("123")), QHostAddress("127.0.0.1"),
-//                    8080);
+//            Utilities::Password(QString("123")), QHostAddress("127.0.0.1"),
+//            8080);
 
 // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
     m_isClean = false;
@@ -154,32 +154,61 @@ void DaemonApplication::addCatalogueToAlias(const QString &path,
             new DaemonConfiguration::Config(ip.toString(), port, aliasId,
                     password.getHash(), path));
 
-//    /*
-//     * Check overlap duplicate
-//     */
-//    {
-//    // TODO if given path is higher in filesystem tree replace oldone to that ?, what if more than one is inside ? For now just do nothing
-//        QRegExp regex(QString("^(") + path + ")");
-//    }
+    /*
+     * Check overlap duplicate
+     */
+    QRegExp regex(QString("^(") + QRegExp::escape(path) + ")");
+
+    QList<DaemonThread*>::iterator it = m_daemonThreads.begin();
+    while (it != m_daemonThreads.end()) {
+        boost::shared_ptr<DaemonConfiguration::Config> cnf = (*it)->getConfig();
+
+        if (cnf->m_aliasId == aliasId
+                && cnf->m_cataloguePath.length() != path.length()) {
+            QRegExp innerRegex(
+                    QString("^(") + QRegExp::escape(cnf->m_cataloguePath)
+                            + ")");
+
+            // If outer overlapping (path in m_cataloguePath => path shorter than m_cataloguePath)
+            if (regex.indexIn(cnf->m_cataloguePath) != -1) {
+                // Stop daemon and change his path into bigger one
+                (*it)->stopThread();
+                QList<DaemonThread*>::iterator iter = m_daemonThreads.erase(it);
+                delete *it;
+                it = iter;
+
+                m_config.removeConfig(cnf->m_aliasId, cnf->m_cataloguePath);
+
+            } // Else if inner overlapping (m_cataloguePath in path => path longer than m_cataloguePath)
+            else if (innerRegex.indexIn(path) != -1) {
+                // Only one possibility
+                // do nothing, catalogue already in
+                return;
+            } else {
+                ++it;
+            }
+        } else {
+            ++it;
+        }
+    }
 
     if (m_config.addConfig(config)) {
         DaemonThread *dt = new DaemonThread(config);
         m_daemonThreads.append(dt);
-        //dt->start();  // TODO delete this line
     }
 }
 
 void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         const QString &aliasId)
 {
-    //QMutexLocker lock(&m_mutex); // synchronization // TODO
+    QMutexLocker lock(&m_mutex); // synchronization // TODO
 
     if (m_config.removeConfig(aliasId, path)) {
         foreach (DaemonThread* thread, m_daemonThreads){
         if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path) {
             thread->stopThread(); // TODO check if no thread etc
-            delete thread;
             m_daemonThreads.removeOne(thread);// disconnect this from the list
+            delete thread;// TODO WAIT FOR STOP THREAD!!!
             break;
         }
     }
@@ -199,8 +228,8 @@ void DaemonApplication::detachDaemonThread(DaemonThread *dt)
     foreach (DaemonThread *thread, m_daemonThreads){
     if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path ) {
         thread->stopThread();
-        delete thread;
         m_daemonThreads.removeOne(thread); // disconnect this from the list
+        delete thread; // TODO WAIT FOR STOP THREAD!!!
         break;
     }
 }
@@ -234,15 +263,24 @@ void DaemonApplication::onClosed(DaemonThread *dt)
             Q_ARG(DaemonThread*, dt));
         }
 
+void DaemonApplication::removeAfterServerConnectionFails(DaemonThread *dt)
+{
+    qDebug()
+            << "Server doesn't response for connection tries with DaemonThread "
+            << dt->getConfig()->m_aliasId << " with catalog: "
+            << dt->getConfig()->m_cataloguePath;
+
+    detachDaemonThread(dt);
+}
+
 void DaemonApplication::onThreadClosedSlot(DaemonThread *dt)
 {
     //removeCatalogueFromAlias(dt->getConfig()->m_cataloguePath ,dt->getConfig()->m_aliasId);
     detachDaemonThread(dt);
-    qDebug()<<"TO SIE POWINNO POKAZAC";
+
     // Closing DaemonApplication when last DaemonThread closed
     if (m_daemonThreads.isEmpty()) {
-        qDebug()<<"TO SIE POWINNO POKAZAC TEZ";
-        //stopApplication();
+//        stopApplication(); // TODO remember that
     }
 }
 

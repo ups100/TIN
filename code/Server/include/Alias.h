@@ -157,17 +157,47 @@ public:
      * @brief Takes care of ending action when some unexpected
      * situation occurs.
      */
-    void performLastAliasAction();
+    //void performLastAliasAction();
+
+    /**
+     * @brief This method is used when some daemon is call to check
+     * what make with him in case this is TRANSFER state
+     */
+    void waitForReceivers(DaemonConnection *dc);
 
 private slots:
     void removeDaemonSlot(DaemonConnection *dc);
     void removeClientSlot(ClientConnection *cc);
+    void performPullActionSlot();
+    void performFindFileSlot();
+    void performRemoveFileSlot();
 
 private:
     /**
      * @brief Disable copy constructor
      */
     Alias(const Alias &);
+
+    /**
+     * @brief Executed in state PULL_TRANSFER
+     * when all daemons answer or disconnect this is perform.
+     */
+    void performPullAction();
+
+    /**
+     * @brief This method clear data after perform Pull action.
+     */
+    void afterPullAction();
+
+    /**
+     * @brief Executed in state FIND_FILE when all daemons answered.
+     */
+    void performFindFile();
+
+    /**
+     * @brief Executed in state REMOVE_FILE when all daemons answered.
+     */
+    void performRemoveFile();
 
     /**
      * @brief Clients connected to this alias
@@ -199,10 +229,46 @@ private:
      */
     QThread m_thread;
 
+    QList<Utilities::FileLocation *> m_location;
+
+    //Utilities::Identifier *m_senderDaemonIdentifier;
+
+    /**
+     * @brief Pointer to daemon which will be send a file.
+     * @brief Out of transferring state this should be Null.
+     * @note There is always only one Sender
+     */
+    DaemonConnection *m_senderDaemon;
+
+    /**
+     * @brief List of receivers daemon.
+     * @note This is used in Pull, Push, etc.
+     */
+    QList<DaemonConnection *> m_receiverDaemon;
+
+    /**
+     * @brief This list provide all daemons which are in some action.
+     *  For example somebody wants FileList from them
+     *  or in transfer state they hold all receivers.
+     */
+    QList<DaemonConnection*> m_actionDaemon;
+
+    /**
+     * @brief This is the list of client which should be notify
+     * about some action performed.
+     */
+    QList<ClientConnection*> m_notifyClient;
+
     /**
      * @brief How many daemons left to wait for them
      */
-    quint32 m_waitForDaemons;
+    //quint32 m_waitForDaemons;
+
+    /**
+     * @brief Inform only this object if there is file to remove
+     */
+    bool m_removeFind;
+    QString m_removeName;
 
     /**
      * @brief Temporary AliasFileList to merge from each daemon and send it all to client
@@ -211,12 +277,20 @@ private:
 
     enum AliasAction {
         onListAliasAction,
-        onFindFileAction,
+        LIST_ALIAS,
+        FIND_FILE,
         REMOVE_FILE,
-        none
+        PULL_TRANSFER,
+        NONE
     };
-
-    enum AliasAction m_lastAliasAction;
+    /**
+     * Depreciated Try to do not use it. It will be deleted
+     */
+    //enum AliasAction m_lastAliasAction;
+    /**
+     * @brief Current execution action.
+     */
+    enum AliasAction m_currentAction;
 
 };
 

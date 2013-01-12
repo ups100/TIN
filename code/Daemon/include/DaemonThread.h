@@ -81,7 +81,9 @@ private:
     QString& cutAbsolutePath(QString &str);
 
     /**
-     *
+     * @brief Suffix always added while receiving a file
+     * when receiving file name cause name conflicts (exists on hard drive).
+     * After receiving complete this additional file is removing.
      */
     const QString m_suffix;
 
