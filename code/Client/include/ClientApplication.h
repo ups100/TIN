@@ -21,6 +21,9 @@
 #include <boost/shared_ptr.hpp>
 #include <QString>
 #include <QObject>
+#include <QDateTime>
+#include <QtGlobal>
+#include "stdint.h"
 #include <iostream>
 #include "ServerConnection.h"
 #include "ClientView.h"

@@ -46,8 +46,8 @@ DaemonApplication* DaemonApplication::makeInstance()
 }
 
 DaemonApplication::DaemonApplication()
-        : m_singleApplication(argc,argv), //argc,argv are static fields set by initDaemon() method
-          m_isClean(true)
+        : m_singleApplication(argc, argv), //argc,argv are static fields set by initDaemon() method
+        m_isClean(true)
 {
     qRegisterMetaType<DaemonThread*>("DaemonThread*");
     // to avoid communication with client when this is the second running proces of ./daemon application
@@ -62,11 +62,11 @@ void DaemonApplication::stopApplication()
     m_clientCommunication->wait();
 
     foreach (DaemonThread *dt, m_daemonThreads){
-        qDebug() << "Stopping... " << dt->getConfig()->m_cataloguePath;
-        dt->stopThread();
-        delete dt;
-    }
-    // remove all element from the list
+    qDebug() << "Stopping... " << dt->getConfig()->m_cataloguePath;
+    dt->stopThread();
+    delete dt;
+}
+// remove all element from the list
     m_daemonThreads.clear();
 
 // Above we clean all things so object is clean:
@@ -95,12 +95,20 @@ int DaemonApplication::start()
     m_clientCommunication->start();
 
     foreach (boost::shared_ptr<DaemonConfiguration::Config> cnf, m_config.getConfigs()){
-        qDebug() << "Tworze watek DaemonThread" << cnf->m_cataloguePath;    // TODO delete this line
-        DaemonThread *dt = new DaemonThread(cnf);
-        m_daemonThreads.append(dt);
-    }
+    qDebug() << "Tworze watek DaemonThread" << cnf->m_cataloguePath; // TODO delete this line
+    DaemonThread *dt = new DaemonThread(cnf);
+    m_daemonThreads.append(dt);
+}
 
-    // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
+// Config creatror 4 testing // TODO remove that
+//    addCatalogueToAlias("/home/kajo/workspace/tin/testDir1", "TEST",
+//                    Utilities::Password(QString("123")), QHostAddress("127.0.0.1"),
+//                    8080);
+//    addCatalogueToAlias("/home/kajo/workspace/tin/testDir2", "TEST",
+//                    Utilities::Password(QString("123")), QHostAddress("127.0.0.1"),
+//                    8080);
+
+// Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
     m_isClean = false;
     return m_singleApplication.exec();
 }
@@ -171,7 +179,7 @@ void DaemonApplication::removeCatalogueFromAlias(const QString &path,
         if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path) {
             thread->stopThread(); // TODO check if no thread etc
             delete thread;
-            m_daemonThreads.removeOne(thread); // disconnect this from the list
+            m_daemonThreads.removeOne(thread);// disconnect this from the list
             break;
         }
     }
@@ -188,50 +196,54 @@ void DaemonApplication::detachDaemonThread(DaemonThread *dt)
     QString aliasId(dt->getConfig()->m_aliasId);
     QString path(dt->getConfig()->m_cataloguePath);
 
-    foreach (DaemonThread *thread, m_daemonThreads) {
-        if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path ) {
-            thread->stopThread();
-            delete thread;
-            m_daemonThreads.removeOne(thread); // disconnect this from the list
-            break;
-        }
+    foreach (DaemonThread *thread, m_daemonThreads){
+    if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path ) {
+        thread->stopThread();
+        delete thread;
+        m_daemonThreads.removeOne(thread); // disconnect this from the list
+        break;
     }
+}
 }
 
 void DaemonApplication::onStarted(DaemonThread *dt)
 {
-    qDebug() << "DaemonThread started successful for alias: " << dt->getConfig()->m_aliasId
-             << " with catalog" << dt->getConfig()->m_cataloguePath;
+    qDebug() << "DaemonThread started successful for alias: "
+            << dt->getConfig()->m_aliasId << " with catalog"
+            << dt->getConfig()->m_cataloguePath;
 }
 
 void DaemonApplication::onStartingError(DaemonThread *dt)
 {
-    qDebug() << "Error while DaemonThread tries connecting for alias: " << dt->getConfig()->m_aliasId
-            << " with catalog" << dt->getConfig()->m_cataloguePath;
+    qDebug() << "Error while DaemonThread tries connecting for alias: "
+            << dt->getConfig()->m_aliasId << " with catalog"
+            << dt->getConfig()->m_cataloguePath;
 
     // even if error occurs I don't remove this DeamonThread from config file
-    QMetaObject::invokeMethod(this, "onThreadClosedSlot",
-            Qt::QueuedConnection, Q_ARG(DaemonThread*, dt));
-}
+    QMetaObject::invokeMethod(this, "onThreadClosedSlot", Qt::QueuedConnection,
+            Q_ARG(DaemonThread*, dt));
+        }
 
 void DaemonApplication::onClosed(DaemonThread *dt)
 {
-    qDebug() << "Server closed connection with DaemonThread " << dt->getConfig()->m_aliasId
-             << " with catalog: "<< dt->getConfig()->m_cataloguePath;
+    qDebug() << "Server closed connection with DaemonThread "
+            << dt->getConfig()->m_aliasId << " with catalog: "
+            << dt->getConfig()->m_cataloguePath;
 
-    QMetaObject::invokeMethod(this, "onThreadClosedSlot",
-                Qt::QueuedConnection, Q_ARG(DaemonThread*, dt));
-}
+    QMetaObject::invokeMethod(this, "onThreadClosedSlot", Qt::QueuedConnection,
+            Q_ARG(DaemonThread*, dt));
+        }
 
 void DaemonApplication::onThreadClosedSlot(DaemonThread *dt)
 {
     //removeCatalogueFromAlias(dt->getConfig()->m_cataloguePath ,dt->getConfig()->m_aliasId);
     detachDaemonThread(dt);
-
+    qDebug()<<"TO SIE POWINNO POKAZAC";
     // Closing DaemonApplication when last DaemonThread closed
-     if (m_daemonThreads.isEmpty()) {
-         stopApplication();
-     }
+    if (m_daemonThreads.isEmpty()) {
+        qDebug()<<"TO SIE POWINNO POKAZAC TEZ";
+        //stopApplication();
+    }
 }
 
 QtSingleCoreApplication* DaemonApplication::getSingleApplicationPointer()

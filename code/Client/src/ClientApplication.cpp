@@ -175,7 +175,7 @@ void ClientApplication::onAliasListedSlot(
             && ((*this).m_command->getParameter() == "d")) {
         (*this).showListOfConflicts(list);
     }
-    QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+    QTimer::singleShot(500, &(*m_view), SLOT(reconnectNotifier()));
 
 }
 
@@ -257,12 +257,6 @@ void ClientApplication::getCommand(QString s)
 {
     boost::shared_ptr<Commands> cmd = m_commandParser.parseCommand(s);
 
-    /**
-     * This singleShot shouldn't be here, but otherwise it wouldn't work at all
-     * reconnectNotifier should be invoked by slots
-     * REMEMBER THAT THIS SHOULD BE REMOVED
-     */
-    //QTimer::singleShot(1000, &(*m_view), SLOT(reconnectNotifier()));
     if ((!(*this).checkIntegrity(cmd)) || (!(*this).checkStateCondition(cmd))) {
         qDebug() << "SPRAWDZENIE POPRAWNOSCI NEGATYWNE";
         QTimer::singleShot(1000, &(*m_view), SLOT(reconnectNotifier()));
@@ -286,30 +280,41 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
     if ((cmd->getCommand() == "choose")
             && (!((m_command->getCommand() == "choose")
                     || ((m_command->getCommand() == "synch")
-                            && (m_command->getParameter() == "o")))))
-        qDebug() << "NIEDOPSZ";
+                            && (m_command->getParameter() == "o"))))) {
+        qDebug() << "You cannot invoke this method in this state. Type 'help'";
+        QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+        return false;
+    }
     if ((cmd->getCommand() == "push")
             && (!((m_command->getCommand() == "push")
                     || ((m_command->getCommand() == "ls")
-                            && (m_command->getParameter() == "l")))))
-        qDebug() << "NIEDOPSZ";
+                            && (m_command->getParameter() == "l"))))) {
+        qDebug() << "You cannot invoke this method in this state. Type 'help'";
+        QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+        return false;
+    }
     if ((cmd->getCommand() == "pull")
             && (!((m_command->getCommand() == "pull")
                     || ((m_command->getCommand() == "ls")
-                            && (m_command->getParameter() == "r")))))
-        qDebug() << "NIEDOPSZ";
+                            && (m_command->getParameter() == "r"))))) {
+        qDebug() << "You cannot invoke this method in this state. Type 'help'";
+        QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+        return false;
+    }
     if ((cmd->getCommand() == "read")
             && (!((m_command->getCommand() == "read")
                     || ((m_command->getCommand() == "ls")
-                            && (m_command->getParameter() == "r")))))
-        qDebug() << "NIEDOPSZ";
+                            && (m_command->getParameter() == "r"))))) {
+        qDebug() << "You cannot invoke this method in this state. Type 'help'";
+        QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+        return false;
+    }
 
     /**
      * End of checking the previous command, maybe it will be deleted later
      */
 
     m_command = cmd;
-    qDebug() << m_state;
 
     if (cmd->getCommand() == "exit") {
         (*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
@@ -328,11 +333,6 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
     } else if (cmd->getCommand() == "log") {
         (*this).m_alias = cmd->getArg();
         (*this).m_password = cmd->getPassword();
-        //Utilities::CommunicationProtocol::Communicate<
-        //    Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
-        //    Utilities::Message(m_alias, m_password, m_path, m_address,
-        //             m_port));
-        //m_DaemonCommunication.talkToDaemon(message.toQByteArray());
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.connectToAlias(cmd->getArg(), cmd->getPassword(),
                 (*this).m_path);
@@ -341,37 +341,30 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
 
         (*this).m_alias = cmd->getArg();
         (*this).m_password = cmd->getPassword();
-        //Utilities::CommunicationProtocol::Communicate<
-          //      Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
-            //    Utilities::Message(m_alias, m_password, m_path, m_address,
-              //          m_port));
-        //m_DaemonCommunication.talkToDaemon(message.toQByteArray());
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.createAlias(cmd->getArg(), cmd->getPassword());
 
     } else if (cmd->getCommand() == "add") {
-        //(*this).setState(ClientApplication::WAITING);
         Utilities::CommunicationProtocol::Communicate<
                 Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
-                Utilities::Message(m_alias, m_password, cmd->getArg(),
-                        m_address, m_port));
+                Utilities::Message(cmd->getArg(), cmd->getPassword(),
+                        cmd->getArg2(), m_address, m_port));
         QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
 
-    } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d")) {
-        (*this).setState(ClientApplication::WAITING);
+    } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "")) {
         Utilities::CommunicationProtocol::Communicate<
                 Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
-                Utilities::Message(m_alias, cmd->getArg()));
+                Utilities::Message(cmd->getArg(), cmd->getArg2()));
+        qDebug() << "TU SIE WYWALA";
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
 
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a")) {
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.removeAlias(cmd->getArg(), cmd->getPassword());
 
-    } else if ((cmd->getCommand() == "rm")) {
+    } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "f")) {
         (*this).setState(ClientApplication::WAITING);
-        qDebug() << "POLECENIE TO " << cmd->getArg();
         (*this).m_serverConnection.removeFileFromAlias(cmd->getArg());
 
     } else if ((cmd->getCommand() == "find")) {
@@ -413,12 +406,8 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
     } else if (cmd->getCommand() == "change") {
         (*this).changeRootPath(cmd->getArg());
         qDebug() << "SCIEZKA TO TERAZ" << m_path;
-        Utilities::CommunicationProtocol::Communicate<
-                Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
-                Utilities::Message(m_alias, m_password, m_path, m_address,
-                        m_port));
         QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
-        m_DaemonCommunication.talkToDaemon(message.toQByteArray());
+
     }
     return true;
 }
@@ -430,9 +419,11 @@ int ClientApplication::start(const QHostAddress& address, quint16 port,
         qDebug() << "Another client application is running" << endl;
         return -1;
     }
+
+    // Pass empty message to start Daemon if not running
+    m_DaemonCommunication.talkToDaemon(QByteArray("00000"));
+
     qDebug() << "Client application started" << endl;
-    /** Server should be working to set state to waiting */
-    //(*this).setState(ClientApplication::WAITING);
     m_address = address;
     m_port = port;
     m_path = path;
@@ -458,15 +449,18 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
     if (!cmd->isCorrect())
         return false;
     if (cmd->getCommand() == "log") {
+        //qDebug()<<"WYNIK TO "<<(*this).
         return (*this).checkIfConfigFileExists();
     }
-    if ((cmd->getCommand() == "add") || (cmd->getCommand() == "change")
-            || ((cmd->getCommand() == "rm") && (cmd->getParameter() == "d"))) {
+    if (cmd->getCommand() == "change") {
         return (*this).checkAbsolutePath(cmd->getArg());
+    } else if (cmd->getCommand() == "add") {
+        return (*this).checkAbsolutePath(cmd->getArg2());
     }
     if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "")) {
+        return (*this).checkAbsolutePath(cmd->getArg2());
+    } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "f"))
         return (*this).checkRelativePath(cmd->getArg());
-    }
     if ((cmd->getCommand() == "choose")
             || ((cmd->getCommand() == "push") && (cmd->getCommand() == "pull"))
             || (cmd->getCommand() == "read")) {
@@ -494,9 +488,14 @@ bool ClientApplication::checkStateCondition(
             return true;
         else if (cmd->getCommand() == "create")
             return true;
-        else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a"))
+        else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a")) {
+            qDebug() << "CHECK STATE CONDITION ZWRACA TRUE";
             return true;
-        else if ((cmd->getCommand() == "add") && (cmd->getParameter() == ""))
+        }
+        //       return true;
+        else if ((cmd->getCommand() == "add"))
+            return true;
+        else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == ""))
             return true;
         else if (cmd->getCommand() == "choose")
             return true;
@@ -511,6 +510,8 @@ bool ClientApplication::checkStateCondition(
         else if (cmd->getCommand() == "create")
             return false;
         else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a"))
+            return false;
+        else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == ""))
             return false;
         else if ((cmd->getCommand() == "add") && (cmd->getParameter() == ""))
             return false;
@@ -541,14 +542,12 @@ bool ClientApplication::checkAbsolutePath(QString s) const
 
 bool ClientApplication::checkIfConfigFileExists() const
 {
-    //This should be finally
-    //Checks if the file exists
 
-    /*QString path = m_path;
-     path.append(QDir::separator());
-     path.append(ConfigFileName::CONFIG_FILE_NAME);
-     QFile file(path);
-     return (file.exists());*/
+    QString path = m_path;
+    path.append(QDir::separator());
+    path.append(ConfigFileName::CONFIG_FILE_NAME);
+    QFile file(path);
+    //return (file.exists());
     return true;
 }
 
@@ -634,12 +633,17 @@ void ClientApplication::moveOnTreeShowList(boost::shared_ptr<AliasTree> tree,
         boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
+                bool number;
+                //TODO HERE
+                qint64 liczba = ((m_tree->getFileLocations()[i].m_date).toInt(
+                        &number, 10));
+                std::cout<<liczba;
                 std::cout.width(indent * 4);
                 std::cout << " ";
                 std::cout << m_tree->getFilename().toStdString() << "\t"
-                        << m_tree->getFileLocations()[i].m_date.toStdString()
-                        << "\t" << m_tree->getFileLocations()[i].m_size << "\t"
-                        << "\n";
+                        << ((QDateTime::fromMSecsSinceEpoch(liczba)).toString()
+                                .toStdString()) << "\t"
+                        << m_tree->getFileLocations()[i].m_size << "\t" << "\n";
             }
         } else {
             std::cout.width(indent * 4);
@@ -699,7 +703,7 @@ void ClientApplication::showListOfRemote(const AliasFileList& list)
     int counter = 1;
     (*this).moveOnTreeShowListOfRemote(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
-    QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+    //QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
     return;
 }
 
@@ -738,7 +742,7 @@ void ClientApplication::showListOfLocal(const AliasFileList& list)
     int counter = 1;
     (*this).moveOnTreeShowListOfLocal(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
-    QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+    //QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
     return;
 }
 
@@ -870,7 +874,7 @@ void ClientApplication::showListOfFoundFiles(const AliasFileList& list)
     int counter = 1;
     (*this).moveOnTreeShowFoundFiles(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
-    QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+    //QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
     return;
 }
 
@@ -898,8 +902,16 @@ void ClientApplication::moveOnTreeShowFoundFiles(
 
 void ClientApplication::changeRootPath(QString s)
 {
-    //INFORM DAEMON
-    m_path = s;
+    QString dir = s;
+    s.append(QDir::separator());
+    s.append(ConfigFileName::CONFIG_FILE_NAME);
+
+    QFile file(s);
+    if (file.exists())
+        m_path = s;
+    else
+        m_view->showMessage(
+                "Cannot change to given path, no config file there");
     (*this).setState(ClientApplication::CONNECTED);
     QTimer::singleShot(1000, &(*m_view), SLOT(reconnectNotifier()));
 }
