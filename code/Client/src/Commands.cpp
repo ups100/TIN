@@ -56,6 +56,10 @@ Commands::Commands(QString command, QString arg1, Argument::Types f)
             m_parameter = arg1;
             break;
 
+            //CHANGE
+        case Argument::ABS_PATH:
+            m_argument = Argument(arg1, f);
+            break;
         default:
             qDebug()
                     << "Something went wrong: Commands(QString, QString, Argument::Types"
@@ -101,17 +105,22 @@ Commands::Commands(QString command, QString arg1, QString arg2, QString arg3,
     m_flague = f;
     m_command = command;
     m_correct = true;
-    if (f == Argument::ALIAS) {
+
+    if ((f == Argument::ALIAS) && (!(command == "add"))) {
         m_parameter = arg1;
         m_argument = Argument(arg2, f);
         m_password = Password(arg3);
+    } else if ((command == "add") || (command == "rm")) {
+        m_argument = Argument(arg1, f);
+        m_password = Password(arg2);
+        m_argument2 = Argument(arg3, f);
     } else
         qDebug() << "Something went wrong" << endl;
     shout();
 }
 
 /**
- * @brief getter for the command
+ * @brief Getter for the command
  * @return command
  */
 QString Commands::getCommand()
@@ -123,7 +132,7 @@ QString Commands::getCommand()
 }
 
 /**
- * @brief getter for the parameter
+ * @brief Getter for the parameter
  * @return parameter
  */
 QString Commands::getParameter()
@@ -132,7 +141,7 @@ QString Commands::getParameter()
 }
 
 /**
- * @brief getter for the argument
+ * @brief Getter for the argument
  * @return QString
  */
 QString Commands::getArg() const
@@ -140,9 +149,13 @@ QString Commands::getArg() const
     return m_argument.getData();
 }
 
+QString Commands::getArg2() const
+{
+    return m_argument2.getData();
+}
 /**
- * @brief getter for the name of an alias
- * @return alias name
+ * @brief Getter for the name of an alias
+ * @return Alias name
  */
 QString Commands::getData(Argument::Types f) const
 {
@@ -154,7 +167,7 @@ QString Commands::getData(Argument::Types f) const
 }
 
 /**
- * @brief getter for the flague
+ * @brief Getter for the flague
  * @return flague
  */
 Argument::Types Commands::getFlague() const
@@ -163,7 +176,7 @@ Argument::Types Commands::getFlague() const
 }
 
 /**
- * @brief getter for the password
+ * @brief Getter for the password
  * @return password
  */
 Password Commands::getPassword() const
@@ -175,7 +188,7 @@ Password Commands::getPassword() const
 }
 
 /**
- * @brief to check if the whole command is correct
+ * @brief To check if the whole command is correct
  * @return is the command correct or not
  */
 bool Commands::isCorrect() const

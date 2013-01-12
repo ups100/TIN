@@ -30,21 +30,23 @@ Password::Password(const Password& password)
  */
 Password::Password(const QString& password)
 {
-    QByteArray myHash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha1);
+    QByteArray myHash = QCryptographicHash::hash(password.toUtf8(),
+            QCryptographicHash::Sha1);
     (*this).m_hashed_password = myHash;
 }
 
 Password::Password(const QByteArray& password)
 {
-    QByteArray myHash = QCryptographicHash::hash(password, QCryptographicHash::Sha1);
-    (*this).m_hashed_password = myHash;
+    //QByteArray myHash = QCryptographicHash::hash(password, QCryptographicHash::Sha1);
+    (*this).m_hashed_password = password; // TODO ...
 }
 /**
  * Check if password is correct
  */
 bool Password::check(const QString& password) const
 {
-    QByteArray myHash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha1);
+    QByteArray myHash = QCryptographicHash::hash(password.toUtf8(),
+            QCryptographicHash::Sha1);
     return ((*this).m_hashed_password == myHash);
 }
 
@@ -73,7 +75,6 @@ QByteArray Password::getHash() const
 {
     return (*this).m_hashed_password;
 }
-
 
 } //namespace Utilities
 } //namespace TIN_project

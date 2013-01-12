@@ -27,28 +27,34 @@ public:
     Commands(QString, QString, QString, Argument::Types);
     Commands(QString, QString, QString, QString, Argument::Types);
 
+
     /**
-     * @brief getter for the command
+     * @brief Getter for the command
      */
     QString getCommand();
 
     /**
-     * @brief getter for the parameter
+     * @brief Getter for the parameter
      */
     QString getParameter();
 
     /**
-     * @brief getter for the argument (luckily maximum one is possible)
+     * @brief Getter for the argument
      */
     QString getArg() const;
 
     /**
-     * @brief getter for the password
+     * @brief Getter for the second argument (used in add and remove)
+     */
+    QString getArg2() const;
+
+    /**
+     * @brief Getter for the password
      */
     Password getPassword() const;
 
     /**
-     * @brief getter for the flague (but to be hones I hardly use it)
+     * @brief Getter for the flague (but to be honest I hardly use it)
      */
     Argument::Types getFlague() const;
 
@@ -59,7 +65,7 @@ public:
     bool isCorrect() const;
 
     /**
-     * @brief just for debug
+     * @brief Just for debug
      */
     void shout() const;
     virtual ~Commands();
@@ -71,22 +77,26 @@ private:
     QString getData(Argument::Types) const;
 
     /**
-     * @brief command invoked by user
+     * @brief Command invoked by user
      */
-    //CommandParser::Command m_command2;
     QString m_command;
     /**
-     * @brief parameter of command
+     * @brief Parameter of command
      */
     QString m_parameter;
 
     /**
-     * @brief argument of command
+     * @brief Argument of command
      */
     Argument m_argument;
 
     /**
-     * @brief password (not used always)
+     * @brief Used only on add and remove directory
+     */
+    Argument m_argument2;
+
+    /**
+     * @brief Password (not used always)
      */
     Password m_password;
 

@@ -52,16 +52,18 @@ void DaemonCommunication::talkToDaemon(const QByteArray &message)
 
         if (connect(m_socket, (struct sockaddr *) &m_server,
                 sizeof(struct sockaddr_un)) < 0) {
-            system("echo \"I'm starting daemon application..Wait for a while...\"");
+            system(
+                    "echo \"I'm starting daemon application..Wait for a while...\"");
             system("gnome-terminal -x bash -c \"./daemon; bash\""); // TODO run in the background
-            // system("./daemon&"); // TODO make alias for daemon while installation
+            //system("./daemon&"); // TODO make alias for daemon while installation
             sleep(1); // Wait to start daemon app
         } else {
             break;
         }
 
         if (tries == 9)
-            throw std::runtime_error("Client unable to connect. Couldn't connect(run) to DaemonApplication.");
+            throw std::runtime_error(
+                    "Client unable to connect. Couldn't connect(run) to DaemonApplication.");
     }
 
     if (write(m_socket, array.data(), array.size()) < 0)

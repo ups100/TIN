@@ -20,6 +20,9 @@
 using namespace TIN_project::Client;
 int main(int argc, char **argv)
 {
+
+    QDir dir("/home/marcin/TIN_testy");
+    qDebug()<<dir.exists();
     AliasFileList afl;
     QString tmp1 = "/home/marcin";
     QString tmp2 = "/home/marta";

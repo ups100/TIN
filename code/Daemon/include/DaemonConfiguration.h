@@ -21,6 +21,7 @@
 #include <boost/shared_ptr.hpp>
 #include <QList>
 #include <QString>
+#include <QMutexLocker>
 
 namespace TIN_project {
 namespace Daemon {
@@ -107,8 +108,15 @@ public:
 
 private:
 
-    /**  List of daemon threads configuration */
+    /**
+     * @brief List of daemon threads configuration
+     */
     QList<boost::shared_ptr<DaemonConfiguration::Config> > m_configs;
+
+    /**
+     * @brief IO mutex
+     */
+    static QMutex m_mutex;
 
 public:
 

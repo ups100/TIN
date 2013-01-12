@@ -48,6 +48,7 @@ private:
                 CHOOSE,
                 DISCONNECT,
                 EXIT,
+                CHANGE
             };
     /**
      * @brief list of all possible commands
