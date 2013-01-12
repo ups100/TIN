@@ -159,7 +159,7 @@ public:
      * - true if this object and daemon are from that same machine and directory
      * - false otherwise
      */
-    inline bool operator==(const DaemonConnection& daemon);
+    bool operator==(const DaemonConnection& daemon);
     inline bool operator==(const ClientConnection& other)
     {
         return ((m_identity.getId() == other.m_identity.getId())
