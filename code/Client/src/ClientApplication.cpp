@@ -335,7 +335,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         (*this).m_password = cmd->getPassword();
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.connectToAlias(cmd->getArg(), cmd->getPassword(),
-                (*this).m_path);
+                Utilities::Identifier(Utilities::Identify::getMachineIdentificator())); // JS changed it
 
     } else if (cmd->getCommand() == "create") {
 
@@ -827,7 +827,7 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
                                         m_tree->getFileLocations()[j].m_size,
                                         Identifier(
                                                 m_tree->getFileLocations()[j]
-                                                        .m_id)));
+                                                        .m_id,m_tree->getPath()))); // JS change it
                         (*this).setState(ClientApplication::WAITING);
                     }
                     counter++;

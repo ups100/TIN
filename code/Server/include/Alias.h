@@ -171,6 +171,7 @@ private slots:
     void performPullActionSlot();
     void performFindFileSlot();
     void performRemoveFileSlot();
+    void performPushActionSlot();
 
 private:
     /**
@@ -188,6 +189,18 @@ private:
      * @brief This method clear data after perform Pull action.
      */
     void afterPullAction();
+
+    /**
+     * @brief This method is call when all daemon answers.
+     * It is executed in state Push_transfer
+     */
+    void performPushAction();
+
+    /**
+     * @brief This method clear data after perform Push action.
+     * Keeps state to be right etc.
+     */
+    void afterPushAction();
 
     /**
      * @brief Executed in state FIND_FILE when all daemons answered.
@@ -276,11 +289,11 @@ private:
     boost::shared_ptr<Utilities::AliasFileList> m_tmpAliasFileList;
 
     enum AliasAction {
-        onListAliasAction,
         LIST_ALIAS,
         FIND_FILE,
         REMOVE_FILE,
         PULL_TRANSFER,
+        PUSH_TRANSFER,
         NONE
     };
     /**
