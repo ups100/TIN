@@ -335,7 +335,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         (*this).m_password = cmd->getPassword();
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.connectToAlias(cmd->getArg(), cmd->getPassword(),
-                (*this).m_path);
+                        Utilities::Identifier(Utilities::Identify::getMachineIdentificator()));
 
     } else if (cmd->getCommand() == "create") {
 
@@ -349,7 +349,6 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
                 Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
                 Utilities::Message(cmd->getArg(), cmd->getPassword(),
                         cmd->getArg2(), m_address, m_port));
-        (*this).changeRootPath(cmd->getArg());
         QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
 
@@ -357,7 +356,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         Utilities::CommunicationProtocol::Communicate<
                 Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
                 Utilities::Message(cmd->getArg(), cmd->getArg2()));
-        qDebug() << "TU SIE WYWALA";
+        QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
 
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "a")) {
@@ -406,7 +405,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
 
     } else if (cmd->getCommand() == "change") {
         (*this).changeRootPath(cmd->getArg());
-        qDebug() << "SCIEZKA TO TERAZ" << m_path;
+        qDebug() << "NIE ROBCIE TEGO, TO NIE MA DZIALAC";
         QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 
     }
@@ -427,7 +426,6 @@ int ClientApplication::start(const QHostAddress& address, quint16 port,
     qDebug() << "Client application started" << endl;
     m_address = address;
     m_port = port;
-    m_path = path;
     (*this).setState(ClientApplication::WAITING);
     m_serverConnection.connectToServer(address, port);
     m_application.exec();
@@ -450,8 +448,7 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
     if (!cmd->isCorrect())
         return false;
     if (cmd->getCommand() == "log") {
-        //qDebug()<<"WYNIK TO "<<(*this).
-        //return (*this).checkIfConfigFileExists();
+        //NOTHING??
     }
     if (cmd->getCommand() == "change") {
         return (*this).checkAbsolutePath(cmd->getArg());
@@ -461,7 +458,7 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
     if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "")) {
         qDebug()<<"TU WCHODZIMY";
         qDebug()<<(*this).checkIntegrityOfConfigFile(cmd->getArg2(),cmd->getArg(),cmd->getPassword());
-        return (*this).checkAbsolutePath(cmd->getArg2());
+        return ((*this).checkAbsolutePath(cmd->getArg2()) && ((*this).checkIntegrityOfConfigFile(cmd->getArg2(), cmd->getArg(), cmd->getPassword())));
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "f"))
         return (*this).checkRelativePath(cmd->getArg());
     if ((cmd->getCommand() == "choose")
@@ -526,7 +523,7 @@ bool ClientApplication::checkStateCondition(
 
 bool ClientApplication::checkRelativePath(QString s) const
 {
-
+    //NOTHING TO DO HERE
     QString tmpDir = m_path;
     tmpDir.append(QDir::separator());
     tmpDir.append(s);
@@ -566,9 +563,13 @@ bool ClientApplication::checkIntegrityOfConfigFile(QString path, QString alias, 
     QString tmpPass = QByteArray::fromHex(file.readLine());
     qDebug()<<"TMP ALIAS TO "<<tmpAlias;
     qDebug()<<"ALIAS TO "<< alias;
-    qDebug()<<"PIERWSZE INFO TO"<<tmpAlias==alias;
-    qDebug()<<"DRUGIE INFO TO "<
-    return ((tmpAlias == alias) && (pass.check(tmpPass)));
+    qDebug()<<"PIERWSZE INFO TO"<<(tmpAlias==alias);
+    qDebug()<<"DRUGIE INFO TO "<<(pass.getHash() == tmpPass.simplified());
+    qDebug()<<"TRZECIE INFO TO "<<(pass.getHash() == tmpPass);
+    qDebug()<<"PASS TO "<<pass.getHash();
+    qDebug()<<"TMP PASS TO "<<tmpPass.simplified();
+    file.close();
+    return ((tmpAlias == alias) && (pass.getHash() == tmpPass));
     //return true;
 }
 void ClientApplication::synchWithOverWriting(
