@@ -74,6 +74,11 @@ private:
     QList<FileSender *> m_sender;
 
     /**
+     * @brief Removes temporary file created on connected to alias
+     */
+    void removeTmpFile();
+
+    /**
 * @brief Cut absolute file path to relative to supported catalogue
 *
 * @return String with cutted path

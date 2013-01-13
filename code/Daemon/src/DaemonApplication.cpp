@@ -229,7 +229,7 @@ void DaemonApplication::detachDaemonThread(DaemonThread *dt)
     if (thread->getConfig()->m_aliasId == aliasId && thread->getConfig()->m_cataloguePath == path ) {
         thread->stopThread();
         m_daemonThreads.removeOne(thread); // disconnect this from the list
-        delete thread; // TODO WAIT FOR STOP THREAD!!!
+        delete thread;// TODO WAIT FOR STOP THREAD!!!
         break;
     }
 }
