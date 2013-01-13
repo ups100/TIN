@@ -138,11 +138,13 @@ void Alias::onConnectionClosed(ClientConnection* client) // TODO w ogole
 {
     qDebug() << "Connection closed with client: ";
 
-    //in this case all client transaction is closed
-    //m_waitForDaemons = 0; // to sluzylo do nie podejmowania dalszych akcji
-    // (nawet jak jakis Daemon zglosil ze znalzal plik itp - bo przeciez Klient moze wyleciec
-    // w kazdej chwili) Trzeba wymyslec jakis zastepczy sposob na to.
-    //m_tmpAliasFileList is reseting in invokeMethod above
+    if (m_currentAction != NONE) {
+        qDebug() << "Client exit while waiting for some operations "
+                 << " it will cause wrong state in the Alias ";
+    }
+
+    //in this case all answers should be ignore
+    m_currentAction = NONE;
 
     // removes closed Client
     QMetaObject::invokeMethod(this, "removeClientSlot",
@@ -308,41 +310,66 @@ void Alias::onFileList(DaemonConnection* daemon,
 
 void Alias::onFileTransferStarted(FileTransferServer *transfer) //TODO dodaj Push
 {
-    qDebug() << "FileTransferStarted.";
-    if (m_currentAction == PUSH_TRANSFER)
-        qDebug() << "Pushing ...";
-
     // Client should know about it:
     m_clients.first()->sendFileTransferStarted();
+
+    switch (m_currentAction) {
+        case PULL_TRANSFER:
+            qDebug() << "Start pulling... ";
+            break;
+        case PUSH_TRANSFER:
+            qDebug() << "Start pushing... ";
+            break;
+        default:
+            qDebug() << "Wrong state when TransferStarted";
+            break;
+    }
 }
 
 /**
  * Notify if transfer completed
  */
-void Alias::onFileTransferCompleted(FileTransferServer *transfer)// TODO dodajPUSh
+void Alias::onFileTransferCompleted(FileTransferServer *transfer)
 {
-    qDebug() << "FileTransferCompleted";
-
     // Client should know about it:
     m_notifyClient.first()->sendFileTransferFinished();
 
-    if (m_currentAction == PULL_TRANSFER)
-        afterPullAction();
+    switch (m_currentAction) {
+        case PULL_TRANSFER:
+            qDebug() << "Pull FileTransferCompleted";
+            afterPullAction();
+            break;
+        case PUSH_TRANSFER:
+            qDebug() << "Push FileTransferCompleted";
+            afterPushAction();
+            break;
+        default:
+             qDebug() << "Wrong state when TransferCompleted";
+             break;
+    }
 }
 
 /**
  * Notify if an error occurred
  */
-void Alias::onFileTransferError(FileTransferServer *transfer)//TODO doajPush
+void Alias::onFileTransferError(FileTransferServer *transfer)
 {
-    qDebug() << "FileTransferError ";
-
     // Client should know about it:
     m_notifyClient.first()->sendFileTransferError();
 
-
-    if (m_currentAction == PULL_TRANSFER)
-        afterPullAction();
+    switch (m_currentAction) {
+        case PULL_TRANSFER:
+            qDebug() << "FileTransferError while Pull";
+            afterPullAction();
+            break;
+        case PUSH_TRANSFER:
+            qDebug() << "FileTransferError while Push";
+            afterPushAction();
+            break;
+        default:
+             qDebug() << "Wrong state when TransferError";
+             break;
+    }
 }
 
 void Alias::onFindFile(ClientConnection* client, const QString& name)
@@ -488,20 +515,33 @@ void Alias::onPullFileFrom(ClientConnection* client,
     // remember sender Identifier - this is need here in onFileFound method
     //m_senderDaemonIdentifier = location.getOwnerIdentifier();
 
-    // send a request to all Daemon to check if they have pulling file
     foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
         // remember who is reciver
         if ( *client == *dc) {
             m_receiverDaemon.push_front(dc.get());
             continue;   // don't append this daemon to m_actionDaemons List
         }
+        // NEW CONCEPTION - adding this if:
+        // finding sender
+        if ( (dc.get()->getIdentifier().getId() == location.getOwnerIdentifier().getId() )
+                && (dc.get()->getIdentifier().getPath() == location.getOwnerIdentifier().getPath() ) )
+            m_senderDaemon = dc.get();  // TODO sprawdź czy to nie rozmnaża shared_ptr - czy program konczy sie poprawnie?
+
+        /* PREVIOUS PULL CONCEPTION
         //all daemon without that corresponding to client are searched
+        // send a request to all Daemon to check if they have pulling file
         m_actionDaemon.append(dc.get()); // I point that I wait for this daemon action completed
         dc->sendFindFile(fileName);
+        */
      }
+
+    //NEW CONCEPTION:
+    performPullAction(); // executing next commands
+
 
     qDebug() << "rozmiar pliku do wysylki" << location.getSize();   // TODO remove this line
 
+    //previous conception comment below
 //NOT// Waiting for all Daemon acknowledge. Next instruction are in onFindFile or onNoSuchFile
 }
 
@@ -547,6 +587,7 @@ void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
     if (m_senderDaemon == NULL) {
         qDebug() << "inAlias: Can not find sender Daemon before Push " << path;
         client->sendFileTransferError();
+        m_actionDaemon.clear();
         return;
     }
 
@@ -653,8 +694,8 @@ void Alias::performPullAction()
         qDebug() << "We shouldn't be in this state / Pull_transfer need";
     }
 
-    if (m_senderDaemon == NULL) {
-        qDebug() << "Alias: Nobody wants sending a file to you";
+    if (m_senderDaemon == NULL || m_receiverDaemon.size() == 0) {
+        qDebug() << "Alias: Nobody wants sending or receiving a files";
         m_notifyClient.first()->sendFileTransferError();
         return; // TODO wyczysc dane w tym przypadku
     }
