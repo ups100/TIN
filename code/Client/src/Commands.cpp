@@ -181,9 +181,6 @@ Argument::Types Commands::getFlague() const
  */
 Password Commands::getPassword() const
 {
-    if (m_flague != Argument::ALIAS) {
-        qDebug() << "Something went wrong: Commands::getPassword()" << endl;
-    }
     return m_password;
 }
 

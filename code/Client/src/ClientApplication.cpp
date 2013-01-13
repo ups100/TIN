@@ -349,6 +349,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
                 Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
                 Utilities::Message(cmd->getArg(), cmd->getPassword(),
                         cmd->getArg2(), m_address, m_port));
+        (*this).changeRootPath(cmd->getArg());
         QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
 
@@ -450,14 +451,16 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
         return false;
     if (cmd->getCommand() == "log") {
         //qDebug()<<"WYNIK TO "<<(*this).
-        return (*this).checkIfConfigFileExists();
+        //return (*this).checkIfConfigFileExists();
     }
     if (cmd->getCommand() == "change") {
         return (*this).checkAbsolutePath(cmd->getArg());
     } else if (cmd->getCommand() == "add") {
-        return (*this).checkAbsolutePath(cmd->getArg2());
+        return ((*this).checkAbsolutePath(cmd->getArg2()) && (!(*this).checkIfConfigFileExists(cmd->getArg2())));
     }
     if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "")) {
+        qDebug()<<"TU WCHODZIMY";
+        qDebug()<<(*this).checkIntegrityOfConfigFile(cmd->getArg2(),cmd->getArg(),cmd->getPassword());
         return (*this).checkAbsolutePath(cmd->getArg2());
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "f"))
         return (*this).checkRelativePath(cmd->getArg());
@@ -540,17 +543,34 @@ bool ClientApplication::checkAbsolutePath(QString s) const
     //return true;
 }
 
-bool ClientApplication::checkIfConfigFileExists() const
+bool ClientApplication::checkIfConfigFileExists(QString cnfPath) const
 {
-
-    QString path = m_path;
+    QString path = cnfPath;
     path.append(QDir::separator());
     path.append(ConfigFileName::CONFIG_FILE_NAME);
     QFile file(path);
-    //return (file.exists());
-    return true;
+    qDebug()<<path;
+    return (file.exists());
 }
 
+bool ClientApplication::checkIntegrityOfConfigFile(QString path, QString alias, Password pass) const
+{
+    QString dir = path;
+    dir.append(QDir::separator());
+    dir.append(ConfigFileName::CONFIG_FILE_NAME);
+    QFile file(dir);
+    if(!file.open(QIODevice::ReadOnly))
+        return false;
+    qDebug()<<"SCIEZKA TO "<<dir;
+    QString tmpAlias = file.readLine().simplified();
+    QString tmpPass = QByteArray::fromHex(file.readLine());
+    qDebug()<<"TMP ALIAS TO "<<tmpAlias;
+    qDebug()<<"ALIAS TO "<< alias;
+    qDebug()<<"PIERWSZE INFO TO"<<tmpAlias==alias;
+    qDebug()<<"DRUGIE INFO TO "<
+    return ((tmpAlias == alias) && (pass.check(tmpPass)));
+    //return true;
+}
 void ClientApplication::synchWithOverWriting(
         const Utilities::AliasFileList & list)
 {
@@ -598,7 +618,7 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
                         FileLocation(QString(m_tree->getPath()),
                                 m_tree->getFileLocations()[index].m_size,
                                 Identifier(
-                                        m_tree->getFileLocations()[index].m_id)));
+                                        m_tree->getFileLocations()[index].m_id, m_tree->getPath())));
                 //QEventLoop loop;
                 //QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
                 //SLOT(quit()));
@@ -633,17 +653,16 @@ void ClientApplication::moveOnTreeShowList(boost::shared_ptr<AliasTree> tree,
         boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
-                bool number;
-                //TODO HERE
-                qint64 liczba = ((m_tree->getFileLocations()[i].m_date).toInt(
-                        &number, 10));
-                std::cout<<liczba;
+                qint64 date =
+                        (m_tree->getFileLocations()[i].m_date).toLongLong();
+
                 std::cout.width(indent * 4);
                 std::cout << " ";
                 std::cout << m_tree->getFilename().toStdString() << "\t"
-                        << ((QDateTime::fromMSecsSinceEpoch(liczba)).toString()
-                                .toStdString()) << "\t"
-                        << m_tree->getFileLocations()[i].m_size << "\t" << "\n";
+                        << (QDateTime::fromMSecsSinceEpoch(date).toString(
+                                "hh:mm:ss dd/MM/yyyy")).toStdString() << "\t"
+                        << "Size: " << m_tree->getFileLocations()[i].m_size
+                        << "bytes" << "\t" << "\n";
             }
         } else {
             std::cout.width(indent * 4);
@@ -677,13 +696,16 @@ void ClientApplication::moveOnTreeShowListOfConflicts(
                 continue;
 
             for (int j = 0; j < m_tree->getFileLocations().size(); ++j) {
+                qint64 date =
+                        (m_tree->getFileLocations()[i].m_date).toLongLong();
                 std::cout.width(indent * 4);
                 std::cout << " ";
                 std::cout << m_tree->getFilename().toStdString() << "["
                         << (counter++) << "]" << "\t"
-                        << m_tree->getFileLocations()[j].m_date.toStdString()
-                        << "\t" << m_tree->getFileLocations()[j].m_size << "\t"
-                        << "\n";
+                        << (QDateTime::fromMSecsSinceEpoch(date).toString(
+                                "hh:mm:ss dd/MM/yyyy")).toStdString() << "\t"
+                        << "Size: " << m_tree->getFileLocations()[j].m_size
+                        << "bytes" << "\t" << "\n";
 
             }
         } else {
@@ -717,12 +739,16 @@ void ClientApplication::moveOnTreeShowListOfRemote(
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
                 if (m_tree->getFileLocations()[i].m_id
                         != Identify::getMachineIdentificator()) {
+                    qint64 date = (m_tree->getFileLocations()[i].m_date)
+                            .toLongLong();
                     std::cout.width(indent * 4);
                     std::cout << " ";
                     std::cout << m_tree->getFilename().toStdString() << "["
                             << (counter++) << "]" << "\t"
-                            << m_tree->getFileLocations()[i].m_date.toStdString()
-                            << "\t" << m_tree->getFileLocations()[i].m_size
+                            << (QDateTime::fromMSecsSinceEpoch(date).toString(
+                                    "hh:mm:ss dd/MM/yyyy")).toStdString()
+                            << "\t" << "Size:"
+                            << m_tree->getFileLocations()[i].m_size << "b"
                             << "\t" << "\n";
                 }
             }
@@ -756,12 +782,16 @@ void ClientApplication::moveOnTreeShowListOfLocal(
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
                 if (m_tree->getFileLocations()[i].m_id
                         == Identify::getMachineIdentificator()) {
+                    qint64 date = (m_tree->getFileLocations()[i].m_date)
+                            .toLongLong();
                     std::cout.width(indent * 4);
                     std::cout << " ";
                     std::cout << m_tree->getFilename().toStdString() << "["
                             << (counter++) << "]" << "\t"
-                            << m_tree->getFileLocations()[i].m_date.toStdString()
-                            << "\t" << m_tree->getFileLocations()[i].m_size
+                            << (QDateTime::fromMSecsSinceEpoch(date).toString(
+                                    "hh:mm:ss dd/MM/yyyy")).toStdString()
+                            << "\t" << "Size: "
+                            << m_tree->getFileLocations()[i].m_size << "bytes"
                             << "\t" << "\n";
                 }
             }
@@ -827,7 +857,7 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
                                         m_tree->getFileLocations()[j].m_size,
                                         Identifier(
                                                 m_tree->getFileLocations()[j]
-                                                        .m_id)));
+                                                        .m_id,m_tree->getPath())));
                         (*this).setState(ClientApplication::WAITING);
                     }
                     counter++;
@@ -851,7 +881,7 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
                                             m_tree->getFileLocations()[j].m_size,
                                             Identifier(
                                                     m_tree->getFileLocations()[j]
-                                                            .m_id)));
+                                                            .m_id, m_tree->getPath())));
                             (*this).setState(ClientApplication::WAITING);
                         }
                         counter++;
@@ -886,10 +916,13 @@ void ClientApplication::moveOnTreeShowFoundFiles(
         boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
-
+                qint64 date =
+                        (m_tree->getFileLocations()[i].m_date).toLongLong();
                 std::cout << m_tree->getPath().toStdString() << "\t"
-                        << m_tree->getFileLocations()[i].m_date.toStdString()
-                        << "\t" << m_tree->getFileLocations()[i].m_size << "\t"
+                        << (QDateTime::fromMSecsSinceEpoch(date).toString(
+                                "hh:mm:ss dd/MM/yyyy")).toStdString() << "\t"
+                        << "Size: " << m_tree->getFileLocations()[i].m_size
+                        << "bytes" << "\t"
                         << ((m_tree->getFileLocations()[i].m_id
                                 == Identify::getMachineIdentificator()) ?
                                 "Local computer" : "Remote Computer") << "\n";
@@ -903,10 +936,10 @@ void ClientApplication::moveOnTreeShowFoundFiles(
 void ClientApplication::changeRootPath(QString s)
 {
     QString dir = s;
-    s.append(QDir::separator());
-    s.append(ConfigFileName::CONFIG_FILE_NAME);
+    dir.append(QDir::separator());
+    dir.append(ConfigFileName::CONFIG_FILE_NAME);
 
-    QFile file(s);
+    QFile file(dir);
     if (file.exists())
         m_path = s;
     else
