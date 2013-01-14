@@ -266,7 +266,7 @@ CommunicationProtocol::CommunicateNameAndLong::CommunicateNameAndLong(
     QByteArray length = data.mid(4 + size);
     uchar rawData[8];
 
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 8; ++i) {
         rawData[i] = length[i];
     }
 
