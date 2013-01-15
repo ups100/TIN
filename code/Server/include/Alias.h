@@ -180,6 +180,11 @@ private:
     Alias(const Alias &);
 
     /**
+     * @brief Check server IP address
+     */
+    QHostAddress getServerIp();
+
+    /**
      * @brief Executed in state PULL_TRANSFER
      * when all daemons answer or disconnect this is perform.
      */

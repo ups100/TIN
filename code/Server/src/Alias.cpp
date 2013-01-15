@@ -25,6 +25,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QRegExp>
+#include <QHostInfo>
 
 namespace TIN_project {
 namespace Server {
@@ -485,11 +486,13 @@ void Alias::onPullFileFrom(ClientConnection* client,
         qDebug() << "Wrong state. Should by none." << m_currentAction;
         return;
     }
-    qDebug() << "From" << m_name << "Pull file:" << location.getPath();
+    qDebug() << "From" << m_name << "Pull file:" << location.getPath()
+             << "filePath: " <<location.getPath()
+             << "owner: " << location.getOwnerIdentifier().getId();  // TODO delete this and line above. first line zostaw
 
-    if (m_daemons.isEmpty()) {
-        qDebug() << "Send File Transfer Error to Client "
-                 << "because in alias:" << m_name << "is no daemon";
+    if (m_daemons.isEmpty() || m_daemons.size() == 1) {
+        qDebug() << "Send File stop, because in alias:"
+                << m_name << "is no daemon or one";
         client->sendFileTransferError();
         return;
     }
@@ -498,6 +501,9 @@ void Alias::onPullFileFrom(ClientConnection* client,
 
     // remember here a location object for future use
     m_location.append(new Utilities::FileLocation(location));
+    qDebug() << "after appending: size:" << m_location.first()->getSize() //TODO del this 3 line
+             << "fileName: " << m_location.first()->getPath()
+             << "owner: " << m_location.first()->getOwnerIdentifier().getId();
 
     // remember who should be notify about Pull action
     m_notifyClient.append(client);
@@ -523,8 +529,8 @@ void Alias::onPullFileFrom(ClientConnection* client,
         }
         // NEW CONCEPTION - adding this if:
         // finding sender
-        if ( (dc.get()->getIdentifier().getId() == location.getOwnerIdentifier().getId() )
-                && (dc.get()->getIdentifier().getPath() == location.getOwnerIdentifier().getPath() ) )
+        if ( (dc.get()->getIdentifier().getId() == location.getOwnerIdentifier().getId() ) ) // TODO TODO TODO TODO TODO - komentarz napraw nizej:
+                //&& (dc.get()->getIdentifier().getPath() == location.getOwnerIdentifier().getPath() ) )
             m_senderDaemon = dc.get();  // TODO sprawdź czy to nie rozmnaża shared_ptr - czy program konczy sie poprawnie?
 
         /* PREVIOUS PULL CONCEPTION
@@ -535,11 +541,11 @@ void Alias::onPullFileFrom(ClientConnection* client,
         */
      }
 
+    qDebug() << "rozmiar pliku do wysylki - pull" << location.getSize();   // TODO remove this line
+
     //NEW CONCEPTION:
     performPullAction(); // executing next commands
 
-
-    qDebug() << "rozmiar pliku do wysylki" << location.getSize();   // TODO remove this line
 
     //previous conception comment below
 //NOT// Waiting for all Daemon acknowledge. Next instruction are in onFindFile or onNoSuchFile
@@ -554,9 +560,9 @@ void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
     }
     qDebug() << "Pushing a file" << path << "to alias:" << m_name;
 
-    if (m_daemons.isEmpty()) {
-        qDebug() << "Stop push. Send File Transfer Error to Client "
-                 << "because in alias:" << m_name << "is no daemon";
+    if (m_daemons.isEmpty() || m_daemons.size() == 1) {
+        qDebug() << "Stop push. because in alias:"
+                << m_name << "is no daemon or one";
         client->sendFileTransferError();
         return;
     }
@@ -596,7 +602,8 @@ void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
 
     // save file properties - which will be need when transfer start in performPushAction
     // note I never use this FileLocation identifier so it is empty
-    m_location.append( new Utilities::FileLocation(path, size, Utilities::Identifier(QString())) ); //TODO remember to delete
+    qDebug() << "Server knew size of file: "<< size;    //TODO delet this line
+    m_location.append( new Utilities::FileLocation(path, size, Utilities::Identifier(QString())) ); //TODO remember to free this
 
     // and send a request to all Daemon to check if they have pushed file
     foreach(DaemonConnection *dc, m_actionDaemon) {
@@ -700,9 +707,18 @@ void Alias::performPullAction()
         return; // TODO wyczysc dane w tym przypadku
     }
 
+    if (m_senderDaemon == m_receiverDaemon.first()) {
+        qDebug() << "The same daemons for sender and receiver. Error";
+        m_clients.first()->sendFileTransferError();
+        return;
+    }
+
     // preparing data
+    qDebug() << "preparing data";
     QString fileName(m_location.first()->getPath());
     int fileSize = m_location.first()->getSize();
+    qDebug() << "filePath:" << fileName << "size:" << fileSize
+             << "ownerID" << m_location.first()->getOwnerIdentifier().getId(); //TODO del this
 
     // PULL FILE EXECUTION STARTED // between ONLY 2 daemons:
     boost::shared_ptr<FileTransferServer> fts(new FileTransferServer(this,2,fileSize));
@@ -715,10 +731,16 @@ void Alias::performPullAction()
         m_currentAction = NONE;
         return;
     }
+    qDebug() << "FTS for pull address: "<< fts->getAddress()
+             << "FTS port: " << fts->getPort();
 
     // proper send action started
+    qDebug() << "Notify sender... ";
     m_senderDaemon->sendSendFile(fileName, fts->getAddress(), fts->getPort());
-    m_actionDaemon.first()->sendReciveFile(fileName, fts->getAddress(), fts->getPort(), fileSize);  //TODO blad ze m_action
+    qDebug() << "Notify receiver";
+    // komentarz niżej to byl blad ? Co tam robi m_actionDaemon ???
+    //m_actionDaemon.first()->sendReciveFile(fileName, fts->getAddress(), fts->getPort(), fileSize);  //TODO blad ze m_action
+    m_receiverDaemon.first()->sendReciveFile(fileName, fts->getAddress(), fts->getPort(), fileSize);  //TODO blad ze m_action
 
     // don't change state here - it will be done in afterPullAction() method
 }
@@ -749,6 +771,7 @@ void Alias::afterPullAction()
     // TODO choice
     m_transfers.first()->deleteLater();
     //QTimer::singleShot(0, m_transfers.first().get(), SLOT(deleteLater()));
+    m_transfers.clear();
 }
 
 void Alias::performPushAction()
@@ -761,35 +784,66 @@ void Alias::performPushAction()
     }
 
     if (m_receiverDaemon.size() == 0) {
-        qDebug() << "Nobody wants to receive pushed file.";     // TODO
+        qDebug() << "Nobody wants to receive pushed file.";
+        qDebug() << "but we have " << m_daemons.size() <<"daemons";
         int x = qrand() % m_daemons.size();
-        if (m_daemons.at(x).get() == m_senderDaemon)
-            x = (x+1) % m_daemons.size();
-        m_receiverDaemon.append((m_daemons.takeAt(x)).get());
+        int i = 0; // counter
+        foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
+            if (x == i && dc.get() == m_senderDaemon ) {
+                //qDebug() << "Alias:push, wylosowany ten sam daemon co klient " << x;  //TODO usun to
+                x = (x+1) % m_daemons.size();
+                break;
+            }
+            if (x == i)
+                break;
+
+            ++i; // must be here
+        }
+        i = 0;
+
+        foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
+            if (x == i && dc.get() == m_senderDaemon ) {
+                qDebug() << "It can't be such situation."
+                        << "Double daemons corresponding to client.";
+            }
+            if (x == i) {
+                m_receiverDaemon.append(dc.get());
+                break;
+            }
+            ++i; // must be here
+        }
+        if (m_receiverDaemon.size() == 0)
+            qDebug() << "Amount of receiver is still 0 fatal error.";
     }
 
     //preparing data:
     QString filePath(m_location.first()->getPath());
     quint32 fileSize = m_location.first()->getSize();
+    //qDebug() << "Ten sam rozmiar pliku co alias knew to: " << fileSize; //TODO remove
     // I don't need FileLocation object any more so:
-    delete m_location.first();
-    m_location.clear();
+    //delete m_location.first();
+    //m_location.clear();
 
     // remember to add 1 to number of receivers
+    qDebug() << "FileTransferServer start. Liczba receiverow to:" << m_receiverDaemon.size();
     boost::shared_ptr<FileTransferServer> fts(new FileTransferServer(this,m_receiverDaemon.size() + 1, fileSize));
     m_transfers.append(fts);
 
-    if (fts->startFileServer()==false) {
+    if (fts->startFileServer(getServerIp())==false) {
         qDebug() << "in Alias: FileTransferServer don't start properly while Push.";
         fts->deleteLater();
         m_clients.first()->sendFileTransferError();
         m_currentAction = NONE;
         return;
     }
+    qDebug() << "FTS for pushing: address: " << fts->getAddress()
+             << "port" << fts->getPort();
 
     // proper send action started
+    qDebug() << "sender is notify to push a file";
     m_senderDaemon->sendSendFile(filePath, fts->getAddress(), fts->getPort());
     foreach(DaemonConnection *dc, m_receiverDaemon) {
+        qDebug() <<"receiver is notify to receive a file";  // TODO usun
         dc->sendReciveFile(filePath, fts->getAddress(), fts->getPort(), fileSize);
     }
 
@@ -804,6 +858,7 @@ void Alias::afterPushAction()
         qDebug() << "Wrong state. Should by Push_transfer" << m_currentAction;
         return;
     }
+    qDebug() << "czyszczenie po pushowaniu";
 
     // transfer ended so changes state
     m_currentAction = NONE;
@@ -820,6 +875,28 @@ void Alias::afterPushAction()
     // TODO choice
     m_transfers.first()->deleteLater();
     //QTimer::singleShot(0, m_transfers.first().get(), SLOT(deleteLater()));
+}
+
+QHostAddress Alias::getServerIp()
+{
+    QHostInfo info;
+    // the return value of server ip
+    QHostAddress address = QHostAddress::Any;
+    qDebug() << "Number of server addreses: " << info.addresses().size();
+
+    if (!info.addresses().isEmpty()) {
+        address = info.addresses().first();
+        qDebug() << "First find ip address: " << address;
+
+        if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6) {
+            //address = info.addresses().takeAt(1);
+            // maybe:
+            address = info.addresses().at(1);
+        }
+    }
+    qDebug() << "inAlias::checkServerIP: " << address;
+
+    return address;
 }
 
 void Alias::performFindFile()

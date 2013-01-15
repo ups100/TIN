@@ -153,12 +153,13 @@ void DaemonThread::onFindFile(const QString &fileName)
     enum QDirIterator::IteratorFlag searchFlag = QDirIterator::Subdirectories;
     // use fileNameCorrect instead of fileName - see below in if block
     QString fileNameCorrect(fileName);
+    //QDirIterator it(m_config->m_cataloguePath, QDirIterator::Subdirectories); // is set below in else block
     // the found files list:
-    //QDirIterator it(m_config->m_cataloguePath, QDirIterator::Subdirectories); // is below in else block
     QList<QString> foundPaths;
 
-    QRegExp dotAndSlash("^(\./)");
-    if (dotAndSlash.indexIn(fileName) != -1) {
+    if (fileName[0] == QDir::separator()) fileNameCorrect.replace(0,1,"");
+    QRegExp dotAndSlash("^(\\./)");
+    if (dotAndSlash.indexIn(fileNameCorrect) != -1) {
         qDebug() << "Search only root alias level - because type ./ in"
                 << fileName;
         // tells qDirIterator do not go deeper into catalog structure
@@ -357,7 +358,12 @@ void DaemonThread::onReciveFile(const QString& fileName,
 {
     //TODO onReceive
     QString filePath(m_config->m_cataloguePath);
-    filePath += "/";
+    // adding slash when its needed:
+    qDebug() << "filenama in receiver is" << fileName;
+    qDebug() << "Katalog domowy receivera: " << filePath;
+    qDebug() << "Adres odbioru" << address << "port" << port;
+    //adding slash when is necessary
+    if (fileName[0] != QDir::separator()) filePath += QDir::separator();
     filePath += fileName;
     qDebug() << "Somebody wants to Receive file in: " << filePath;
 
@@ -370,7 +376,7 @@ void DaemonThread::onReciveFile(const QString& fileName,
         recFile.rename(orig);
     }
 
-    qDebug() << "receiver ma taki plik " << size;
+    qDebug() << "receiver ma taki plik "<< filePath << "with size:" << size;
     m_receiver.append(new FileReciver(this, new QFile(filePath), size));
     m_receiver.last()->connectToServer(address, port);
 
@@ -401,7 +407,12 @@ void DaemonThread::onSendFile(const QString& fileName,
 {
     // TODO onSendFile - permission zrobic i co jesli plik nie istnieje?
     QString filePath(m_config->m_cataloguePath);
-    filePath += "/";
+    qDebug() << "fileName in sender is" << fileName;
+    qDebug() << "Katalog domowy sendera: " << filePath;
+    qDebug() << "Adres wysylki: " << address << "port" << port;   // TODO del this
+    // adding slash if necessary
+    if (fileName[0] != QDir::separator()) filePath += QDir::separator();
+    //filePath += "/";
     filePath += fileName;
     qDebug() << "I send somebody file: " << filePath;
 
