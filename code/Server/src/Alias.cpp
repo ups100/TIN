@@ -35,7 +35,7 @@ Alias::~Alias()
     // TODO
 }
 
-Alias::Alias(const QString& name, Utilities::Password password)
+Alias::Alias(const QString& name, Utilities::Password password, QHostAddress address)
         : m_name(name), m_password(password), m_senderDaemon(NULL),
           m_removeFind(false)
 {
