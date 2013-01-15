@@ -310,6 +310,8 @@ private:
      */
     enum AliasAction m_currentAction;
 
+    QHostAddress m_address;
+
 };
 
 } //namespace server

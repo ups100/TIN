@@ -37,7 +37,7 @@ Alias::~Alias()
 
 Alias::Alias(const QString& name, Utilities::Password password, QHostAddress address)
         : m_name(name), m_password(password), m_senderDaemon(NULL),
-          m_removeFind(false)
+          m_removeFind(false), m_address(address)
 {
     m_currentAction = NONE;
     qRegisterMetaType<ClientConnection*>("ClientConnection*");
@@ -724,7 +724,7 @@ void Alias::performPullAction()
     boost::shared_ptr<FileTransferServer> fts(new FileTransferServer(this,2,fileSize));
     m_transfers.append(fts);
 
-    if(fts->startFileServer()==false) {
+    if(fts->startFileServer(this->m_address)==false) {
         qDebug() << "in Alias: FileTransferServer don't start properly while Pull";
         m_notifyClient.first()->sendFileTransferError();
         fts->deleteLater();
@@ -879,6 +879,7 @@ void Alias::afterPushAction()
 
 QHostAddress Alias::getServerIp()
 {
+    /*
     QHostInfo info;
     // the return value of server ip
     QHostAddress address = QHostAddress::Any;
@@ -893,10 +894,10 @@ QHostAddress Alias::getServerIp()
             // maybe:
             address = info.addresses().at(1);
         }
-    }
-    qDebug() << "inAlias::checkServerIP: " << address;
+    }*/
+    qDebug() << "inAlias::checkServerIP: " << m_address;
 
-    return address;
+    return m_address;
 }
 
 void Alias::performFindFile()
