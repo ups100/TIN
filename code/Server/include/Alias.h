@@ -142,7 +142,7 @@ public:
 
     virtual void onFindFile(ClientConnection *client, const QString& name);
 
-    virtual void onListAlias(ClientConnection *client);
+    virtual void onListAlias(ClientConnection *client, bool remoteOnly);
 
     virtual void onNoSuchFile(DaemonConnection *daemon);
 

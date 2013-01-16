@@ -404,7 +404,7 @@ void Alias::onFindFile(ClientConnection* client, const QString& name)
 
 }
 
-void Alias::onListAlias(ClientConnection* client)
+void Alias::onListAlias(ClientConnection* client, bool remoteOnly)
 {
     if (m_currentAction != NONE) {
         qDebug() << "IN onListAlias. Wrong state. Should be none" << m_currentAction;
