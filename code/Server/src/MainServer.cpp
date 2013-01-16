@@ -166,10 +166,10 @@ int MainServer::start(const QHostAddress& address, quint16 port, const QHostAddr
 //            <catalogue path="/home/kajo/workspace/tin/testDir2"/>
 //        </thread>
 //    </threads>
-//    Alias *alias = new Alias("TEST", Utilities::Password(QString("123")));
-//    alias->start();
-//    boost::shared_ptr<Alias> ptr(alias);
-//    m_aliases.append(ptr);
+    Alias *alias = new Alias("TEST", Utilities::Password(QString("123")), m_outerAddress);
+    alias->start();
+    boost::shared_ptr<Alias> ptr(alias);
+    m_aliases.append(ptr);
 
     return m_application.exec();
 }
