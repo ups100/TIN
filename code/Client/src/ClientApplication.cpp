@@ -333,6 +333,8 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         m_serverConnection.disconnectFromServer();
 
     } else if (cmd->getCommand() == "disconnect") {
+        m_alias = "";
+        m_password = NULL;
         (*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
         m_serverConnection.disconnectFromServer();
         QEventLoop loop;
@@ -401,7 +403,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
     }
     else if ((cmd->getCommand() == "ls") && (cmd->getParameter() == "l")) {
 
-        (*this).listLocalPath();
+        showListOfLocal((*this).listLocalPath());
     }
     else if (cmd->getCommand() == "ls") {
         (*this).setState(ClientApplication::WAITING);
