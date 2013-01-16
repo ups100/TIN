@@ -342,9 +342,10 @@ void ServerConnection::socketReadyReadSlot()
                     }
                     size = m_socket->read(4);
                     m_sizeOk = true;
+                    m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                                            size);
                 }
-                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
-                        size);
+
 
                 if (m_socket->bytesAvailable() < m_messageSize) {
                     return;
@@ -371,9 +372,10 @@ void ServerConnection::socketReadyReadSlot()
                     }
                     size = m_socket->read(4);
                     m_sizeOk = true;
+                    m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                                            size);
                 }
-                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
-                        size);
+
 
                 if (m_socket->bytesAvailable() < m_messageSize) {
                     return;

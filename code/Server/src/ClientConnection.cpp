@@ -247,10 +247,9 @@ void ClientConnection::socketReadyReadSlot()
                 if (m_socket->bytesAvailable() < 1) {
                     return;
                 }
+
+                data = m_socket->read(1);
                 m_currentMessageId = CHAR_MAX;
-
-                data = m_socket->read(m_messageSize);
-
                 CommunicationProtocol::Communicate<
                                         CommunicationProtocol::LIST_ALIAS> message(data);
 
@@ -266,9 +265,10 @@ void ClientConnection::socketReadyReadSlot()
                     }
                     size = m_socket->read(4);
                     m_sizeOk = true;
+                    m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                                            size);
                 }
-                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
-                        size);
+
 
                 if (m_socket->bytesAvailable() < m_messageSize) {
                     return;
@@ -294,9 +294,9 @@ void ClientConnection::socketReadyReadSlot()
                     }
                     size = m_socket->read(4);
                     m_sizeOk = true;
+                    m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                                            size);
                 }
-                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
-                        size);
 
                 if (m_socket->bytesAvailable() < m_messageSize) {
                     return;
@@ -323,9 +323,10 @@ void ClientConnection::socketReadyReadSlot()
                     }
                     size = m_socket->read(4);
                     m_sizeOk = true;
+                    m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                                            size);
                 }
-                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
-                        size);
+
 
                 if (m_socket->bytesAvailable() < m_messageSize) {
                     return;
@@ -353,9 +354,10 @@ void ClientConnection::socketReadyReadSlot()
                     }
                     size = m_socket->read(4);
                     m_sizeOk = true;
+                    m_messageSize = CommunicationProtocol::getIntFromQByteArray(
+                                           size);
                 }
-                m_messageSize = CommunicationProtocol::getIntFromQByteArray(
-                        size);
+
 
                 if (m_socket->bytesAvailable() < m_messageSize) {
                     return;
@@ -378,6 +380,7 @@ void ClientConnection::socketReadyReadSlot()
 
             default:
                 qDebug() << "Unknown code received " << m_currentMessageId;
+                m_currentMessageId = CHAR_MAX;
                 break;
         }
     } while (m_socket->bytesAvailable() != 0);
