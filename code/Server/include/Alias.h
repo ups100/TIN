@@ -312,7 +312,15 @@ private:
      */
     enum AliasAction m_currentAction;
 
+    /**
+     * @brief Outer server IP address
+     */
     QHostAddress m_address;
+
+    /**
+     * @brief If true transfer is still in progress.
+     */
+    bool m_onTransmission;
 
 };
 
