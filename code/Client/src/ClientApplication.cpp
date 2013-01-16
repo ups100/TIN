@@ -608,10 +608,10 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
                         << m_tree->getFileLocations()[index].m_date;
                 m_serverConnection.pushFileToAlias(QString(m_tree->getPath()),
                         m_tree->getFileLocations()[index].m_size);
-                //QEventLoop loop;
-                //QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
-                // SLOT(quit()));
-                //loop.exec();
+                QEventLoop loop;
+                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+                 SLOT(quit()));
+                loop.exec();
             } else {
                 qDebug() << m_tree->getPath() << "PULL"
                         << m_tree->getFileLocations()[index].m_date;
@@ -620,10 +620,10 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
                                 m_tree->getFileLocations()[index].m_size,
                                 Identifier(
                                         m_tree->getFileLocations()[index].m_id, m_tree->getPath())));
-                //QEventLoop loop;
-                //QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
-                //SLOT(quit()));
-                //loop.exec();
+                QEventLoop loop;
+                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+                SLOT(quit()));
+                loop.exec();
             }
 
             /** TODO Seems to be useless here */

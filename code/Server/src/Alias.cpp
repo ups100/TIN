@@ -122,7 +122,7 @@ void Alias::stop()
     m_daemons.clear();
 
     //stop file transfers
-    foreach(boost::shared_ptr<FileTransferServer> connection, m_transfers){
+    foreach(FileTransferServer *connection, m_transfers){
     connection->disconnectFromAliasSynch();
 }
     m_transfers.clear();
@@ -333,7 +333,9 @@ void Alias::onFileTransferStarted(FileTransferServer *transfer) //TODO dodaj Pus
 void Alias::onFileTransferCompleted(FileTransferServer *transfer)
 {
     // Client should know about it:
-    m_notifyClient.first()->sendFileTransferFinished();
+    qDebug()<<"funkjca on transfer Completed";
+    qDebug()<<m_notifyClient.size();
+    m_clients.first()->sendFileTransferFinished();
 
     switch (m_currentAction) {
         case PULL_TRANSFER:
@@ -721,10 +723,10 @@ void Alias::performPullAction()
              << "ownerID" << m_location.first()->getOwnerIdentifier().getId(); //TODO del this
 
     // PULL FILE EXECUTION STARTED // between ONLY 2 daemons:
-    boost::shared_ptr<FileTransferServer> fts(new FileTransferServer(this,2,fileSize));
+    FileTransferServer *fts = new FileTransferServer(this,2,fileSize);
     m_transfers.append(fts);
 
-    if(fts->startFileServer(this->m_address)==false) {
+    if(fts->startFileServer()==false) {
         qDebug() << "in Alias: FileTransferServer don't start properly while Pull";
         m_notifyClient.first()->sendFileTransferError();
         fts->deleteLater();
@@ -736,11 +738,11 @@ void Alias::performPullAction()
 
     // proper send action started
     qDebug() << "Notify sender... ";
-    m_senderDaemon->sendSendFile(fileName, fts->getAddress(), fts->getPort());
+    m_senderDaemon->sendSendFile(fileName, this->m_address, fts->getPort());
     qDebug() << "Notify receiver";
     // komentarz niżej to byl blad ? Co tam robi m_actionDaemon ???
     //m_actionDaemon.first()->sendReciveFile(fileName, fts->getAddress(), fts->getPort(), fileSize);  //TODO blad ze m_action
-    m_receiverDaemon.first()->sendReciveFile(fileName, fts->getAddress(), fts->getPort(), fileSize);  //TODO blad ze m_action
+    m_receiverDaemon.first()->sendReciveFile(fileName, this->m_address, fts->getPort(), fileSize);  //TODO blad ze m_action
 
     // don't change state here - it will be done in afterPullAction() method
 }
@@ -769,8 +771,8 @@ void Alias::afterPullAction()
     m_senderDaemon = NULL;
 
     // TODO choice
-    m_transfers.first()->deleteLater();
-    //QTimer::singleShot(0, m_transfers.first().get(), SLOT(deleteLater()));
+    //m_transfers.first()->deleteLater();
+    QTimer::singleShot(0, m_transfers.first(), SLOT(deleteLater()));
     m_transfers.clear();
 }
 
@@ -826,10 +828,10 @@ void Alias::performPushAction()
 
     // remember to add 1 to number of receivers
     qDebug() << "FileTransferServer start. Liczba receiverow to:" << m_receiverDaemon.size();
-    boost::shared_ptr<FileTransferServer> fts(new FileTransferServer(this,m_receiverDaemon.size() + 1, fileSize));
+    FileTransferServer *fts = new FileTransferServer(this,m_receiverDaemon.size() + 1, fileSize);
     m_transfers.append(fts);
 
-    if (fts->startFileServer(getServerIp())==false) {
+    if (fts->startFileServer()==false) {
         qDebug() << "in Alias: FileTransferServer don't start properly while Push.";
         fts->deleteLater();
         m_clients.first()->sendFileTransferError();
@@ -841,10 +843,10 @@ void Alias::performPushAction()
 
     // proper send action started
     qDebug() << "sender is notify to push a file";
-    m_senderDaemon->sendSendFile(filePath, fts->getAddress(), fts->getPort());
+    m_senderDaemon->sendSendFile(filePath, m_address, fts->getPort());
     foreach(DaemonConnection *dc, m_receiverDaemon) {
         qDebug() <<"receiver is notify to receive a file";  // TODO usun
-        dc->sendReciveFile(filePath, fts->getAddress(), fts->getPort(), fileSize);
+        dc->sendReciveFile(filePath, this->m_address, fts->getPort(), fileSize);
     }
 
     // client is notify about start sending when all daemon will be connected
@@ -873,8 +875,9 @@ void Alias::afterPushAction()
     m_senderDaemon = NULL;
 
     // TODO choice
-    m_transfers.first()->deleteLater();
-    //QTimer::singleShot(0, m_transfers.first().get(), SLOT(deleteLater()));
+    //m_transfers.first()->deleteLater();
+    QTimer::singleShot(0, m_transfers.first(), SLOT(deleteLater()));
+    m_transfers.clear();
 }
 
 QHostAddress Alias::getServerIp()

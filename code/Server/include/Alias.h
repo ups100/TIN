@@ -232,7 +232,7 @@ private:
     /**
      * @brief File transfers in alias
      */
-    QList<boost::shared_ptr<FileTransferServer> > m_transfers;
+    QList<FileTransferServer* > m_transfers;
 
     /**
      * @brief Name of alias
