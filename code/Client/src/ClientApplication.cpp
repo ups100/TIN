@@ -334,7 +334,6 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
 
     } else if (cmd->getCommand() == "disconnect") {
         m_alias = "";
-        m_password = NULL;
         (*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
         m_serverConnection.disconnectFromServer();
         QEventLoop loop;
@@ -400,14 +399,15 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
     } else if ((cmd->getCommand() == "ls") && (cmd->getParameter() == "r")) {
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.listAlias(true);
-    }
-    else if ((cmd->getCommand() == "ls") && (cmd->getParameter() == "l")) {
 
+    } else if ((cmd->getCommand() == "ls") && (cmd->getParameter() == "l")) {
         showListOfLocal((*this).listLocalPath());
-    }
-    else if (cmd->getCommand() == "ls") {
+        QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
+
+    } else if (cmd->getCommand() == "ls") {
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.listAlias();
+
     } else if ((cmd->getCommand() == "synch") && (cmd->getParameter() == "o")) {
         m_serverConnection.listAlias();
         (*this).setState(ClientApplication::WAITING);
@@ -470,7 +470,8 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
     if (!cmd->isCorrect())
         return false;
     if (cmd->getCommand() == "log") {
-        //NOTHING??
+        //return ((*this).checkIntegrityOfConfigFile(m_path, cmd->getArg(),
+        //cmd->getPassword()));
     }
     if (cmd->getCommand() == "change") {
         return (*this).checkAbsolutePath(cmd->getArg());
@@ -479,10 +480,6 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
                 && (!(*this).checkIfConfigFileExists(cmd->getArg2())));
     }
     if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "")) {
-        qDebug() << "TU WCHODZIMY";
-        qDebug()
-                << (*this).checkIntegrityOfConfigFile(cmd->getArg2(),
-                        cmd->getArg(), cmd->getPassword());
         return ((*this).checkAbsolutePath(cmd->getArg2())
                 && ((*this).checkIntegrityOfConfigFile(cmd->getArg2(),
                         cmd->getArg(), cmd->getPassword())));
@@ -509,7 +506,6 @@ bool ClientApplication::checkStateCondition(
         qDebug() << "We shouldn't be here at all";
     if (state == ClientApplication::WAITING_FOR_DISCONNECT)
         qDebug() << "We shouldn't be here at all";
-
     if (state == ClientApplication::CONNECTED) {
         if (cmd->getCommand() == "log")
             return true;
@@ -931,8 +927,6 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
                                 == Identify::getMachineIdentificator())) {
 
                     if (index == counter) {
-                        qDebug() << "ZNALEZIONO " << m_tree->getPath();
-
                         m_serverConnection.pushFileToAlias(m_tree->getPath(),
                                 m_tree->getFileLocations()[j].m_size);
                         (*this).setState(ClientApplication::WAITING);
@@ -943,7 +937,6 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
                         && (m_tree->getFileLocations()[j].m_id
                                 != Identify::getMachineIdentificator())) {
                     if (index == counter) {
-                        qDebug() << "ZNALEZIONO " << m_tree->getPath();
                         m_serverConnection.pullFileFrom(
                                 FileLocation(m_tree->getPath(),
                                         m_tree->getFileLocations()[j].m_size,
