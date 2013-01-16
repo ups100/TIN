@@ -53,6 +53,8 @@ public:
      *
      * @param[in] password to this alias
      *
+     * @param[in] address of running Server
+     *
      * @note Remember to start alias after creation with start() function.
      */
     Alias(const QString& name, Utilities::Password password, QHostAddress address);

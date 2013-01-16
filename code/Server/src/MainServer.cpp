@@ -100,7 +100,7 @@ void MainServer::onCreateAlias(UnknownConnection *connection,
         }
     }
 
-    Alias *alias = new Alias(aliasName, password, m_server.serverAddress());
+    Alias *alias = new Alias(aliasName, password, m_outerAddress);
     alias->start();
     boost::shared_ptr<Alias> ptr(alias);
     m_aliases.append(ptr);
@@ -134,8 +134,9 @@ void MainServer::addNewConnection(UnknownConnection *connection)
     m_connections.append(shared);
 }
 
-int MainServer::start(const QHostAddress& address, quint16 port)
+int MainServer::start(const QHostAddress& address, quint16 port, const QHostAddress& outerAddress)
 {
+    m_outerAddress = outerAddress;
     if (m_application.isRunning()) {
         qDebug() << "Another instance of server is now running";
         return -1;
