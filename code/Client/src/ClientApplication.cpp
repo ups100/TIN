@@ -360,7 +360,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
     } else if (cmd->getCommand() == "add") {
         m_path = cmd->getArg2();
         Utilities::CommunicationProtocol::Communicate<
-        Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
+                Utilities::CommunicationProtocol::ADD_DIRECTORY_AND_CONNECT> message(
                 Utilities::Message(cmd->getArg(), cmd->getPassword(),
                         cmd->getArg2(), m_address, m_port));
         QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
@@ -368,7 +368,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
 
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "")) {
         Utilities::CommunicationProtocol::Communicate<
-        Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
+                Utilities::CommunicationProtocol::REMOVE_DIRECTORY_AND_DISCONNECT> message(
                 Utilities::Message(cmd->getArg(), cmd->getArg2()));
         QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
         m_DaemonCommunication.talkToDaemon(message.toQByteArray());
@@ -395,18 +395,18 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         (*this).invokeCommandByIndex((*this).m_list, cmd->getArg(),
                 cmd->getCommand());
 
+    } else if ((cmd->getCommand() == "ls") && (cmd->getParameter() == "r")) {
+        (*this).setState(ClientApplication::WAITING);
+        m_serverConnection.listAlias(true);
     }
-    else if ((cmd->getCommand() == "ls") && (cmd->getParameter() == "r")) {
-                (*this).setState(ClientApplication::WAITING);
-                m_serverConnection.listAlias(true);
-            }
-else if (cmd->getCommand() == "ls") {
+    else if ((cmd->getCommand() == "ls") && (cmd->getParameter() == "l")) {
+
+        (*this).listLocalPath();
+    }
+    else if (cmd->getCommand() == "ls") {
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.listAlias();
-
-    }
-
-            else if ((cmd->getCommand() == "synch") && (cmd->getParameter() == "o")) {
+    } else if ((cmd->getCommand() == "synch") && (cmd->getParameter() == "o")) {
         m_serverConnection.listAlias();
         (*this).setState(ClientApplication::WAITING);
 
@@ -426,13 +426,11 @@ else if (cmd->getCommand() == "ls") {
 
     } else if (cmd->getCommand() == "change") {
         (*this).changeRootPath(cmd->getArg());
-        qDebug() << "NIE ROBCIE TEGO, TO NIE MA DZIALAC";
-        QTimer::singleShot(0, &(*m_view),             SLOT(reconnectNotifier())
-)            ;
+        QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 
-        }
-        return true;
     }
+    return true;
+}
 
 int ClientApplication::start(const QHostAddress& address, quint16 port,
         QString path)
@@ -603,7 +601,7 @@ bool ClientApplication::checkIntegrityOfConfigFile(QString path, QString alias,
 void ClientApplication::synchWithOverWriting(
         const Utilities::AliasFileList & list)
 {
-    boost::shared_ptr < AliasTree > tree(new AliasTree(list.getTree()));
+    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
 
     (*this).moveOnTreeAutoSynch(tree, 0, counter);
@@ -616,9 +614,9 @@ void ClientApplication::synchWithOverWriting(
 void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
         int indent, int & counter)
 {
-    QList < boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
+    QList<boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
     for (int i = 0; i < list.size(); ++i) {
-        boost::shared_ptr < AliasTree > m_tree = list[i];
+        boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             int index = 0;
             long int maxDate =
@@ -690,7 +688,7 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
 
 void ClientApplication::showList(const Utilities::AliasFileList & list)
 {
-    boost::shared_ptr < AliasTree > tree(new AliasTree(list.getTree()));
+    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
     (*this).moveOnTreeShowList(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
@@ -701,9 +699,9 @@ void ClientApplication::showList(const Utilities::AliasFileList & list)
 void ClientApplication::moveOnTreeShowList(boost::shared_ptr<AliasTree> tree,
         int indent, int & counter)
 {
-    QList < boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
+    QList<boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
     for (int i = 0; i < list.size(); ++i) {
-        boost::shared_ptr < AliasTree > m_tree = list[i];
+        boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
                 qint64 date =
@@ -739,7 +737,7 @@ void ClientApplication::moveOnTreeShowList(boost::shared_ptr<AliasTree> tree,
 
 void ClientApplication::showListOfConflicts(const AliasFileList & list)
 {
-    boost::shared_ptr < AliasTree > tree(new AliasTree(list.getTree()));
+    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
     (*this).moveOnTreeShowListOfConflicts(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
@@ -750,10 +748,10 @@ void ClientApplication::showListOfConflicts(const AliasFileList & list)
 void ClientApplication::moveOnTreeShowListOfConflicts(
         boost::shared_ptr<AliasTree> tree, int indent, int & counter)
 {
-    QList < boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
+    QList<boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
 
     for (int i = 0; i < list.size(); ++i) {
-        boost::shared_ptr < AliasTree > m_tree = list[i];
+        boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             if (m_tree->getFileLocations().size() == 1)
                 continue;
@@ -793,7 +791,7 @@ void ClientApplication::moveOnTreeShowListOfConflicts(
 
 void ClientApplication::showListOfRemote(const AliasFileList& list)
 {
-    boost::shared_ptr < AliasTree > tree(new AliasTree(list.getTree()));
+    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
     (*this).moveOnTreeShowListOfRemote(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
@@ -804,9 +802,9 @@ void ClientApplication::showListOfRemote(const AliasFileList& list)
 void ClientApplication::moveOnTreeShowListOfRemote(
         boost::shared_ptr<AliasTree> tree, int indent, int & counter)
 {
-    QList < boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
+    QList<boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
     for (int i = 0; i < list.size(); ++i) {
-        boost::shared_ptr < AliasTree > m_tree = list[i];
+        boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
                 if (m_tree->getFileLocations()[i].m_id
@@ -846,7 +844,7 @@ void ClientApplication::moveOnTreeShowListOfRemote(
 
 void ClientApplication::showListOfLocal(const AliasFileList& list)
 {
-    boost::shared_ptr < AliasTree > tree(new AliasTree(list.getTree()));
+    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
     (*this).moveOnTreeShowListOfLocal(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
@@ -857,9 +855,9 @@ void ClientApplication::showListOfLocal(const AliasFileList& list)
 void ClientApplication::moveOnTreeShowListOfLocal(
         boost::shared_ptr<AliasTree> tree, int indent, int & counter)
 {
-    QList < boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
+    QList<boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
     for (int i = 0; i < list.size(); ++i) {
-        boost::shared_ptr < AliasTree > m_tree = list[i];
+        boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
                 if (m_tree->getFileLocations()[i].m_id
@@ -900,7 +898,7 @@ void ClientApplication::moveOnTreeShowListOfLocal(
 void ClientApplication::invokeCommandByIndex(Utilities::AliasFileList & list,
         QString ind, QString command)
 {
-    boost::shared_ptr < AliasTree > tree(new AliasTree(list.getTree()));
+    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
     bool ok;
     int index = ind.toInt(&ok, 10);
@@ -915,10 +913,10 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
         int indent, int & counter, int index, QString command)
 {
 
-    QList < boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
+    QList<boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
 
     for (int i = 0; i < list.size(); ++i) {
-        boost::shared_ptr < AliasTree > m_tree = list[i];
+        boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
 
             if ((command == "choose")
@@ -994,7 +992,7 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
 
 void ClientApplication::showListOfFoundFiles(const AliasFileList& list)
 {
-    boost::shared_ptr < AliasTree > tree(new AliasTree(list.getTree()));
+    boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
     (*this).moveOnTreeShowFoundFiles(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
@@ -1005,9 +1003,9 @@ void ClientApplication::showListOfFoundFiles(const AliasFileList& list)
 void ClientApplication::moveOnTreeShowFoundFiles(
         boost::shared_ptr<AliasTree> tree, int indent, int & counter)
 {
-    QList < boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
+    QList<boost::shared_ptr<AliasTree> > list = tree->getMDirContent();
     for (int i = 0; i < list.size(); ++i) {
-        boost::shared_ptr < AliasTree > m_tree = list[i];
+        boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
                 qint64 date =
