@@ -75,6 +75,8 @@ public:
      *
      * @param[in] port to listen
      *
+     * @param[in] outerAddress is outer Server Address
+     *
      * @return value returned by event loop
      */
     int start(const QHostAddress& address, quint16 port, const QHostAddress& outerAddress);

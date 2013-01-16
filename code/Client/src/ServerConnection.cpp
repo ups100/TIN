@@ -119,11 +119,11 @@ void ServerConnection::findFileInAlias(const QString& fileName)
     }
 }
 
-void ServerConnection::listAlias()
+void ServerConnection::listAlias(bool remoteOnly)
 {
     QMutexLocker locker(&this->m_mutex);
     if (m_isReadyState) {
-        CommunicationProtocol::Communicate<CommunicationProtocol::LIST_ALIAS> message;
+        CommunicationProtocol::Communicate<CommunicationProtocol::LIST_ALIAS> message(remoteOnly);
         emit sendData(new QByteArray(message.toQByteArray()));
     } else {
         qDebug() << "Trying to send but connection is not opened";

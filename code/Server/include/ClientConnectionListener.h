@@ -71,8 +71,12 @@ public:
      * @brief Informs that client would like to list content of alias
      *
      * @param client identity
+     *
+     * @param remoteOnly is flag which tells
+     * to list only remote file to this client
+     *
      */
-    virtual void onListAlias(ClientConnection* client) = 0;
+    virtual void onListAlias(ClientConnection* client, bool remoteOnly) = 0;
 
     /**
      * @brief Informs that client would like to pull some file

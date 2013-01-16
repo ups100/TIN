@@ -142,7 +142,7 @@ public:
 
     virtual void onFindFile(ClientConnection *client, const QString& name);
 
-    virtual void onListAlias(ClientConnection *client);
+    virtual void onListAlias(ClientConnection *client, bool remoteOnly);
 
     virtual void onNoSuchFile(DaemonConnection *daemon);
 
@@ -312,7 +312,15 @@ private:
      */
     enum AliasAction m_currentAction;
 
+    /**
+     * @brief Outer server IP address
+     */
     QHostAddress m_address;
+
+    /**
+     * @brief If true transfer is still in progress.
+     */
+    bool m_onTransmission;
 
 };
 

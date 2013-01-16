@@ -37,7 +37,7 @@ Alias::~Alias()
 
 Alias::Alias(const QString& name, Utilities::Password password, QHostAddress address)
         : m_name(name), m_password(password), m_senderDaemon(NULL),
-          m_removeFind(false), m_address(address)
+          m_removeFind(false), m_address(address), m_onTransmission(false)
 {
     m_currentAction = NONE;
     qRegisterMetaType<ClientConnection*>("ClientConnection*");
@@ -144,6 +144,8 @@ void Alias::onConnectionClosed(ClientConnection* client) // TODO w ogole
                  << " it will cause wrong state in the Alias ";
     }
 
+    if (m_onTransmission == true)
+        qDebug() << "Transfer initialize by user is still in progress.";
     //in this case all answers should be ignore
     m_currentAction = NONE;
 
@@ -309,7 +311,7 @@ void Alias::onFileList(DaemonConnection* daemon,
     }
 }
 
-void Alias::onFileTransferStarted(FileTransferServer *transfer) //TODO dodaj Push
+void Alias::onFileTransferStarted(FileTransferServer *transfer)
 {
     // Client should know about it:
     m_clients.first()->sendFileTransferStarted();
@@ -322,7 +324,8 @@ void Alias::onFileTransferStarted(FileTransferServer *transfer) //TODO dodaj Pus
             qDebug() << "Start pushing... ";
             break;
         default:
-            qDebug() << "Wrong state when TransferStarted";
+            if (m_onTransmission == false)
+                qDebug() << "Wrong state when TransferStarted";
             break;
     }
 }
@@ -333,8 +336,6 @@ void Alias::onFileTransferStarted(FileTransferServer *transfer) //TODO dodaj Pus
 void Alias::onFileTransferCompleted(FileTransferServer *transfer)
 {
     // Client should know about it:
-    qDebug()<<"funkjca on transfer Completed";
-    qDebug()<<m_notifyClient.size();
     m_clients.first()->sendFileTransferFinished();
 
     switch (m_currentAction) {
@@ -347,8 +348,10 @@ void Alias::onFileTransferCompleted(FileTransferServer *transfer)
             afterPushAction();
             break;
         default:
-             qDebug() << "Wrong state when TransferCompleted";
-             break;
+            // if there is no transmission and state is different Pull or Push
+            if (m_onTransmission == false)
+                qDebug() << "Wrong state when TransferCompleted";
+            break;
     }
 }
 
@@ -370,8 +373,9 @@ void Alias::onFileTransferError(FileTransferServer *transfer)
             afterPushAction();
             break;
         default:
-             qDebug() << "Wrong state when TransferError";
-             break;
+            if (m_onTransmission == false)
+                qDebug() << "Wrong state when TransferError";
+            break;
     }
 }
 
@@ -404,7 +408,7 @@ void Alias::onFindFile(ClientConnection* client, const QString& name)
 
 }
 
-void Alias::onListAlias(ClientConnection* client)
+void Alias::onListAlias(ClientConnection* client, bool remoteOnly)
 {
     if (m_currentAction != NONE) {
         qDebug() << "IN onListAlias. Wrong state. Should be none" << m_currentAction;
@@ -425,16 +429,16 @@ void Alias::onListAlias(ClientConnection* client)
     //m_waitForDaemons = m_daemons.size();
 
     foreach (boost::shared_ptr<DaemonConnection> dcon, m_daemons) {
+        if ( *client == *dcon )
+            continue;
         m_actionDaemon.append(dcon.get());
         dcon->sendListYourFiles();
     }
 
 }
 
-void Alias::onNoSuchFile(DaemonConnection* daemon)//TODO dodaj pUsh
+void Alias::onNoSuchFile(DaemonConnection* daemon)
 {
-    //qDebug() << "Client call FindFile, but daemon doesn't have it";
-
     qDebug() << "onNoSuchFile: state:" << m_currentAction;
 
     if (m_currentAction == NONE) {
@@ -482,19 +486,25 @@ void Alias::onNoSuchFile(DaemonConnection* daemon)//TODO dodaj pUsh
 }
 
 void Alias::onPullFileFrom(ClientConnection* client,
-        const Utilities::FileLocation& location)    // TODO generalnie powinno dzialac
+        const Utilities::FileLocation& location)
 {
     if (m_currentAction != NONE) {
         qDebug() << "Wrong state. Should by none." << m_currentAction;
         return;
     }
-    qDebug() << "From" << m_name << "Pull file:" << location.getPath()
-             << "filePath: " <<location.getPath()
+    qDebug() << "From alias" << m_name << "Pull file:" << location.getPath()
+             << "fileSize: " <<location.getSize()
              << "owner: " << location.getOwnerIdentifier().getId();  // TODO delete this and line above. first line zostaw
 
     if (m_daemons.isEmpty() || m_daemons.size() == 1) {
         qDebug() << "Send File stop, because in alias:"
                 << m_name << "is no daemon or one";
+        client->sendFileTransferError();
+        return;
+    }
+
+    if (location.getSize() <= 0) {
+        qDebug() << "Transmission empty file. Abort.";
         client->sendFileTransferError();
         return;
     }
@@ -568,14 +578,20 @@ void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
         client->sendFileTransferError();
         return;
     }
+
+    if (size <= 0) {
+        qDebug() << "Transmission empty file. Abort.";
+        client->sendFileTransferError();
+        return;
+    }
     // state is set below
 
     //integrity (and safety) checking:
     if (m_senderDaemon != NULL) {
         qDebug() << "Something goes wrong. I can't push,"
                  << "because m_senderDaemon isn't null at push start";
-        //client->sendFileTransferError();
-        m_clients.first()->sendFileTransferError();
+        client->sendFileTransferError();
+        //m_clients.first()->sendFileTransferError();
         return;
     }
 
@@ -638,7 +654,7 @@ void Alias::onRemoveFromAlias(ClientConnection* client, const QString& fileName)
     m_removeName = fileName;
 
     QString searchName(fileName);
-    qDebug() << "szukam: " << searchName.replace(QRegExp(QString() + fileName + "?/"), "");
+    qDebug() << "szukam: " << searchName.replace(QRegExp(QString() + fileName + "?/"), "./");
 
 
     // we wait for their answers
@@ -723,7 +739,7 @@ void Alias::performPullAction()
              << "ownerID" << m_location.first()->getOwnerIdentifier().getId(); //TODO del this
 
     // PULL FILE EXECUTION STARTED // between ONLY 2 daemons:
-    FileTransferServer *fts = new FileTransferServer(this,2,fileSize);
+    FileTransferServer *fts = new FileTransferServer(this, 2, fileSize);
     m_transfers.append(fts);
 
     if(fts->startFileServer()==false) {
@@ -733,16 +749,15 @@ void Alias::performPullAction()
         m_currentAction = NONE;
         return;
     }
-    qDebug() << "FTS for pull address: "<< fts->getAddress()
+    qDebug() << "FTS for pull address: "<< /*fts->getAddress()*/ this->m_address
              << "FTS port: " << fts->getPort();
+    m_onTransmission = true;
 
     // proper send action started
     qDebug() << "Notify sender... ";
     m_senderDaemon->sendSendFile(fileName, this->m_address, fts->getPort());
     qDebug() << "Notify receiver";
-    // komentarz niżej to byl blad ? Co tam robi m_actionDaemon ???
-    //m_actionDaemon.first()->sendReciveFile(fileName, fts->getAddress(), fts->getPort(), fileSize);  //TODO blad ze m_action
-    m_receiverDaemon.first()->sendReciveFile(fileName, this->m_address, fts->getPort(), fileSize);  //TODO blad ze m_action
+    m_receiverDaemon.first()->sendReciveFile(fileName, this->m_address, fts->getPort(), fileSize);
 
     // don't change state here - it will be done in afterPullAction() method
 }
@@ -755,6 +770,7 @@ void Alias::afterPullAction()
     }
 
     m_currentAction = NONE;
+    m_onTransmission = false;
     // if pull is ended - nothing to notifing
     m_notifyClient.clear();
 
@@ -827,7 +843,7 @@ void Alias::performPushAction()
     //m_location.clear();
 
     // remember to add 1 to number of receivers
-    qDebug() << "FileTransferServer start. Liczba receiverow to:" << m_receiverDaemon.size();
+    qDebug() << "FileTransferServer starting. Number of receivers to:" << m_receiverDaemon.size();
     FileTransferServer *fts = new FileTransferServer(this,m_receiverDaemon.size() + 1, fileSize);
     m_transfers.append(fts);
 
@@ -838,8 +854,9 @@ void Alias::performPushAction()
         m_currentAction = NONE;
         return;
     }
-    qDebug() << "FTS for pushing: address: " << fts->getAddress()
+    qDebug() << "FTS for pushing: address: " << /*fts->getAddress()*/ this->m_address
              << "port" << fts->getPort();
+    m_onTransmission = true;
 
     // proper send action started
     qDebug() << "sender is notify to push a file";
@@ -864,6 +881,7 @@ void Alias::afterPushAction()
 
     // transfer ended so changes state
     m_currentAction = NONE;
+    m_onTransmission = false;
 
     if (m_location.size() > 0 )
         delete m_location.first();
@@ -931,8 +949,8 @@ void Alias::performRemoveFile()
     }
 
     if (m_removeFind == true) {
+        qDebug() << "inAlias: sending remove file" << m_removeName;
         foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
-            qDebug() << "inAlias: wysylam zadanie usuniecia pliku" << m_removeName;
             dc->sendRemoveFile(m_removeName);
         }
     }//if end
