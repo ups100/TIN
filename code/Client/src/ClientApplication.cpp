@@ -334,7 +334,6 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
 
     } else if (cmd->getCommand() == "disconnect") {
         m_alias = "";
-        m_password = NULL;
         (*this).setState(ClientApplication::WAITING_FOR_DISCONNECT);
         m_serverConnection.disconnectFromServer();
         QEventLoop loop;
