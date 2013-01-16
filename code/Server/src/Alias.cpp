@@ -895,7 +895,7 @@ QHostAddress Alias::getServerIp()
             address = info.addresses().at(1);
         }
     }*/
-    qDebug() << "inAlias::checkServerIP: " << m_address;
+    //qDebug() << "inAlias::checkServerIP: " << m_address;
 
     return m_address;
 }

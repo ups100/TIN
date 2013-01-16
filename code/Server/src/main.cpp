@@ -23,11 +23,12 @@
 int main(int argc, char **argv)
 {
     QHostAddress addr = QHostAddress::LocalHost;
+    QHostAddress routerAddress = QHostAddress::LocalHost;
     quint16 port = 8080;
 
     if (argc > 1) {
         QHostAddress address;
-        // below return true if addres is correct
+        // below return true if address is correct
         if ( address.setAddress(argv[1]))
             addr = address;
         else
@@ -41,9 +42,23 @@ int main(int argc, char **argv)
             port = givenPort;
         else
             qDebug() << "Bad port address. Type number (1024 - 65535)";
-
     }
 
-    TIN_project::Server::MainServer server(argc, argv);
+    if (argc > 3) {
+        QHostAddress givenRouterAddr;
+        // below return true if address is correct
+        if (givenRouterAddr.setAddress(argv[3]))
+            routerAddress = givenRouterAddr;
+        else
+            qDebug() << "Bad router IP address."
+                     << "Type something like 127.0.0.1";
+    }
+
+    if (argc <= 1) {
+        qDebug() << "Not enough arguments. Try: ./server adres_IP portNumber";
+        return -1;
+    }
+
+    TIN_project::Server::MainServer server(argc, argv, routerAddress);
     return server.start(addr, port);
 }
