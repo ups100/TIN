@@ -271,7 +271,7 @@ void DaemonConnection::socketReadyReadSlot()
                 }
                 m_messageSize = CommunicationProtocol::getIntFromQByteArray(
                         size);
-
+                qDebug()<<" rozmiar wiadomosci "<<m_messageSize;
                 if (m_socket->bytesAvailable() < m_messageSize) {
                     return;
                 }
@@ -291,6 +291,7 @@ void DaemonConnection::socketReadyReadSlot()
                 break;
             default:
                 qDebug() << "Unknown code received " << m_currentMessageId;
+                m_currentMessageId = CHAR_MAX;
                 break;
         }
     } while (m_socket->bytesAvailable() != 0);
