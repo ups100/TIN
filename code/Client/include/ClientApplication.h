@@ -381,9 +381,19 @@ private:
 
     /**
      * @brief Checks if exists config file
+     * @param[in] path Path to the catalog
      * @return True if exists, false otherwise
      */
-    bool checkIfConfigFileExists() const;
+    //REMOVE PUBLIC
+public:
+    bool checkIfConfigFileExists(QString path) const;
+
+
+    /**
+     * @brief Checks if login and hashed password in config file are right
+     * @return True if we can add this catalog to alias, false otherwise
+     */
+    bool checkIntegrityOfConfigFile(QString path, QString alias, Password pass) const;
 
     /**
      * @brief Changes the root

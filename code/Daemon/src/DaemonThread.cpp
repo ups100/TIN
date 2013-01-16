@@ -150,19 +150,72 @@ void DaemonThread::onFindFile(const QString &fileName)
     qDebug() << "in DaemonThread catalog " << m_config->m_cataloguePath
             << " onFindFIle: search " << fileName;
 
-    QDirIterator it(m_config->m_cataloguePath, QDirIterator::Subdirectories);
+    enum QDirIterator::IteratorFlag searchFlag = QDirIterator::Subdirectories;
+    // use fileNameCorrect instead of fileName - see below in if block
+    QString fileNameCorrect(fileName);
+    //QDirIterator it(m_config->m_cataloguePath, QDirIterator::Subdirectories); // is set below in else block
+    // the found files list:
     QList<QString> foundPaths;
-    QRegExp regex(QRegExp::escape(fileName));
 
-    while (it.hasNext()) {
-        QFileInfo info = it.fileInfo();
+    if (fileName[0] == QDir::separator()) fileNameCorrect.replace(0,1,"");
+    QRegExp dotAndSlash("^(\\./)");
+    if (dotAndSlash.indexIn(fileNameCorrect) != -1) {
+        qDebug() << "Search only root alias level - because type ./ in"
+                << fileName;
+        // tells qDirIterator do not go deeper into catalog structure
+        searchFlag = QDirIterator::NoIteratorFlags;
+        // remove symbol ./ from begin of file name
+        fileNameCorrect.replace(0,2,"");
+        qDebug() << "now we searched for: " << fileNameCorrect;     //TODO delete only this line
+    } else {
+        // normally checking also subdirectories
+        searchFlag = QDirIterator::Subdirectories;
+    }
+    // after this 'if' block the fileNameCorrect doesn't begin with ./
+
+    // check if name of file contains other slash symbols
+    QRegExp hasSlash(QDir::separator());
+    if (hasSlash.indexIn(fileNameCorrect) != -1) {
+        QString searchPath = m_config->m_cataloguePath;
+        searchPath += QDir::separator();    // it is slash
+        searchPath += fileNameCorrect;  // here we have absolute path
+        // create Info object corresponding with file
+        QFileInfo finfor(searchPath);
+        // checking last character in absolute path to know when client wants to find a directory
+        if (finfor.exists() && finfor.isDir() == false ) {
+            qDebug() << "Daemon find concrete file " << searchPath;
+            foundPaths.append(finfor.filePath());
+        } else {
+            qDebug() << "Listing all catalog files";
+            QDirIterator iter(searchPath, searchFlag);
+            while (iter.hasNext()) {
+                QFileInfo inform = iter.fileInfo();
+                if (inform.isFile()) {
+                    foundPaths.append(inform.filePath());
+                }
+                iter.next();
+            }
+        }
+    }
+    else
+    {
+        // original code below:
+        QDirIterator it(m_config->m_cataloguePath, searchFlag);//QDirIterator::Subdirectories);
+
+        QRegExp regex(QRegExp::escape(fileNameCorrect));
+
+        while (it.hasNext()) {
+            QFileInfo info = it.fileInfo();
+            //qDebug() << info.filePath();        //TODO delete this
 
         if (info.isFile())
             if (regex.indexIn(info.fileName()) != -1)
                 foundPaths.append(info.filePath());
 
-        it.next();
-    }
+            it.next();
+        } // while end
+
+    }//if else end
 
 //    //TODO choose one
 //    /*
@@ -236,7 +289,7 @@ void DaemonThread::onFindFile(const QString &fileName)
     if (files.getSize()) {
         qDebug() << "DT " << m_config->m_cataloguePath
                 << " sending client that FileFound";
-        m_ServerConnection->sendFileFound(files); // it sometimes do "naruszenie ochrony pamięci"
+        m_ServerConnection->sendFileFound(files);
     } else {
         qDebug() << "DT" << m_config->m_cataloguePath
                 << " sending client that File NOT Found";
@@ -246,7 +299,7 @@ void DaemonThread::onFindFile(const QString &fileName)
 
 void DaemonThread::onListFiles()
 {
-    qDebug() << "DaemonThread start onList File";
+    qDebug() << "DaemonThread onList File";
     QDir dir(m_config->m_cataloguePath);
     if (!dir.exists())
         throw std::runtime_error("Path doesn't exit.");
@@ -305,7 +358,12 @@ void DaemonThread::onReciveFile(const QString& fileName,
 {
     //TODO onReceive
     QString filePath(m_config->m_cataloguePath);
-    filePath += "/";
+    // adding slash when its needed:
+    qDebug() << "filenama in receiver is" << fileName;
+    qDebug() << "Katalog domowy receivera: " << filePath;
+    qDebug() << "Adres odbioru" << address << "port" << port;
+    //adding slash when is necessary
+    if (fileName[0] != QDir::separator()) filePath += QDir::separator();
     filePath += fileName;
     qDebug() << "Somebody wants to Receive file in: " << filePath;
 
@@ -318,7 +376,7 @@ void DaemonThread::onReciveFile(const QString& fileName,
         recFile.rename(orig);
     }
 
-    qDebug() << "receiver ma taki plik " << size;
+    qDebug() << "receiver ma taki plik "<< filePath << "with size:" << size;
     m_receiver.append(new FileReciver(this, new QFile(filePath), size));
     m_receiver.last()->connectToServer(address, port);
 
@@ -330,6 +388,8 @@ void DaemonThread::onRemoveFile(const QString& fileName)
     QFile file(QString(m_config->m_cataloguePath) + "/" + QString(fileName)); //fileLocation->path));
     QString filePath(
             QString(m_config->m_cataloguePath) + "/" + QString(fileName));
+    qDebug() << "DT "<< m_config->m_cataloguePath
+             << "trying to remove file: " << fileName;
 
     if (file.exists())
         if (file.remove()) {
@@ -347,7 +407,12 @@ void DaemonThread::onSendFile(const QString& fileName,
 {
     // TODO onSendFile - permission zrobic i co jesli plik nie istnieje?
     QString filePath(m_config->m_cataloguePath);
-    filePath += "/";
+    qDebug() << "fileName in sender is" << fileName;
+    qDebug() << "Katalog domowy sendera: " << filePath;
+    qDebug() << "Adres wysylki: " << address << "port" << port;   // TODO del this
+    // adding slash if necessary
+    if (fileName[0] != QDir::separator()) filePath += QDir::separator();
+    //filePath += "/";
     filePath += fileName;
     qDebug() << "I send somebody file: " << filePath;
 

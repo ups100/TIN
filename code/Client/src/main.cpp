@@ -20,10 +20,16 @@
 using namespace TIN_project::Client;
 int main(int argc, char **argv)
 {
-
-    QDir dir("/home/marcin/TIN_testy");
-    qDebug()<<dir.exists();
-    AliasFileList afl;
+    /*QFile file("/home/marcin/TIN_testy/.TIN_project");
+    file.open(QIODevice::WriteOnly);
+    file.write("login");
+    file.write("\n");
+    file.write(QByteArray("Marta").toHex());
+    file.close();
+    qDebug()<<"MOMENCIK";
+    ClientApplication app(argc, argv);
+    qDebug()<<app.checkIntegrityOfConfigFile("/home/marcin/TIN_testy","login", TIN_project::Utilities::Password(QString("Marta")));*/
+    /*AliasFileList afl;
     QString tmp1 = "/home/marcin";
     QString tmp2 = "/home/marta";
     QString tmp3 = "/home/marta/cos";
@@ -55,8 +61,10 @@ int main(int argc, char **argv)
     //app.showListOfConflicts(afl);
    // app.synchWithOverWriting(afl);
     //app.showListOfConflicts(afl);
-    //app.invokeCommandByIndex(afl, "1", "pull");
+    //app.invokeCommandByIndex(afl, "1", "pull");*/
+    ClientApplication app(argc,argv);
     app.start(QHostAddress(argv[1]), atoi(argv[2]),QString(argv[3]));
 
+    //ClientApplication app(argc,argv);
     return 0;
 }

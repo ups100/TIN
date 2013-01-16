@@ -55,7 +55,7 @@ public:
     /**
      * @brief Informs that alias contention list has arrived.
      *
-     * @param list contention of alias
+     * @param location list contention of alias
      */
     virtual void onAliasListed(
             TIN_project::Utilities::AliasFileList location) = 0;

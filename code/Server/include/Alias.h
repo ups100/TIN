@@ -55,7 +55,7 @@ public:
      *
      * @note Remember to start alias after creation with start() function.
      */
-    Alias(const QString& name, Utilities::Password password);
+    Alias(const QString& name, Utilities::Password password, QHostAddress address);
 
     /**
      * @brief Destructor
@@ -171,12 +171,18 @@ private slots:
     void performPullActionSlot();
     void performFindFileSlot();
     void performRemoveFileSlot();
+    void performPushActionSlot();
 
 private:
     /**
      * @brief Disable copy constructor
      */
     Alias(const Alias &);
+
+    /**
+     * @brief Check server IP address
+     */
+    QHostAddress getServerIp();
 
     /**
      * @brief Executed in state PULL_TRANSFER
@@ -188,6 +194,18 @@ private:
      * @brief This method clear data after perform Pull action.
      */
     void afterPullAction();
+
+    /**
+     * @brief This method is call when all daemon answers.
+     * It is executed in state Push_transfer
+     */
+    void performPushAction();
+
+    /**
+     * @brief This method clear data after perform Push action.
+     * Keeps state to be right etc.
+     */
+    void afterPushAction();
 
     /**
      * @brief Executed in state FIND_FILE when all daemons answered.
@@ -276,11 +294,11 @@ private:
     boost::shared_ptr<Utilities::AliasFileList> m_tmpAliasFileList;
 
     enum AliasAction {
-        onListAliasAction,
         LIST_ALIAS,
         FIND_FILE,
         REMOVE_FILE,
         PULL_TRANSFER,
+        PUSH_TRANSFER,
         NONE
     };
     /**
@@ -291,6 +309,8 @@ private:
      * @brief Current execution action.
      */
     enum AliasAction m_currentAction;
+
+    QHostAddress m_address;
 
 };
 

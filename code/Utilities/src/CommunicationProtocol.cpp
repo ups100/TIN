@@ -266,7 +266,7 @@ CommunicationProtocol::CommunicateNameAndLong::CommunicateNameAndLong(
     QByteArray length = data.mid(4 + size);
     uchar rawData[8];
 
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 8; ++i) {
         rawData[i] = length[i];
     }
 
@@ -281,7 +281,7 @@ QByteArray CommunicationProtocol::CommunicateNameAndLong::getQByteArray() const
     qToBigEndian(m_length, data);
 
     QByteArray buff;
-    buff.append(reinterpret_cast<char*>(data), 4);
+    buff.append(reinterpret_cast<char*>(data), 8);
 
     return CommunicationProtocol::getQByteArrayFromInt(name.size()) + name
             + buff;

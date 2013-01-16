@@ -100,7 +100,7 @@ void MainServer::onCreateAlias(UnknownConnection *connection,
         }
     }
 
-    Alias *alias = new Alias(aliasName, password);
+    Alias *alias = new Alias(aliasName, password, m_server.serverAddress());
     alias->start();
     boost::shared_ptr<Alias> ptr(alias);
     m_aliases.append(ptr);

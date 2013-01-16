@@ -6,7 +6,8 @@ If you want to add your own plugin to Wireshark, you need to do plenty of things
 sudo dpkg-reconfigure wireshark-common
 And press yes in the pop-up
 
-Then invoke each of this commands seperately:
+Then invoke each of this commands seperately (if you can run wireshark without typing sudo, you 
+don't have to do that. But in case of errors, this is rather necessary):
 
 
 sudo apt-get install libcap2-bin wireshark
@@ -24,7 +25,8 @@ wget http://www.lua.org/ftp/lua-5.2.0.tar.gz
 Then
 tar zxf lua-5.2.0.tar.gz
 Get into that catalog and type
-sudo make linux install
+sudo make linux
+sudo make install
 
 There will probably be some problems with readline and ncursers lib so just install them
 
