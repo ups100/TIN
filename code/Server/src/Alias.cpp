@@ -429,7 +429,7 @@ void Alias::onListAlias(ClientConnection* client, bool remoteOnly)
     //m_waitForDaemons = m_daemons.size();
 
     foreach (boost::shared_ptr<DaemonConnection> dcon, m_daemons) {
-        if ( *client == *dcon )
+        if (remoteOnly && *client == *dcon )
             continue;
         m_actionDaemon.append(dcon.get());
         dcon->sendListYourFiles();

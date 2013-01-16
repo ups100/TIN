@@ -291,6 +291,7 @@ void DaemonConnection::socketReadyReadSlot()
                 break;
             default:
                 qDebug() << "Unknown code received " << m_currentMessageId;
+                m_currentMessageId = CHAR_MAX;
                 break;
         }
     } while (m_socket->bytesAvailable() != 0);
