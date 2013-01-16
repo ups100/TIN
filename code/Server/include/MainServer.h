@@ -77,7 +77,7 @@ public:
      *
      * @return value returned by event loop
      */
-    int start(const QHostAddress& address, quint16 port);
+    int start(const QHostAddress& address, quint16 port, const QHostAddress& outerAddress);
 
     /**
      * @brief Add connection to set of handled connections
@@ -161,6 +161,10 @@ private:
      */
     QList<boost::shared_ptr<UnknownConnection> > m_connections;
 
+    /**
+     * @brief Outer address of server
+     */
+    QHostAddress m_outerAddress;
 };
 
 } //namespace server

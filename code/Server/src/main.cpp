@@ -54,11 +54,11 @@ int main(int argc, char **argv)
                      << "Type something like 127.0.0.1";
     }
 
-    if (argc <= 1) {
+    if (argc <= 3) {
         qDebug() << "Not enough arguments. Try: ./server adres_IP portNumber";
         return -1;
     }
 
-    TIN_project::Server::MainServer server(argc, argv, routerAddress);
-    return server.start(addr, port);
+    TIN_project::Server::MainServer server(argc, argv);
+    return server.start(addr, port, routerAddress );
 }
