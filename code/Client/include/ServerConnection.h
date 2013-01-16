@@ -181,7 +181,7 @@ public:
      * @details Asynchronous method. Results are provided to
      * AliasCommunicationListener::onAliasListed()
      */
-    void listAlias();
+    void listAlias(bool remoteOnly = false);
 
     /**
      * @brief Pull the specific file from other computer to this.

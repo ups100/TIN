@@ -72,7 +72,7 @@ public:
      *
      * @param client identity
      */
-    virtual void onListAlias(ClientConnection* client) = 0;
+    virtual void onListAlias(ClientConnection* client, bool remoteOnly) = 0;
 
     /**
      * @brief Informs that client would like to pull some file

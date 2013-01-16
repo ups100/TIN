@@ -142,7 +142,7 @@ public:
 
     virtual void onFindFile(ClientConnection *client, const QString& name);
 
-    virtual void onListAlias(ClientConnection *client);
+    virtual void onListAlias(ClientConnection *client, bool remoteOnly);
 
     virtual void onNoSuchFile(DaemonConnection *daemon);
 
@@ -232,7 +232,7 @@ private:
     /**
      * @brief File transfers in alias
      */
-    QList<boost::shared_ptr<FileTransferServer> > m_transfers;
+    QList<FileTransferServer* > m_transfers;
 
     /**
      * @brief Name of alias

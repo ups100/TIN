@@ -471,13 +471,9 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
                 && (!(*this).checkIfConfigFileExists(cmd->getArg2())));
     }
     if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "")) {
-        qDebug() << "TU WCHODZIMY";
-        qDebug()
-                << (*this).checkIntegrityOfConfigFile(cmd->getArg2(),
-                        cmd->getArg(), cmd->getPassword());
-        return ((*this).checkAbsolutePath(cmd->getArg2())
-                && ((*this).checkIntegrityOfConfigFile(cmd->getArg2(),
-                        cmd->getArg(), cmd->getPassword())));
+        qDebug()<<"TU WCHODZIMY";
+        qDebug()<<(*this).checkIntegrityOfConfigFile(cmd->getArg2(),cmd->getArg(),cmd->getPassword());
+        return ((*this).checkAbsolutePath(cmd->getArg2()) && ((*this).checkIntegrityOfConfigFile(cmd->getArg2(), cmd->getArg(), cmd->getPassword())));
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "f"))
         return (*this).checkRelativePath(cmd->getArg());
     if ((cmd->getCommand() == "choose")
@@ -628,10 +624,10 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
                         << m_tree->getFileLocations()[index].m_date;
                 m_serverConnection.pushFileToAlias(QString(m_tree->getPath()),
                         m_tree->getFileLocations()[index].m_size);
-                //QEventLoop loop;
-                //QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
-                // SLOT(quit()));
-                //loop.exec();
+                QEventLoop loop;
+                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+                 SLOT(quit()));
+                loop.exec();
             } else {
                 qDebug() << m_tree->getPath() << "PULL"
                         << m_tree->getFileLocations()[index].m_date;
@@ -639,12 +635,11 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
                         FileLocation(QString(m_tree->getPath()),
                                 m_tree->getFileLocations()[index].m_size,
                                 Identifier(
-                                        m_tree->getFileLocations()[index].m_id,
-                                        m_tree->getPath())));
-                //QEventLoop loop;
-                //QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
-                //SLOT(quit()));
-                //loop.exec();
+                                        m_tree->getFileLocations()[index].m_id, m_tree->getPath())));
+                QEventLoop loop;
+                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+                SLOT(quit()));
+                loop.exec();
             }
 
             /** TODO Seems to be useless here */

@@ -243,12 +243,22 @@ void ClientConnection::socketReadyReadSlot()
         qint64 currentLeftSize = 0;
 
         switch (CommunicationProtocol::getType(m_currentMessageId)) {
-            case CommunicationProtocol::LIST_ALIAS:
-                m_currentMessageId = CHAR_MAX;
-                if (m_connectionListener != 0L) {
-                    m_connectionListener->onListAlias(this);
+            case CommunicationProtocol::LIST_ALIAS: {
+                if (m_socket->bytesAvailable() < 1) {
+                    return;
                 }
-                break;
+                m_currentMessageId = CHAR_MAX;
+
+                data = m_socket->read(m_messageSize);
+
+                CommunicationProtocol::Communicate<
+                                        CommunicationProtocol::LIST_ALIAS> message(data);
+
+                if (m_connectionListener != 0L) {
+                    m_connectionListener->onListAlias(this, message.isRemoteOnly());
+                }
+            }
+            break;
             case CommunicationProtocol::FIND_FILE: {
                 if (!m_sizeOk) {
                     if (m_socket->bytesAvailable() < 4) {

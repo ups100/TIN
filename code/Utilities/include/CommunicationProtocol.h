@@ -1546,6 +1546,54 @@ public:
         }
 
     };
+
+    /**
+         * @brief Specialization of template class for #LIST_ALIAS message
+         */
+        template<typename T> class Communicate<9, T> : public CommunicateBase
+        {
+        public:
+            /**
+             * @brief Constructor
+             *
+             * @param[in] remoteOnly flag which informs if server should list remote only
+             */
+            Communicate(bool remoteOnly = false)
+                :m_remoteOnly(remoteOnly)
+            {
+
+            }
+
+            /**
+             * @brief Constructor
+             *
+             * @param[in] data raw data to parse message.
+             */
+            Communicate(const QByteArray &data)
+            {
+                if(data[0] == 'r') {
+                    m_remoteOnly = true;
+                } else {
+                    m_remoteOnly = false;
+                }
+            }
+
+            virtual QByteArray toQByteArray()
+            {
+
+                return QByteArray() + CommunicationProtocol::getCode(LIST_ALIAS)
+                        + (m_remoteOnly ? QByteArray("r") : QByteArray("n"));
+            }
+
+            bool isRemoteOnly()
+            {
+                return m_remoteOnly;
+            }
+
+        private:
+            bool m_remoteOnly;
+
+        };
 };
 
 } //namespace Utilities

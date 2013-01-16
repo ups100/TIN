@@ -290,12 +290,14 @@ void FileTransferServer::threadFinishedSlot()
         case ALL_DISCONNECTED:
             if (m_FileTransferListener != 0L) {
                 m_FileTransferListener->onFileTransferCompleted(this);
+                m_state = OFFLINE;
             }
             break;
         case ERROR_DISCONNECTING:
         case ERROR:
             if (m_FileTransferListener != 0L) {
                 m_FileTransferListener->onFileTransferError(this);
+                m_state = OFFLINE;
             }
             break;
         case CLOSING:
