@@ -61,6 +61,16 @@ signals:
 public:
 
     /**
+     * @brief used to set size of indent when empty datetime (dir) when list
+     */
+    static const int FILE_TIMESTAMP_INDENT;
+
+    /**
+     * @brief used to set size of indent
+     */
+    static const int FILE_SIZE_WIDTH;
+
+    /**
      * @brief Enum that represents status of the application
      */
     enum State
@@ -384,10 +394,16 @@ private:
      * @param[in] path Path to the catalog
      * @return True if exists, false otherwise
      */
+
+    /**
+     * @brief List client root catalogue
+     * @return AliasFileList with listed files
+     */
+    AliasFileList listLocalPath();
+
     //REMOVE PUBLIC
 public:
     bool checkIfConfigFileExists(QString path) const;
-
 
     /**
      * @brief Checks if login and hashed password in config file are right
