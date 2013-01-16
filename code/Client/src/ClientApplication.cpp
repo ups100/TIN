@@ -2,7 +2,7 @@
 //  ClientApplication.cpp
 //  Implementation of the Class ClientApplication
 //  Created on:      07-gru-2012 00:33:33
-//  Original author: kopasiak
+//  Original author: Marcin Kubik
 ///////////////////////////////////////////////////////////
 
 #include "ClientApplication.h"
@@ -71,7 +71,7 @@ void ClientApplication::onAliasListed(
 {
     QMetaObject::invokeMethod(this, "onAliasListedSlot", Qt::AutoConnection,
             Q_ARG(TIN_project::Utilities::AliasFileList, list));
-        }
+}
 
 void ClientApplication::onConnected()
 {
@@ -91,7 +91,7 @@ void ClientApplication::onFileFound(
     qDebug() << "KLIENT POINFORMOWANY";
     QMetaObject::invokeMethod(this, "onFileFoundSlot", Qt::AutoConnection,
             Q_ARG(TIN_project::Utilities::AliasFileList, location));
-        }
+}
 
 void ClientApplication::onFileNotFound()
 {
@@ -395,10 +395,17 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         (*this).invokeCommandByIndex((*this).m_list, cmd->getArg(),
                 cmd->getCommand());
 
-    } else if (cmd->getCommand() == "ls") {
+    } else if ((cmd->getCommand() == "ls") && (cmd->getParameter() == "r")) {
+        (*this).setState(ClientApplication::WAITING);
+        m_serverConnection.listAlias(true);
+    }
+    else if ((cmd->getCommand() == "ls") && (cmd->getParameter() == "l")) {
+
+        (*this).listLocalPath();
+    }
+    else if (cmd->getCommand() == "ls") {
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.listAlias();
-
     } else if ((cmd->getCommand() == "synch") && (cmd->getParameter() == "o")) {
         m_serverConnection.listAlias();
         (*this).setState(ClientApplication::WAITING);
@@ -419,7 +426,6 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
 
     } else if (cmd->getCommand() == "change") {
         (*this).changeRootPath(cmd->getArg());
-        qDebug() << "NIE ROBCIE TEGO, TO NIE MA DZIALAC";
         QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 
     }
@@ -471,9 +477,13 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
                 && (!(*this).checkIfConfigFileExists(cmd->getArg2())));
     }
     if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "")) {
-        qDebug()<<"TU WCHODZIMY";
-        qDebug()<<(*this).checkIntegrityOfConfigFile(cmd->getArg2(),cmd->getArg(),cmd->getPassword());
-        return ((*this).checkAbsolutePath(cmd->getArg2()) && ((*this).checkIntegrityOfConfigFile(cmd->getArg2(), cmd->getArg(), cmd->getPassword())));
+        qDebug() << "TU WCHODZIMY";
+        qDebug()
+                << (*this).checkIntegrityOfConfigFile(cmd->getArg2(),
+                        cmd->getArg(), cmd->getPassword());
+        return ((*this).checkAbsolutePath(cmd->getArg2())
+                && ((*this).checkIntegrityOfConfigFile(cmd->getArg2(),
+                        cmd->getArg(), cmd->getPassword())));
     } else if ((cmd->getCommand() == "rm") && (cmd->getParameter() == "f"))
         return (*this).checkRelativePath(cmd->getArg());
     if ((cmd->getCommand() == "choose")
@@ -609,15 +619,38 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
         boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             int index = 0;
-            long int max = m_tree->getFileLocations().first().m_date.toLong();
+            long int maxDate =
+                    m_tree->getFileLocations().first().m_date.toLong();
+            int maxSize = m_tree->getFileLocations().first().m_size;
             if (m_tree->getFileLocations().size() == 1)
                 continue;
+
             for (int j = 0; j < m_tree->getFileLocations().size(); ++j) {
-                if (m_tree->getFileLocations()[j].m_date.toLong() > max) {
-                    max = m_tree->getFileLocations()[j].m_date.toLong();
+                if ((m_tree->getFileLocations()[j].m_date.toLong() > maxDate)
+                        && (m_tree->getFileLocations()[j].m_size != maxSize)) {
+                    maxDate = m_tree->getFileLocations()[j].m_date.toLong();
+                    maxSize = m_tree->getFileLocations()[j].m_size;
                     index = j;
                 }
             }
+
+            QString tmpPath = m_path + "/" + m_tree->getPath();
+            QFile file(tmpPath);
+            qDebug() << "SCIEZKA TO " << tmpPath;
+            if ((file.exists()) && (file.size() != maxSize)) {
+                m_serverConnection.pullFileFrom(
+                        FileLocation(QString(m_tree->getPath()),
+                                m_tree->getFileLocations()[index].m_size,
+                                Identifier(
+                                        m_tree->getFileLocations()[index].m_id,
+                                        m_tree->getPath())));
+                QEventLoop loop;
+                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+                        SLOT(quit()));
+                loop.exec();
+
+            }
+
             if (m_tree->getFileLocations()[index].m_id
                     == Identify::getMachineIdentificator()) {
                 qDebug() << m_tree->getPath() << "PUSH"
@@ -626,7 +659,7 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
                         m_tree->getFileLocations()[index].m_size);
                 QEventLoop loop;
                 QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
-                 SLOT(quit()));
+                        SLOT(quit()));
                 loop.exec();
             } else {
                 qDebug() << m_tree->getPath() << "PULL"
@@ -635,10 +668,11 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
                         FileLocation(QString(m_tree->getPath()),
                                 m_tree->getFileLocations()[index].m_size,
                                 Identifier(
-                                        m_tree->getFileLocations()[index].m_id, m_tree->getPath())));
+                                        m_tree->getFileLocations()[index].m_id,
+                                        m_tree->getPath())));
                 QEventLoop loop;
                 QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
-                SLOT(quit()));
+                        SLOT(quit()));
                 loop.exec();
             }
 
