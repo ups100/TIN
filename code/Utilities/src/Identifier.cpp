@@ -67,6 +67,17 @@ QByteArray Identifier::toQByteArray()
     return bytes;
 }
 
+QByteArray Identifier::toQByteArray() const
+{
+    QByteArray bytes;
+    QDataStream out(&bytes, QIODevice::WriteOnly);
+
+    out << m_id;
+    out << m_path;
+
+    return bytes;
+}
+
 QDataStream& operator<<(QDataStream &out, const Identifier &identifier)
 {
     out << identifier.m_id;

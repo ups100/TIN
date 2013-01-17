@@ -157,7 +157,8 @@ void DaemonThread::onFindFile(const QString &fileName)
     // the found files list:
     QList<QString> foundPaths;
 
-    if (fileName[0] == QDir::separator()) fileNameCorrect.replace(0,1,"");
+    if (fileName[0] == QDir::separator())
+        fileNameCorrect.replace(0, 1, "");
     QRegExp dotAndSlash("^(\\./)");
     if (dotAndSlash.indexIn(fileNameCorrect) != -1) {
         qDebug() << "Search only root alias level - because type ./ in"
@@ -165,8 +166,8 @@ void DaemonThread::onFindFile(const QString &fileName)
         // tells qDirIterator do not go deeper into catalog structure
         searchFlag = QDirIterator::NoIteratorFlags;
         // remove symbol ./ from begin of file name
-        fileNameCorrect.replace(0,2,"");
-        qDebug() << "now we searched for: " << fileNameCorrect;     //TODO delete only this line
+        fileNameCorrect.replace(0, 2, "");
+        qDebug() << "now we searched for: " << fileNameCorrect; //TODO delete only this line
     } else {
         // normally checking also subdirectories
         searchFlag = QDirIterator::Subdirectories;
@@ -182,7 +183,7 @@ void DaemonThread::onFindFile(const QString &fileName)
         // create Info object corresponding with file
         QFileInfo finfor(searchPath);
         // checking last character in absolute path to know when client wants to find a directory
-        if (finfor.exists() && finfor.isDir() == false ) {
+        if (finfor.exists() && finfor.isDir() == false) {
             qDebug() << "Daemon find concrete file " << searchPath;
             foundPaths.append(finfor.filePath());
         } else {
@@ -196,11 +197,9 @@ void DaemonThread::onFindFile(const QString &fileName)
                 iter.next();
             }
         }
-    }
-    else
-    {
+    } else {
         // original code below:
-        QDirIterator it(m_config->m_cataloguePath, searchFlag);//QDirIterator::Subdirectories);
+        QDirIterator it(m_config->m_cataloguePath, searchFlag); //QDirIterator::Subdirectories);
 
         QRegExp regex(QRegExp::escape(fileNameCorrect));
 
@@ -208,14 +207,14 @@ void DaemonThread::onFindFile(const QString &fileName)
             QFileInfo info = it.fileInfo();
             //qDebug() << info.filePath();        //TODO delete this
 
-        if (info.isFile())
-            if (regex.indexIn(info.fileName()) != -1)
-                foundPaths.append(info.filePath());
+            if (info.isFile())
+                if (regex.indexIn(info.fileName()) != -1)
+                    foundPaths.append(info.filePath());
 
             it.next();
         } // while end
 
-    }//if else end
+    } //if else end
 
 //    //TODO choose one
 //    /*
@@ -363,23 +362,31 @@ void DaemonThread::onReciveFile(const QString& fileName,
     qDebug() << "Katalog domowy receivera: " << filePath;
     qDebug() << "Adres odbioru" << address << "port" << port;
     //adding slash when is necessary
-    if (fileName[0] != QDir::separator()) filePath += QDir::separator();
+    if (fileName[0] != QDir::separator())
+        filePath += QDir::separator();
     filePath += fileName;
     qDebug() << "Somebody wants to Receive file in: " << filePath;
 
-
     QString tmpFile(filePath);
-    QStringList stringList = tmpFile.split(QDir::separator());
+    QStringList stringList = tmpFile.split(QDir::separator(),
+            QString::SkipEmptyParts);
     stringList.pop_back();
 
-    QString tmp = "";
-    foreach (QString qs, stringList) {
-        tmp += qs;
-        QDir qdir(tmp);
-        if (!qdir.exists(tmp)) {
-            qdir.mkdir(tmp);
-        }
-        tmp += QDir::separator();
+    QString tmp = QDir::separator();
+    foreach (QString qs, stringList){
+    tmp += qs;
+    QDir qdir(tmp);
+    if (!qdir.exists(tmp)) {
+        qdir.mkdir(tmp);
+    }
+    tmp += QDir::separator();
+}
+
+// empty file case no transmission - only create this file
+    if (size == 0) {
+        QFile touched(filePath);
+        touched.open(QIODevice::ReadWrite);
+        return;
     }
 
     QFile recFile(filePath);
@@ -391,7 +398,7 @@ void DaemonThread::onReciveFile(const QString& fileName,
         recFile.rename(orig);
     }
 
-    qDebug() << "receiver ma taki plik "<< filePath << "with size:" << size;
+    qDebug() << "receiver ma taki plik " << filePath << "with size:" << size;
     m_receiver.append(new FileReciver(this, new QFile(filePath), size));
     m_receiver.last()->connectToServer(address, port);
 
@@ -403,8 +410,8 @@ void DaemonThread::onRemoveFile(const QString& fileName)
     QFile file(QString(m_config->m_cataloguePath) + "/" + QString(fileName)); //fileLocation->path));
     QString filePath(
             QString(m_config->m_cataloguePath) + "/" + QString(fileName));
-    qDebug() << "DT "<< m_config->m_cataloguePath
-             << "trying to remove file: " << fileName;
+    qDebug() << "DT " << m_config->m_cataloguePath << "trying to remove file: "
+            << fileName;
 
     if (file.exists())
         if (file.remove()) {
@@ -424,9 +431,10 @@ void DaemonThread::onSendFile(const QString& fileName,
     QString filePath(m_config->m_cataloguePath);
     qDebug() << "fileName in sender is" << fileName;
     qDebug() << "Katalog domowy sendera: " << filePath;
-    qDebug() << "Adres wysylki: " << address << "port" << port;   // TODO del this
+    qDebug() << "Adres wysylki: " << address << "port" << port; // TODO del this
     // adding slash if necessary
-    if (fileName[0] != QDir::separator()) filePath += QDir::separator();
+    if (fileName[0] != QDir::separator())
+        filePath += QDir::separator();
     //filePath += "/";
     filePath += fileName;
     qDebug() << "I send somebody file: " << filePath;
@@ -536,6 +544,7 @@ void DaemonThread::onTransferError(FileReciver * receiver)
 
 void DaemonThread::stopThread()
 {
+    removeTmpFile();
     if (m_connectionOk) {
         // nevertheless disconnectFromServer() succeed or not, I select connection false
         m_connectionOk = false;

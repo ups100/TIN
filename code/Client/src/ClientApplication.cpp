@@ -449,6 +449,7 @@ int ClientApplication::start(const QHostAddress& address, quint16 port,
     m_path = path;
 
     qDebug() << "Client application started" << endl;
+    m_path = path;
     m_address = address;
     m_port = port;
     (*this).setState(ClientApplication::WAITING);
@@ -650,10 +651,10 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
                 loop.exec();
                 m_serverConnection.pushFileToAlias(m_tree->getPath(),
                         m_tree->getFileLocations()[index].m_size);
-                QEventLoop loop;
-                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+                QEventLoop loop2;
+                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop2,
                         SLOT(quit()));
-                loop.exec();
+                loop2.exec();
 
             } else if (file.exists()) {
                 m_serverConnection.pushFileToAlias(m_tree->getPath(),
@@ -820,8 +821,8 @@ void ClientApplication::moveOnTreeShowListOfRemote(
         boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
-                if (m_tree->getFileLocations()[i].m_id
-                        != Identify::getMachineIdentificator()) {
+//                if (m_tree->getFileLocations()[i].m_id
+//                        != Identify::getMachineIdentificator()) {
                     qint64 date = (m_tree->getFileLocations()[i].m_date)
                             .toLongLong();
 
@@ -839,7 +840,7 @@ void ClientApplication::moveOnTreeShowListOfRemote(
                     std::cout << " ";
                     std::cout << "[" << counter++ << "] ";
                     std::cout << m_tree->getFilename().toStdString() << "\n";
-                }
+//                }
             }
         } else {
             std::cout.width(FILE_TIMESTAMP_INDENT + FILE_SIZE_WIDTH);

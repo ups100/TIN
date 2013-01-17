@@ -100,14 +100,6 @@ int DaemonApplication::start()
     m_daemonThreads.append(dt);
 }
 
-// Config creatror 4 testing // TODO remove that
-//    addCatalogueToAlias("/home/kajo/workspace/tin/testDir1", "TEST",
-//            Utilities::Password(QString("123")), QHostAddress("127.0.0.1"),
-//            8080);
-//    addCatalogueToAlias("/home/kajo/workspace/tin/testDir2", "TEST",
-//            Utilities::Password(QString("123")), QHostAddress("127.0.0.1"),
-//            8080);
-
 // Above we create some things so we tell that invocation of stop method is needed before ~DaemonApplication
     m_isClean = false;
     return m_singleApplication.exec();
