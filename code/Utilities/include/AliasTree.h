@@ -23,6 +23,7 @@
 #include <QString>
 #include <QList>
 #include <boost/shared_ptr.hpp>
+#include "Identifier.h"
 
 namespace TIN_project {
 namespace Utilities {
@@ -48,7 +49,7 @@ public:
     struct Location
     {
         /** ID of machine */
-        QString m_id;
+        QByteArray m_id;
         /** Last modification date as timestamp */
         QString m_date;
         /** File size */
@@ -70,10 +71,11 @@ public:
          * @param date
          * @param size
          */
-        Location(const QString id, const QString date, const quint32 size)
-                : m_id(id), m_date(date), m_size(size)
+        Location(const QByteArray identifier, const QString date, const quint32 size)
+                : m_id(identifier), m_date(date), m_size(size)
         {
-
+//            Utilities::Identifier ident(id, path);
+//            m_id = ident.toQByteArray();
         }
 
         friend QDataStream& operator<<(QDataStream &out,
@@ -93,10 +95,6 @@ public:
             in >> location.m_size;
 
             return in;
-        }
-        void setLocation(QString location2)
-        {
-            m_id = location2;
         }
 
     };
@@ -150,7 +148,7 @@ public:
      * @param date Last modification date
      * @param size Size of file
      */
-    void addLocation(const QString &id, const QString &date,
+    void addLocation(const QByteArray &id, const QString &date,
             const quint32 &size);
 
     /**
@@ -163,7 +161,7 @@ public:
      * @param id Machine ID, if empty get local Identify
      */
     boost::shared_ptr<AliasTree> addFile(const QString &path,
-            const QString &date, const quint32 &size, QString id = "");
+            const QString &date, const quint32 &size, const QString &fullPath, QByteArray id = QByteArray());
 
     /**
      * @brief Get filename, or name of directory if dir

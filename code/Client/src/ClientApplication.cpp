@@ -446,6 +446,7 @@ int ClientApplication::start(const QHostAddress& address, quint16 port,
     m_DaemonCommunication.talkToDaemon(QByteArray("00000"));
 
     qDebug() << "Client application started" << endl;
+    m_path = path;
     m_address = address;
     m_port = port;
     (*this).setState(ClientApplication::WAITING);
@@ -805,8 +806,8 @@ void ClientApplication::moveOnTreeShowListOfRemote(
         boost::shared_ptr<AliasTree> m_tree = list[i];
         if (m_tree->isFile()) {
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
-                if (m_tree->getFileLocations()[i].m_id
-                        != Identify::getMachineIdentificator()) {
+//                if (m_tree->getFileLocations()[i].m_id
+//                        != Identify::getMachineIdentificator()) {
                     qint64 date = (m_tree->getFileLocations()[i].m_date)
                             .toLongLong();
 
@@ -824,7 +825,7 @@ void ClientApplication::moveOnTreeShowListOfRemote(
                     std::cout << " ";
                     std::cout << "[" << counter++ << "] ";
                     std::cout << m_tree->getFilename().toStdString() << "\n";
-                }
+//                }
             }
         } else {
             std::cout.width(FILE_TIMESTAMP_INDENT + FILE_SIZE_WIDTH);

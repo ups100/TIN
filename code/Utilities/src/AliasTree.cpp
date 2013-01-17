@@ -43,14 +43,14 @@ AliasTree::~AliasTree()
 
 }
 
-void AliasTree::addLocation(const QString &id, const QString &date,
+void AliasTree::addLocation(const QByteArray &id, const QString &date,
         const unsigned int &size)
 {
     m_fileLocations.append(Location(id, date, size));
 }
 
 boost::shared_ptr<AliasTree> AliasTree::addFile(const QString &path,
-        const QString &date, const unsigned int &size, QString id)
+        const QString &date, const unsigned int &size, const QString &fullPath, QByteArray id)
 {
     QStringList parts = path.split(QDir::separator(), QString::SkipEmptyParts);
 
@@ -69,7 +69,7 @@ boost::shared_ptr<AliasTree> AliasTree::addFile(const QString &path,
     foreach (boost::shared_ptr<AliasTree> atree, m_dirContent){
     if (atree->getFilename() == name) {
         if (searchForFile) {
-            atree->addLocation((id.length() ? id : Identify::getMachineIdentificator()), date, size);
+            atree->addLocation((!id.size() ? id : Utilities::Identifier(Identify::getMachineIdentificator(), fullPath).toQByteArray()), date, size);
             return atree;
         } else {
             return atree->addFile(parts.join(QDir::separator()), date, size, id);
@@ -84,7 +84,7 @@ boost::shared_ptr<AliasTree> AliasTree::addFile(const QString &path,
 
     if (searchForFile) {
         atree->addLocation(
-                (id.length() ? id : Identify::getMachineIdentificator()), date,
+                (!id.size() ? id : Utilities::Identifier(Identify::getMachineIdentificator(), fullPath).toQByteArray()), date,
                 size);
         return atree;
     } else {
@@ -101,7 +101,7 @@ void AliasTree::str(int indent, int & counter)
         for(int i = 0; i<atree->m_fileLocations.size();++i)
         {
             std::cout.width(indent * 4); std::cout<<" ";
-            std::cout<<atree->getFilename().toStdString()<<"["<<(counter++)<<"]"<<"\t"<<atree->m_fileLocations[i].m_date.toStdString()<<"\t"<<atree->m_fileLocations[i].m_size<<"\t"<<atree->m_fileLocations[i].m_id.toStdString()<<"\n";
+            std::cout<<atree->getFilename().toStdString()<<"["<<(counter++)<<"]"<<"\t"<<atree->m_fileLocations[i].m_date.toStdString()<<"\t"<<atree->m_fileLocations[i].m_size<<"\t"<<1/*atree->m_fileLocations[i].m_id*/<<"\n";
         }
     } else {
         std::cout.width(indent * 4); std::cout<<" ";

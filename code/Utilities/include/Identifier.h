@@ -86,6 +86,13 @@ public:
      */
     QByteArray toQByteArray();
 
+    /**
+     * @brief Convert object to QByteArray
+     *
+     * @return Object as QByteArray
+     */
+    QByteArray toQByteArray() const;
+
     friend QDataStream& operator<<(QDataStream &out,
             const Identifier &identifier);
     friend QDataStream& operator>>(QDataStream &in, Identifier &identifier);
