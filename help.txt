@@ -1,0 +1,43 @@
+After starting the client application, user can create an alias or join to existing one. He can also add or remove local directory. After client logged successfully, he can list all files, files only gathered locally or only away from user's computer. Commands like Push or Pull are allowed only after listing files - respectively Pull after listing away files, Push after typing list local files. Syntax of the commands:
+
+create <login> <password>
+Possible after connection with server was established
+
+Add <login> <password> <absolute path>
+Adds directory to the alias. If login or password are incorrect, adding does not work.
+
+Rm <login> <password> <absolute path>
+Removes directory from the alias. If login or password are incorrect, removing does not work.
+
+Change <path>
+Changes path of actual working directory
+
+Above commands are allowed to invoke before logging to alias. After logging to alias, these commands are allowed:
+
+ls
+Lists all files under the alias
+
+ls -l 
+Lists all files that are in current directory
+
+ls -r
+Lists all files but these in current directory
+
+find <name>
+Search for file with name in the alias. Shows list of all found files.
+
+push <index>
+send file specified by index to server. Can be invoked only after ls-l
+
+pull <index>
+Get file specified by index from server. Can be invoked only after ls-r
+
+synch -o
+Synchronize all files under alias.
+
+synch -d
+Tries to synchronize files under alias. When some merging conflicts appears, list of all of them is shown on the screen.
+
+After synch -d to choose witch of the conflicts should be resolved, user can type
+choose <index>
+where index is shown on the list.
