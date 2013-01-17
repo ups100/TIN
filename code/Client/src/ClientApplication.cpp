@@ -349,7 +349,7 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.connectToAlias(cmd->getArg(), cmd->getPassword(),
                 Utilities::Identifier(
-                        Utilities::Identify::getMachineIdentificator()));
+                        Utilities::Identify::getMachineIdentificator(), m_path));
 
     } else if (cmd->getCommand() == "create") {
 
