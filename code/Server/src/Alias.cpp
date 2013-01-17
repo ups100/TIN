@@ -434,13 +434,18 @@ void Alias::onListAlias(ClientConnection* client, bool remoteOnly)
             new Utilities::AliasFileList());
     //m_waitForDaemons = m_daemons.size();
 
+    bool noRemote = true;
     foreach (boost::shared_ptr<DaemonConnection> dcon, m_daemons) {
-        if (remoteOnly && *client == *dcon )
+        if (remoteOnly && *client == *dcon ) {
             continue;
+        }
+        noRemote = false;
         m_actionDaemon.append(dcon.get());
         dcon->sendListYourFiles();
     }
 
+    if (noRemote)
+        client->sendFileList(Utilities::AliasFileList());
 }
 
 void Alias::onNoSuchFile(DaemonConnection* daemon)
