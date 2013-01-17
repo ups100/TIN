@@ -516,6 +516,10 @@ public:
      */
     QString m_path;
 
+    /**
+     * @brief Identifier used to diverse local from remote
+     */
+    Identifier m_identifier;
 };
 
 } //namespace Client

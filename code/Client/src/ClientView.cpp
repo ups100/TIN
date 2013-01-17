@@ -18,37 +18,47 @@ ClientView::ClientView(ClientApplication * app)
     connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
 }
 
-
-
 void ClientView::prompt()
 {
     qDebug() << "Welcome to our program. Type some command" << endl;
 }
 
-void ClientView::showMessage(QString s) {
-    qDebug()<<s;
+void ClientView::showMessage(QString s)
+{
+    qDebug() << s;
 }
-
-
 
 void ClientView::waitForCommands()
 {
-
-   QTextStream qtin(stdin);
-   QString m_string;
-   m_string = qtin.readLine();
-   /**
-    * "If" statement just for test, first command is not read, next are read
-    */
-   if(m_app->getState() != ClientApplication::NOT_CONNECTED)
-   {
-       disconnect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
-       connect(m_notifier,SIGNAL(activated(int)), this, SLOT(emptyRead()));
-       m_app->getCommand(m_string);
-   }
-   //else
-     //  m_app->setState(ClientApplication::LOGGED);
-   return;
+    QTextStream qtin(stdin);
+    QString m_string;
+    m_string = qtin.readLine();
+    if (m_string == "help") {
+        QFile file("help.txt");
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            return;
+        QTextStream in(&file);
+        QString line = in.readLine();
+        while (!line.isNull()) {
+            qDebug() << line;
+            line = in.readLine();
+        }
+        disconnect(m_notifier, SIGNAL(activated(int)), this,
+                       SLOT(waitForCommands()));
+        connect(m_notifier,SIGNAL(activated(int)), this, SLOT(waitForCommands()));
+    }
+    /**
+     * "If" statement just for test, first command is not read, next are read
+     */
+    if (m_app->getState() != ClientApplication::NOT_CONNECTED) {
+        disconnect(m_notifier, SIGNAL(activated(int)), this,
+                SLOT(waitForCommands()));
+        connect(m_notifier, SIGNAL(activated(int)), this, SLOT(emptyRead()));
+        m_app->getCommand(m_string);
+    }
+    //else
+    //  m_app->setState(ClientApplication::LOGGED);
+    return;
 }
 
 void ClientView::emptyRead()
@@ -59,9 +69,9 @@ void ClientView::emptyRead()
 
 void ClientView::reconnectNotifier()
 {
-    disconnect(m_notifier,SIGNAL(activated(int)), this, SLOT(emptyRead()));
+    disconnect(m_notifier, SIGNAL(activated(int)), this, SLOT(emptyRead()));
     connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
-    qDebug("$>");
+    std::cout<<">$";
 }
 
 void ClientView::showList(AliasFileList& list)
