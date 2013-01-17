@@ -279,7 +279,7 @@ void DaemonThread::onFindFile(const QString &fileName)
     QString date = QString::number(QFileInfo(str).lastModified().toMSecsSinceEpoch());
     quint32 size = QFileInfo(str).size();
 
-    files.addFile(cutAbsolutePath(str), date, size);
+    files.addFile(cutAbsolutePath(str), date, size, m_config->m_cataloguePath);
 }
     qDebug() << "In" << m_config->m_cataloguePath
             << "Finding complete. How many: " << files.getSize();
@@ -341,7 +341,7 @@ void DaemonThread::onListFiles()
 
                     atree.addFile(attribs.value("filePath").toString(),
                             attribs.value("lastModified").toString(),
-                            attribs.value("size").toString().toUInt());
+                            attribs.value("size").toString().toUInt(), m_config->m_cataloguePath);
                 }
             }
         }
