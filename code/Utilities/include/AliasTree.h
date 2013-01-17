@@ -67,7 +67,7 @@ public:
         /**
          * @brief C-tor
          *
-         * @param id
+         * @param identifier
          * @param date
          * @param size
          */
@@ -158,6 +158,7 @@ public:
      * @param path Path to file
      * @param date Last modification date
      * @param size Size of file
+     * @param fullPath to the daemon's root directory
      * @param id Machine ID, if empty get local Identify
      */
     boost::shared_ptr<AliasTree> addFile(const QString &path,

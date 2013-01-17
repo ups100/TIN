@@ -39,14 +39,6 @@ CommandParser::~CommandParser()
 
 }
 
-/**
- *  @brief translate string with command into object of Command class
- *  @details split string into 3 segments: command, parameter, arguments
- *  @param command string received from client
- *  @return pointer to object of class Commands
- *  @note returns "Wrong" command if the command is not correct
- *  @note see "syntax.txt" for available commands
- */
 shared_ptr<Commands> CommandParser::parseCommand(const QString& command)
 {
 
