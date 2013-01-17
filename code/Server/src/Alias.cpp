@@ -503,13 +503,20 @@ void Alias::onPullFileFrom(ClientConnection* client,
         return;
     }
 
+    const QString fileName(location.getPath());
+
+    // if transferring file size is 0
     if (location.getSize() <= 0) {
-        qDebug() << "Transmission empty file. Abort.";
-        client->sendFileTransferError();
+        qDebug() << "Transferring empty file";
+        foreach(boost::shared_ptr<DaemonConnection> dc, m_daemons) {
+               // check who is receiver
+               if ( *client == *dc)
+                   dc->sendReciveFile(fileName, this->m_address, 5555, 0);
+        }
+        // notify client about Finished transfer
+        client->sendFileTransferFinished();
         return;
     }
-
-    const QString fileName(location.getPath());
 
     // remember here a location object for future use
     m_location.append(new Utilities::FileLocation(location));
@@ -541,8 +548,8 @@ void Alias::onPullFileFrom(ClientConnection* client,
         }
         // NEW CONCEPTION - adding this if:
         // finding sender
-        if ( (dc.get()->getIdentifier().getId() == location.getOwnerIdentifier().getId() ) ) // TODO TODO TODO TODO TODO - komentarz napraw nizej:
-                //&& (dc.get()->getIdentifier().getPath() == location.getOwnerIdentifier().getPath() ) )
+        if ( dc.get()->getIdentifier().getId() == location.getOwnerIdentifier().getId()
+                && dc.get()->getIdentifier().getPath() == location.getOwnerIdentifier().getPath() ) // TODO TODO TODO TODO
             m_senderDaemon = dc.get();  // TODO sprawdź czy to nie rozmnaża shared_ptr - czy program konczy sie poprawnie?
 
         /* PREVIOUS PULL CONCEPTION
@@ -575,12 +582,6 @@ void Alias::onPushFileToAlias(ClientConnection* client, const QString& path,
     if (m_daemons.isEmpty() || m_daemons.size() == 1) {
         qDebug() << "Stop push. because in alias:"
                 << m_name << "is no daemon or one";
-        client->sendFileTransferError();
-        return;
-    }
-
-    if (size <= 0) {
-        qDebug() << "Transmission empty file. Abort.";
         client->sendFileTransferError();
         return;
     }
@@ -771,7 +772,7 @@ void Alias::afterPullAction()
 
     m_currentAction = NONE;
     m_onTransmission = false;
-    // if pull is ended - nothing to notifing
+    // if pull is ended - nothing to notifying
     m_notifyClient.clear();
 
     if (m_location.size() != 1)
@@ -841,6 +842,27 @@ void Alias::performPushAction()
     // I don't need FileLocation object any more so:
     //delete m_location.first();
     //m_location.clear();
+
+    // if transferring file size is 0
+    if (fileSize <= 0) {
+        qDebug() << "Transferring empty file";
+        foreach(DaemonConnection *dc, m_receiverDaemon) {
+            short port = 5555; // any port number
+            dc->sendReciveFile(filePath, this->m_address, port, 0L);
+        }
+        // notify client about Finished transfer
+        m_clients.first()->sendFileTransferFinished();
+        m_currentAction = NONE;
+        m_onTransmission = false;
+        if (m_location.size() > 0 )
+            delete m_location.first();
+        m_location.clear();
+        // some cleaning
+        m_actionDaemon.clear();
+        m_receiverDaemon.clear();
+        m_senderDaemon = NULL;
+        return;
+    }
 
     // remember to add 1 to number of receivers
     qDebug() << "FileTransferServer starting. Number of receivers to:" << m_receiverDaemon.size();

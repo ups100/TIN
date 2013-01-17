@@ -403,8 +403,8 @@ void ClientConnection::sendAllFunction(const QByteArray& array)
 
 bool ClientConnection::operator==(const DaemonConnection& daemon)
  {
-     return ( (m_identity.getId() == (daemon.getIdentifier()).getId()) );
-             // && (m_identity.getPath() == (daemon.getIdentifier()).getPath()) );
+     return ( (m_identity.getId() == (daemon.getIdentifier()).getId())
+              && (m_identity.getPath() == (daemon.getIdentifier()).getPath()) );
  }
 
 bool operator==(const DaemonConnection& daemon, const ClientConnection& client)
