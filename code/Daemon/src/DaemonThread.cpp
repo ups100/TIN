@@ -521,6 +521,7 @@ void DaemonThread::onTransferError(FileReciver * receiver)
 
 void DaemonThread::stopThread()
 {
+    removeTmpFile();
     if (m_connectionOk) {
         // nevertheless disconnectFromServer() succeed or not, I select connection false
         m_connectionOk = false;
