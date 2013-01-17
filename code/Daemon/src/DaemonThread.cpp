@@ -367,6 +367,21 @@ void DaemonThread::onReciveFile(const QString& fileName,
     filePath += fileName;
     qDebug() << "Somebody wants to Receive file in: " << filePath;
 
+
+    QString tmpFile(filePath);
+    QStringList stringList = tmpFile.split(QDir::separator());
+    stringList.pop_back();
+
+    QString tmp = "";
+    foreach (QString qs, stringList) {
+        tmp += qs;
+        QDir qdir(tmp);
+        if (!qdir.exists(tmp)) {
+            qdir.mkdir(tmp);
+        }
+        tmp += QDir::separator();
+    }
+
     QFile recFile(filePath);
 
     // if file exists then I change it name for having backup in case
