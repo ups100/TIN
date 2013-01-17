@@ -176,13 +176,13 @@ void ServerConnection::threadStartedSlot()
 }
 
 void ServerConnection::threadFinishedSlot()
-{qDebug()<< "thread finished";
+{
     m_mutex.lock();
     m_isReadyState = false;
     m_isConnecting = false;
     m_isClosing = false;
     m_mutex.unlock();
-    qDebug()<< "thread finished";
+
     delete m_socket;
     m_socket = 0L;
 
@@ -222,7 +222,7 @@ void ServerConnection::socketDisconnectedSlot()
 
     this->moveToThread(m_creatorThread);
     m_additionalThread.moveToThread(m_creatorThread);
-    qDebug()<<"socket disconnected";
+
     m_additionalThread.quit();
 }
 
@@ -380,6 +380,7 @@ void ServerConnection::socketReadyReadSlot()
 
             default:
                 qDebug() << "Unknown code received " << m_currentMessageId;
+                m_currentMessageId = CHAR_MAX;
                 break;
         }
     } while (m_socket->bytesAvailable() != 0);

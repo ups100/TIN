@@ -235,7 +235,6 @@ void ClientConnection::socketReadyReadSlot()
     do {
         if (m_currentMessageId == CHAR_MAX) {
             m_socket->read(&m_currentMessageId, 1);
-            qDebug() << (int) m_currentMessageId;
         }
 
         QByteArray size;

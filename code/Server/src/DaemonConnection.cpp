@@ -14,6 +14,7 @@
  * Allows user to do operations such as searching, copying and distributing files
  * gathered under one alias.
  */
+
 #include "DaemonConnection.h"
 #include "DaemonConnectionListener.h"
 #include "CommunicationProtocol.h"
@@ -216,7 +217,6 @@ void DaemonConnection::socketReadyReadSlot()
     do {
         if (m_currentMessageId == CHAR_MAX) {
             m_socket->read(&m_currentMessageId, 1);
-            qDebug() << (int) m_currentMessageId;
         }
 
         QByteArray size;
@@ -273,7 +273,6 @@ void DaemonConnection::socketReadyReadSlot()
                                             size);
                 }
 
-                qDebug()<<" rozmiar wiadomosci "<<m_messageSize;
                 if (m_socket->bytesAvailable() < m_messageSize) {
                     return;
                 }

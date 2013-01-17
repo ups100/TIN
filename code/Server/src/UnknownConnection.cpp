@@ -356,6 +356,7 @@ void UnknownConnection::socketReadyReadSlot()
 
             default:
                 qDebug() << "Unknown code received " << m_currentMessageId;
+                m_currentMessageId = CHAR_MAX;
                 break;
         }
     } while ((m_socket != 0L) && (m_socket->bytesAvailable() != 0));
