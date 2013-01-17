@@ -473,8 +473,8 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
     if (!cmd->isCorrect())
         return false;
     if (cmd->getCommand() == "log") {
-        //return ((*this).checkIntegrityOfConfigFile(m_path, cmd->getArg(),
-        //cmd->getPassword()));
+        return ((*this).checkIntegrityOfConfigFile(m_path, cmd->getArg(),
+                cmd->getPassword()));
     }
     if (cmd->getCommand() == "change") {
         return (*this).checkAbsolutePath(cmd->getArg());
@@ -1036,19 +1036,12 @@ void ClientApplication::moveOnTreeShowFoundFiles(
 
 void ClientApplication::changeRootPath(QString s)
 {
-    QString dir = s;
-    dir.append(QDir::separator());
-    dir.append(ConfigFileName::CONFIG_FILE_NAME);
-
-    QFile file(dir);
-    if (file.exists())
-        m_path = s;
-    else
-        m_view->showMessage(
-                "Cannot change to given path, no config file there");
+    m_path = s;
     (*this).setState(ClientApplication::CONNECTED);
     QTimer::singleShot(1000, &(*m_view), SLOT(reconnectNotifier()));
 }
+
+
 ClientApplication::~ClientApplication()
 {
 
