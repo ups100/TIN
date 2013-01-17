@@ -47,10 +47,6 @@ public:
      */
     virtual ~ClientView();
 
-    /**
-     * @brief Just to debug
-     */
-    void prompt();
 
     /**
      * @brief Shows message (usually after response from server)

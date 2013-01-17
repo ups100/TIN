@@ -13,15 +13,10 @@ namespace Client {
 ClientView::ClientView(ClientApplication * app)
         : m_app(app)
 {
-
     m_notifier = new QSocketNotifier(STDIN_FILENO, QSocketNotifier::Read);
     connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
 }
 
-void ClientView::prompt()
-{
-    qDebug() << "Welcome to our program. Type some command" << endl;
-}
 
 void ClientView::showMessage(QString s)
 {
@@ -37,12 +32,8 @@ void ClientView::waitForCommands()
         QFile file("help.txt");
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
             return;
-        QTextStream in(&file);
-        QString line = in.readLine();
-        while (!line.isNull()) {
-            qDebug() << line;
-            line = in.readLine();
-        }
+        qDebug()<<QString(file.readAll());
+
         disconnect(m_notifier, SIGNAL(activated(int)), this,
                        SLOT(waitForCommands()));
         connect(m_notifier,SIGNAL(activated(int)), this, SLOT(waitForCommands()));
@@ -51,12 +42,10 @@ void ClientView::waitForCommands()
      * "If" statement just for test, first command is not read, next are read
      */
     if (m_app->getState() != ClientApplication::NOT_CONNECTED) {
-        disconnect(m_notifier, SIGNAL(activated(int)), this,
-                SLOT(waitForCommands()));
+        disconnect(m_notifier, SIGNAL(activated(int)), this,  SLOT(waitForCommands()));
         connect(m_notifier, SIGNAL(activated(int)), this, SLOT(emptyRead()));
         m_app->getCommand(m_string);
     }
-    return;
 }
 
 void ClientView::emptyRead()
@@ -69,7 +58,7 @@ void ClientView::reconnectNotifier()
 {
     disconnect(m_notifier, SIGNAL(activated(int)), this, SLOT(emptyRead()));
     connect(m_notifier, SIGNAL(activated(int)), this, SLOT(waitForCommands()));
-    std::cout<<">$";
+    std::cout<<">$"<<flush;
 }
 
 void ClientView::showList(AliasFileList& list)

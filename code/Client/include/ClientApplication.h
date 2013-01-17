@@ -377,12 +377,6 @@ private:
      */
     bool checkStateCondition(boost::shared_ptr<Commands> cmd) const;
 
-    /**
-     * @brief Checks if file exists
-     * @param[in] path Relative path to be checked
-     * @return True if file exists, false otherwise
-     */
-    bool checkRelativePath(QString path) const;
 
     /**
      * @brief Checks if file exists

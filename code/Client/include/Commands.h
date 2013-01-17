@@ -13,7 +13,6 @@
 #include <QVariant>
 #include "Argument.h"
 
-
 namespace TIN_project {
 namespace Client {
 using namespace TIN_project::Utilities;
@@ -21,12 +20,44 @@ using namespace TIN_project::Utilities;
 class Commands
 {
 public:
-    Commands();
-    Commands(QString, Argument::Types);
-    Commands(QString, QString, Argument::Types);
-    Commands(QString, QString, QString, Argument::Types);
-    Commands(QString, QString, QString, QString, Argument::Types);
 
+    /**
+     * @brief Constructor
+     */
+    Commands();
+    /**
+     * @brief Constructor
+     * @param[in] cmd Command
+     * @param[in] flague Flague
+     */
+    Commands(QString cmd, Argument::Types flague);
+
+    /**
+     * @brief Constructor
+     * @param[in] cmd Command
+     * @param[in] arg Argument
+     * @param[in] flague Flague
+     */
+    Commands(QString cmd, QString arg, Argument::Types flague);
+
+    /**
+     * @brief Constructor
+     * @param[in] cmd Command
+     * @param[in] arg Argument
+     * @param[in] arg2 Argument
+     * @param[in] flague Flague
+     */
+    Commands(QString cmd, QString arg, QString arg2, Argument::Types flague);
+
+    /**
+     * @brief Constructor
+     * @param[in] cmd Command
+     * @param[in] arg Argument
+     * @param[in] arg2 Argument
+     * @param[in] flague Flague
+     */
+    Commands(QString cmd, QString arg, QString arg2, QString arg3,
+            Argument::Types flague);
 
     /**
      * @brief Getter for the command
