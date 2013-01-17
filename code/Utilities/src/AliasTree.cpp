@@ -69,10 +69,10 @@ boost::shared_ptr<AliasTree> AliasTree::addFile(const QString &path,
     foreach (boost::shared_ptr<AliasTree> atree, m_dirContent){
     if (atree->getFilename() == name) {
         if (searchForFile) {
-            atree->addLocation((!id.size() ? id : Utilities::Identifier(Identify::getMachineIdentificator(), fullPath).toQByteArray()), date, size);
+            atree->addLocation((id.size() ? id : Utilities::Identifier(Identify::getMachineIdentificator(), fullPath).toQByteArray()), date, size);
             return atree;
         } else {
-            return atree->addFile(parts.join(QDir::separator()), date, size, id);
+            return atree->addFile(parts.join(QDir::separator()), date, size, fullPath, id);
         }
     }
 }
@@ -84,11 +84,11 @@ boost::shared_ptr<AliasTree> AliasTree::addFile(const QString &path,
 
     if (searchForFile) {
         atree->addLocation(
-                (!id.size() ? id : Utilities::Identifier(Identify::getMachineIdentificator(), fullPath).toQByteArray()), date,
+                (id.size() ? id : Utilities::Identifier(Identify::getMachineIdentificator(), fullPath).toQByteArray()), date,
                 size);
         return atree;
     } else {
-        return atree->addFile(parts.join(QDir::separator()), date, size, id);
+        return atree->addFile(parts.join(QDir::separator()), date, size, fullPath, id);
     }
 }
 

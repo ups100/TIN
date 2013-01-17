@@ -68,7 +68,7 @@ public:
      * @param size Size of file
      */
     void addFile(const QString &filePath, const QString &date,
-            const quint32 &size);
+            const quint32 &size, const QString &fullPath);
 
     /**
      * Just for tests

@@ -17,6 +17,7 @@
 
 #include "AliasFileList.h"
 #include <QIODevice>
+#include <QDebug>
 
 namespace TIN_project {
 namespace Utilities {
@@ -41,9 +42,9 @@ AliasFileList::~AliasFileList()
 }
 
 void AliasFileList::addFile(const QString &filePath, const QString &date,
-        const quint32 &size)
+        const quint32 &size, const QString &fullPath)
 {
-    if (m_fileTree.addFile(filePath, date, size, filePath)->getLocations().size() == 1)
+    if (m_fileTree.addFile(filePath, date, size, fullPath)->getLocations().size() == 1)
         ++m_size; // No duplicates count
 }
 
@@ -60,7 +61,7 @@ void AliasFileList::mergeIt(const QList<boost::shared_ptr<AliasTree> > &atree)
             mergeIt(at->m_dirContent);
         else if (at->isFile()) {
             foreach (AliasTree::Location loc, at->m_fileLocations) {
-                m_fileTree.addFile(at->m_path, loc.m_date, loc.m_size, QString(),loc.m_id);
+                m_fileTree.addFile(at->m_path, loc.m_date, loc.m_size, QString(), loc.m_id);
             }
         }
     }
