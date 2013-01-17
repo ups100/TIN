@@ -71,7 +71,7 @@ void ClientApplication::onAliasListed(
 {
     QMetaObject::invokeMethod(this, "onAliasListedSlot", Qt::AutoConnection,
             Q_ARG(TIN_project::Utilities::AliasFileList, list));
-}
+        }
 
 void ClientApplication::onConnected()
 {
@@ -90,7 +90,7 @@ void ClientApplication::onFileFound(
 {
     QMetaObject::invokeMethod(this, "onFileFoundSlot", Qt::AutoConnection,
             Q_ARG(TIN_project::Utilities::AliasFileList, location));
-}
+        }
 
 void ClientApplication::onFileNotFound()
 {
@@ -709,7 +709,7 @@ void ClientApplication::moveOnTreeShowListOfConflicts(
 
             for (int j = 0; j < m_tree->getFileLocations().size(); ++j) {
                 qint64 date =
-                        (m_tree->getFileLocations()[i].m_date).toLongLong();
+                        (m_tree->getFileLocations()[j].m_date).toLongLong();
 
                 std::cout
                         << (QDateTime::fromMSecsSinceEpoch(date).toString(
@@ -717,24 +717,24 @@ void ClientApplication::moveOnTreeShowListOfConflicts(
                         << " Size: ";
 
                 QString t = QString::number(
-                        m_tree->getFileLocations()[i].m_size) + " bytes";
+                        m_tree->getFileLocations()[j].m_size) + " bytes";
                 std::cout.width(FILE_SIZE_WIDTH);
                 std::cout << std::left << t.toStdString().c_str();
 
                 std::cout.width(indent * 4);
                 std::cout << " ";
                 std::cout << "[" << counter++ << "] ";
-                std::cout << m_tree->getFilename().toStdString() << "\n";
+                std::cout << m_tree->getPath().toStdString() << "\n";
             }
         } else {
-            std::cout.width(FILE_TIMESTAMP_INDENT + FILE_SIZE_WIDTH);
-            std::cout << " ";
-
-            std::cout.width(indent * 4);
-            std::cout << " ";
-
-            std::cout << "/" << m_tree->getFilename().toStdString() << "\t"
-                    << "\n";
+//            std::cout.width(FILE_TIMESTAMP_INDENT + FILE_SIZE_WIDTH);
+//            std::cout << " ";
+//
+//            std::cout.width(indent * 4);
+//            std::cout << " ";
+//
+//            std::cout << "/" << m_tree->getFilename().toStdString() << "\t"
+//                    << "\n";
             (*this).moveOnTreeShowListOfConflicts(m_tree, indent + 1, counter);
         }
     }
