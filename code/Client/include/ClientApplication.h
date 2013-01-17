@@ -81,7 +81,8 @@ public:
         WAITING_FOR_DISCONNECT = 3,
         FILELIST = 4,
         LOGGED = 5
-    };Q_DECLARE_FLAGS(States, State)
+    };
+    Q_DECLARE_FLAGS(States, State);
 
     /**
      * @brief Constructor
@@ -188,6 +189,7 @@ public:
      * @brief Starter of the Client Application thread
      * @param[in] address IP address of client
      * @param[in] port Port on which client connects
+     * @param[in] path to set as current working directory
      * @return exec
      */
     int start(const QHostAddress& address, quint16 port, QString path);

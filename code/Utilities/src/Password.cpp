@@ -1,9 +1,19 @@
-///////////////////////////////////////////////////////////
-//  Password.cpp
-//  Implementation of the Class Password
-//  Created on:      07-gru-2012 00:33:37
-//  Original author: kopasiak
-///////////////////////////////////////////////////////////
+/**
+ * @file Password.cpp
+ *
+ * @date 06-01-2013
+ *
+ * @author Marcin Kubik <markubik@gmail.com>
+ *
+ * @brief Implementation of the Class TIN_project::Utilities::Password
+ *
+ * @par Project
+ * This is a part of project realized on Warsaw University of Technology
+ * on TIN lectures. Project was created to simplify synchronization between catalogs,
+ * that are stored on different hosts to let clients work on the same files anywhere they want.
+ * Allows user to do operations such as searching, copying and distributing files
+ * gathered under one alias.
+ */
 
 #include "Password.h"
 #include <QCryptographicHash>
