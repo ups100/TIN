@@ -852,6 +852,7 @@ void ClientApplication::showListOfLocal(const AliasFileList& list)
     qDebug() << list.getSize();
     boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
+    qDebug()<<list.getSize();
     (*this).moveOnTreeShowListOfLocal(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
     //QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
@@ -867,7 +868,7 @@ void ClientApplication::moveOnTreeShowListOfLocal(
         if (m_tree->isFile()) {
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
                 if (m_tree->getFileLocations()[i].m_id
-                        == m_identifier.toQByteArray()) {
+                        == Identifier(Identify::getMachineIdentificator(), m_path).toQByteArray()) {
                     qint64 date = (m_tree->getFileLocations()[i].m_date)
                             .toLongLong();
 
@@ -1083,7 +1084,7 @@ Utilities::AliasFileList ClientApplication::listLocalPath()
 
                     atree.addFile(attribs.value("filePath").toString(),
                             attribs.value("lastModified").toString(),
-                            attribs.value("size").toString().toUInt());
+                            attribs.value("size").toString().toUInt(), m_path);
                 }
             }
         }
