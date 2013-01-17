@@ -876,7 +876,7 @@ void ClientApplication::moveOnTreeShowListOfLocal(
         if (m_tree->isFile()) {
             for (int i = 0; i < m_tree->getFileLocations().size(); ++i) {
                 if (m_tree->getFileLocations()[i].m_id
-                        == Identify::getMachineIdentificator()) {
+                        == m_identifier.toQByteArray()) {
                     qint64 date = (m_tree->getFileLocations()[i].m_date)
                             .toLongLong();
 
