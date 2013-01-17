@@ -52,6 +52,12 @@ void Alias::addClient(boost::shared_ptr<UnknownConnection> client, const Utiliti
         return;
     }
 
+    //only one client
+    if (m_clients.size() > 0) {
+        client->disconnectClientSynch();
+        return;
+    }
+
     ClientConnection *connection = new ClientConnection(
             client->convertToOtherConnection(), &m_thread, this,id);
 
