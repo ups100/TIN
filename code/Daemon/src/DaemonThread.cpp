@@ -382,6 +382,13 @@ void DaemonThread::onReciveFile(const QString& fileName,
         tmp += QDir::separator();
     }
 
+    // empty file case no transmission - only create this file
+    if (size == 0) {
+        QFile touched(filePath);
+        touched.open(QIODevice::ReadWrite);
+        return;
+    }
+
     QFile recFile(filePath);
 
     // if file exists then I change it name for having backup in case
