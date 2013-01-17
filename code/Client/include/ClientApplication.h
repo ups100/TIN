@@ -90,7 +90,7 @@ public:
      *
      * @param[in] argv command line arguments
      */
-ClientApplication    (int argc, char** argv);
+    ClientApplication(int argc, char** argv);
 
     /**
      * @brief Destructor
@@ -390,26 +390,24 @@ private:
     bool checkAbsolutePath(QString path) const;
 
     /**
-     * @brief Checks if exists config file
-     * @param[in] path Path to the catalog
-     * @return True if exists, false otherwise
-     */
-
-    /**
      * @brief List client root catalogue
      * @return AliasFileList with listed files
      */
     AliasFileList listLocalPath();
 
-    //REMOVE PUBLIC
-public:
+    /**
+     * @brief Checks if exists config file
+     * @param[in] path Path to the catalog
+     * @return True if exists, false otherwise
+     */
     bool checkIfConfigFileExists(QString path) const;
 
     /**
      * @brief Checks if login and hashed password in config file are right
      * @return True if we can add this catalog to alias, false otherwise
      */
-    bool checkIntegrityOfConfigFile(QString path, QString alias, Password pass) const;
+    bool checkIntegrityOfConfigFile(QString path, QString alias,
+            Password pass) const;
 
     /**
      * @brief Changes the root
@@ -426,7 +424,8 @@ public:
      * @brief invoked by synchWithOverWriting()
      * @see synchWithOverWriting()
      */
-    void moveOnTreeAutoSynch(boost::shared_ptr<AliasTree>, int indent, int & counter);
+    void moveOnTreeAutoSynch(boost::shared_ptr<AliasTree>, int indent,
+            int & counter);
 
     /**
      * @brief Used to move on the tree, used by "ls" and "synch -d"
@@ -438,16 +437,18 @@ public:
             int indent, int & counter);
     void moveOnTreeShowListOfLocal(boost::shared_ptr<AliasTree> tree,
             int indent, int & counter);
-    void moveOnTreeShowList(boost::shared_ptr<AliasTree> tree,
-            int indent, int & counter);
+    void moveOnTreeShowList(boost::shared_ptr<AliasTree> tree, int indent,
+            int & counter);
 
-    void moveOnTreeShowFoundFiles(boost::shared_ptr<AliasTree> tree, int indent, int & counter);
+    void moveOnTreeShowFoundFiles(boost::shared_ptr<AliasTree> tree, int indent,
+            int & counter);
 
     /**
      * @brief Used by push, pull and choose
      * @warning Remember about counter++
      */
-    void moveOnTreeIndex(boost::shared_ptr<AliasTree>, int indent, int & counter, int index, QString command);
+    void moveOnTreeIndex(boost::shared_ptr<AliasTree>, int indent,
+            int & counter, int index, QString command);
 
     /**
      * @brief Actual state of app

@@ -586,19 +586,10 @@ bool ClientApplication::checkIntegrityOfConfigFile(QString path, QString alias,
     QFile file(dir);
     if (!file.open(QIODevice::ReadOnly))
         return false;
-    qDebug() << "SCIEZKA TO " << dir;
     QString tmpAlias = file.readLine().simplified();
     QString tmpPass = QByteArray::fromHex(file.readLine());
-    qDebug() << "TMP ALIAS TO " << tmpAlias;
-    qDebug() << "ALIAS TO " << alias;
-    qDebug() << "PIERWSZE INFO TO" << (tmpAlias == alias);
-    qDebug() << "DRUGIE INFO TO " << (pass.getHash() == tmpPass.simplified());
-    qDebug() << "TRZECIE INFO TO " << (pass.getHash() == tmpPass);
-    qDebug() << "PASS TO " << pass.getHash();
-    qDebug() << "TMP PASS TO " << tmpPass.simplified();
     file.close();
     return ((tmpAlias == alias) && (pass.getHash() == tmpPass));
-    //return true;
 }
 void ClientApplication::synchWithOverWriting(
         const Utilities::AliasFileList & list)
