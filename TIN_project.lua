@@ -112,4 +112,4 @@ function TIN_project.init()
 end
 
 tcp_table = DissectorTable.get("tcp.port")
-tcp_table:add(8080,TIN_project)
+tcp_table:add(8888,TIN_project)

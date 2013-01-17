@@ -346,13 +346,14 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
     } else if (cmd->getCommand() == "log") {
         (*this).m_alias = cmd->getArg();
         (*this).m_password = cmd->getPassword();
+        m_identifier = Identifier(Identify::getMachineIdentificator(), m_path);
         (*this).setState(ClientApplication::WAITING);
         m_serverConnection.connectToAlias(cmd->getArg(), cmd->getPassword(),
                 Utilities::Identifier(
-                        Utilities::Identify::getMachineIdentificator(), m_path));
+                        Utilities::Identify::getMachineIdentificator(),
+                        m_path));
 
     } else if (cmd->getCommand() == "create") {
-
         (*this).m_alias = cmd->getArg();
         (*this).m_password = cmd->getPassword();
         (*this).setState(ClientApplication::WAITING);
@@ -401,7 +402,8 @@ bool ClientApplication::invokeCommand(boost::shared_ptr<Commands> cmd)
         m_serverConnection.listAlias(true);
 
     } else if ((cmd->getCommand() == "ls") && (cmd->getParameter() == "l")) {
-        showListOfLocal((*this).listLocalPath());
+        m_list = listLocalPath();
+        showListOfLocal(m_list);
         QTimer::singleShot(0, &(*m_view), SLOT(reconnectNotifier()));
 
     } else if (cmd->getCommand() == "ls") {
@@ -444,6 +446,7 @@ int ClientApplication::start(const QHostAddress& address, quint16 port,
 
     // Pass empty message to start Daemon if not running
     m_DaemonCommunication.talkToDaemon(QByteArray("00000"));
+    m_path = path;
 
     qDebug() << "Client application started" << endl;
     m_path = path;
@@ -471,8 +474,8 @@ bool ClientApplication::checkIntegrity(boost::shared_ptr<Commands> cmd) const
     if (!cmd->isCorrect())
         return false;
     if (cmd->getCommand() == "log") {
-        //return ((*this).checkIntegrityOfConfigFile(m_path, cmd->getArg(),
-        //cmd->getPassword()));
+        return ((*this).checkIntegrityOfConfigFile(m_path, cmd->getArg(),
+                cmd->getPassword()));
     }
     if (cmd->getCommand() == "change") {
         return (*this).checkAbsolutePath(cmd->getArg());
@@ -641,39 +644,51 @@ void ClientApplication::moveOnTreeAutoSynch(boost::shared_ptr<AliasTree> tree,
                         FileLocation(QString(m_tree->getPath()),
                                 m_tree->getFileLocations()[index].m_size,
                                 Identifier(
-                                        m_tree->getFileLocations()[index].m_id,
-                                        m_tree->getPath())));
+                                        m_tree->getFileLocations()[index].m_id)));
                 QEventLoop loop;
                 QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
                         SLOT(quit()));
                 loop.exec();
+                m_serverConnection.pushFileToAlias(m_tree->getPath(),
+                        m_tree->getFileLocations()[index].m_size);
+                QEventLoop loop2;
+                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop2,
+                        SLOT(quit()));
+                loop2.exec();
 
-            }
-
-            if (m_tree->getFileLocations()[index].m_id
-                    == Identify::getMachineIdentificator()) {
-                qDebug() << m_tree->getPath() << "PUSH"
-                        << m_tree->getFileLocations()[index].m_date;
-                m_serverConnection.pushFileToAlias(QString(m_tree->getPath()),
+            } else if (file.exists()) {
+                m_serverConnection.pushFileToAlias(m_tree->getPath(),
                         m_tree->getFileLocations()[index].m_size);
                 QEventLoop loop;
                 QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
                         SLOT(quit()));
                 loop.exec();
-            } else {
-                qDebug() << m_tree->getPath() << "PULL"
-                        << m_tree->getFileLocations()[index].m_date;
-                m_serverConnection.pullFileFrom(
-                        FileLocation(QString(m_tree->getPath()),
-                                m_tree->getFileLocations()[index].m_size,
-                                Identifier(
-                                        m_tree->getFileLocations()[index].m_id,
-                                        m_tree->getPath())));
-                QEventLoop loop;
-                QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
-                        SLOT(quit()));
-                loop.exec();
             }
+
+            //    if (m_tree->getFileLocations()[index].m_id
+            //           == Identify::getMachineIdentificator()) {
+            //     qDebug() << m_tree->getPath() << "PUSH"
+            //           << m_tree->getFileLocations()[index].m_date;
+            //   m_serverConnection.pushFileToAlias(QString(m_tree->getPath()),
+            //          m_tree->getFileLocations()[index].m_size);
+            // QEventLoop loop;
+            // QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+            //         SLOT(quit()));
+            // loop.exec();
+            // } else {
+            //   qDebug() << m_tree->getPath() << "PULL"
+            //           << m_tree->getFileLocations()[index].m_date;
+            //   m_serverConnection.pullFileFrom(
+            //         FileLocation(QString(m_tree->getPath()),
+            //               m_tree->getFileLocations()[index].m_size,
+            //             Identifier(
+            //                   m_tree->getFileLocations()[index].m_id,
+            //                   m_tree->getPath())));
+            // QEventLoop loop;
+            // QObject::connect(this, SIGNAL(onFileTransferSignal()), &loop,
+            //         SLOT(quit()));
+            // loop.exec();
+            //}
 
             /** TODO Seems to be useless here */
             qDebug() << counter;
@@ -843,6 +858,7 @@ void ClientApplication::moveOnTreeShowListOfRemote(
 
 void ClientApplication::showListOfLocal(const AliasFileList& list)
 {
+    qDebug() << list.getSize();
     boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
     (*this).moveOnTreeShowListOfLocal(tree, 0, counter);
@@ -925,7 +941,7 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
 
                 if ((command == "push")
                         && (m_tree->getFileLocations()[j].m_id
-                                == Identify::getMachineIdentificator())) {
+                                == m_identifier.toQByteArray())) {
 
                     if (index == counter) {
                         m_serverConnection.pushFileToAlias(m_tree->getPath(),
@@ -936,21 +952,20 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
 
                 } else if ((command == "pull" || command == "read")
                         && (m_tree->getFileLocations()[j].m_id
-                                != Identify::getMachineIdentificator())) {
+                                != m_identifier.toQByteArray())) {
                     if (index == counter) {
                         m_serverConnection.pullFileFrom(
                                 FileLocation(m_tree->getPath(),
                                         m_tree->getFileLocations()[j].m_size,
                                         Identifier(
                                                 m_tree->getFileLocations()[j]
-                                                        .m_id,
-                                                m_tree->getPath())));
+                                                        .m_id)));
                         (*this).setState(ClientApplication::WAITING);
                     }
                     counter++;
                 } else if (command == "choose") {
                     if (m_tree->getFileLocations()[j].m_id
-                            == Identify::getMachineIdentificator()) {
+                            == m_identifier.toQByteArray()) {
                         if (index == counter) {
                             qDebug() << "ZNALEZIONO " << m_tree->getPath();
                             m_serverConnection.pushFileToAlias(
@@ -968,8 +983,7 @@ void ClientApplication::moveOnTreeIndex(boost::shared_ptr<AliasTree> tree,
                                             m_tree->getFileLocations()[j].m_size,
                                             Identifier(
                                                     m_tree->getFileLocations()[j]
-                                                            .m_id,
-                                                    m_tree->getPath())));
+                                                            .m_id)));
                             (*this).setState(ClientApplication::WAITING);
                         }
                         counter++;
@@ -1012,7 +1026,7 @@ void ClientApplication::moveOnTreeShowFoundFiles(
                         << "Size: " << m_tree->getFileLocations()[i].m_size
                         << " bytes" << "\t"
                         << ((m_tree->getFileLocations()[i].m_id
-                                == Identify::getMachineIdentificator()) ?
+                                == m_identifier.toQByteArray()) ?
                                 "Local computer" : "Remote Computer") << "\n";
             }
         } else {
@@ -1023,19 +1037,12 @@ void ClientApplication::moveOnTreeShowFoundFiles(
 
 void ClientApplication::changeRootPath(QString s)
 {
-    QString dir = s;
-    dir.append(QDir::separator());
-    dir.append(ConfigFileName::CONFIG_FILE_NAME);
-
-    QFile file(dir);
-    if (file.exists())
-        m_path = s;
-    else
-        m_view->showMessage(
-                "Cannot change to given path, no config file there");
+    m_path = s;
     (*this).setState(ClientApplication::CONNECTED);
     QTimer::singleShot(1000, &(*m_view), SLOT(reconnectNotifier()));
 }
+
+
 ClientApplication::~ClientApplication()
 {
 
