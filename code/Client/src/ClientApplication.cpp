@@ -797,7 +797,6 @@ void ClientApplication::showListOfLocal(const AliasFileList& list)
 {
     boost::shared_ptr<AliasTree> tree(new AliasTree(list.getTree()));
     int counter = 1;
-    qDebug() << list.getSize();
     (*this).moveOnTreeShowListOfLocal(tree, 0, counter);
     (*this).setState(ClientApplication::LOGGED);
     return;

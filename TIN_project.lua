@@ -103,7 +103,7 @@ function TIN_project.dissector (buffer, pinfo, tree)
 	elseif msgid == 33 then
 		pinfo.cols.info:append("REMOVE DIRECTORY AND DISCONNECT")
 		subtree:add(f.size,buffer(offset,4))
-	else pinfo.cols.info:append("PACKAGE NOT RECOGNIZED")
+	else pinfo.cols.info:append("REST OF PACKAGE")
 	end
 
 end
