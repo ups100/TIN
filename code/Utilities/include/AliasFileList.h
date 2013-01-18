@@ -66,6 +66,7 @@ public:
      * @param filePath Path to file
      * @param date Last file modification date timestamp
      * @param size Size of file
+     * @param fullPath
      */
     void addFile(const QString &filePath, const QString &date,
             const quint32 &size, const QString &fullPath);

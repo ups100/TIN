@@ -30,6 +30,11 @@
 
 namespace TIN_project {
 namespace Client {
+
+/**
+ * @brief Class used as interface for user
+ * @details Connected by ClientApplication
+ */
 class ClientApplication;
 class ClientView : public QObject
 {

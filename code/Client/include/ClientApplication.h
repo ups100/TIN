@@ -47,6 +47,11 @@ class CommunicationProtocol;
 
 namespace Client {
 
+/**
+ * @brief Class that represents client program
+ * @details Is connected with server and daemon
+ *
+ */
 class ClientApplication : public QObject,
         public ServerConnectionListener,
         public AliasCommunicationListener

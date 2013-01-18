@@ -5,7 +5,7 @@
  *
  * @author Marcin Kubik <markubik@gmail.com>
  * @author Mikolaj Markiewicz <kajo100@gmail.com>
- * @author Opasiak Krzsztof <ups100@tlen.pl>
+ * @author Opasiak Krzysztof <ups100@tlen.pl>
  * @author Jacek Sosnowski <jacek5656@tlen.pl>
  *
  * @brief TIN_project::Client module main function

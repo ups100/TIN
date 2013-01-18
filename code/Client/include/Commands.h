@@ -1,9 +1,19 @@
-///////////////////////////////////////////////////////////
-//  Commands.h
-//  Implementation of the Class Commands
-//  Created on:      07-gru-2012 00:33:34
-//  Original author: kopasiak
-///////////////////////////////////////////////////////////
+/**
+ * @file Commands.h
+ *
+ * @date 04-01-2013
+ *
+ * @author Marcin Kubik <markubik@gmail.com>
+ *
+ * @brief Implementation of the Class TIN_project::Client::DaemonCommunication
+ *
+ * @par Project
+ * This is a part of project realized on Warsaw University of Technology
+ * on TIN lectures. Project was created to simplify synchronization between catalogs,
+ * that are stored on different hosts to let clients work on the same files anywhere they want.
+ * Allows user to do operations such as searching, copying and distributing files
+ * gathered under one alias.
+ */
 
 #if !defined(EA_BF1C3997_E0EB_4819_BDC9_CF0F9B797239__INCLUDED_)
 #define EA_BF1C3997_E0EB_4819_BDC9_CF0F9B797239__INCLUDED_
@@ -17,6 +27,9 @@ namespace TIN_project {
 namespace Client {
 using namespace TIN_project::Utilities;
 
+/**
+ * @brief Class used as object that held command created by parser
+ */
 class Commands
 {
 public:
@@ -54,6 +67,7 @@ public:
      * @param[in] cmd Command
      * @param[in] arg Argument
      * @param[in] arg2 Argument
+     * @param[in] arg3 Argument
      * @param[in] flague Flague
      */
     Commands(QString cmd, QString arg, QString arg2, QString arg3,

@@ -3,7 +3,7 @@
  *
  * @date 08-12-2012
  *
- * @author Opasiak Krzsztof <ups100@tlen.pl>
+ * @author Opasiak Krzysztof <ups100@tlen.pl>
  *
  * @brief Implementation of the Class TIN_project::Client::AliasCommunicationListener
  *

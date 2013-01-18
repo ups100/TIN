@@ -26,6 +26,9 @@ namespace TIN_project {
 namespace Client {
 
 
+/**
+ * @brief Class used for parse commands from command line to Command object
+ */
 class CommandParser
 {
 
