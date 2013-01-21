@@ -8,7 +8,8 @@ then
 fi
 
 cp ./QtDynamicLibs/* ./build/lib
+cp help.txt ./build/bin
 
 cd build
 cmake ../code
-cp help.txt ./build/bin
+
